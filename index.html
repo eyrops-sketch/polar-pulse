@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Ultimate Pro</title>
+    <title>Polar Infinity - Pro Edition</title>
     <style>
         * {
             box-sizing: border-box;
@@ -106,7 +106,7 @@
         }
         .modal h2 { margin-top: 0; color: #ff007f; font-size: 1.1rem; }
         .setting-group { margin: 10px 0; font-size: 0.75rem; color: #00ffff; font-weight: bold; }
-        .setting-group input { width: 90px; background: #05070d; border: 1px solid #00ffcc; color: #00ffcc; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; }
+        .setting-group input, .setting-group select { width: 130px; background: #05070d; border: 1px solid #00ffcc; color: #00ffcc; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; }
 
         #achievementToast {
             position: absolute;
@@ -176,6 +176,13 @@
 
     <div id="settingsModal" class="modal">
         <h2>AJUSTES DE JUEGO</h2>
+        <div class="setting-group">
+            <label>Tipo de Trazados:</label><br>
+            <select id="curveVarietySelect" onchange="updateSettings()">
+                <option value="pretty">Solo Polares Bonitas</option>
+                <option value="all">Variedad Completa</option>
+            </select>
+        </div>
         <div class="setting-group">
             <label>Aciertos / Nivel:</label><br>
             <input type="number" id="hitsPerLevelInput" value="1" min="1" max="10" onchange="updateSettings()">
@@ -260,6 +267,7 @@
     let maxFailsForPenalty = 3;
     let fxVolume = 0.3;
     let musicVolume = 0.5;
+    let curveVarietyMode = 'pretty'; // 'pretty' por defecto (solo polares bonitas)
 
     let musicMode = 1; // 1: SECUENCIAL, 2: ALEATORIO, 0: OFF
     let currentTrackIndex = 1;
@@ -308,7 +316,6 @@
         mp3Player.play().catch(e => console.log("Reproducción pendiente de interacción", e));
     }
 
-    // Función unificada para cambiar canción y trazado matemático simultáneamente
     function nextSongAndForm() {
         initAudioContext();
         playNextTrack();
@@ -326,9 +333,9 @@
     let gameSpeed = 1.0;
     let angle = 0;
     
-    let curveType = 'rose';
-    let p1 = 3, p2 = 4, p3 = 2;
-    let currentScale = 140;
+    let curveType = 'rhodonea';
+    let p1 = 4, p2 = 5, p3 = 2;
+    let currentScale = 150;
     let relaxTimer = 0;
     let screenShake = 0;
 
@@ -417,7 +424,7 @@
 
     function resetTarget() {
         target.angle = Math.random() * Math.PI * 2;
-        target.radius = 50 + Math.random() * (currentScale - 40);
+        target.radius = 55 + Math.random() * (currentScale - 45);
         target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.003 + (level * 0.0007));
         pulseRadius = 0;
     }
@@ -431,84 +438,113 @@
     }
 
     function generateNewForm() {
-        const types = [
-            'roseFrac', 'piWave', 'harmonic', 'cardioidLim', 'lemniscate', 'epicycloid', 
-            'lissajous', 'butterfly', 'spirograph', 'gear', 'star', 'flower',
-            'epitrochoid', 'hypotrochoid', 'cazoleta', 'grandisRose', 'trifolio', 'cuatrifolio',
-            'logSpiral', 'cornu', 'astroide', 'deltoide', 'hypocycloid', 'polyRose',
-            'nephroid', 'limacon', 'parabolicHelix', 'rhodonea', 'superEllipse', 'sinusoidalGrid',
-            'toroidalWave', 'hyperbolicSpiral', 'octagram', 'decagram', 'omegaSpiral'
+        // Listas de curvas separadas: Polares bonitas simétricas vs Variedad completa
+        const prettyCurves = [
+            'rhodonea', 'roseFrac', 'piWave', 'grandisRose', 'trifolio', 'cuatrifolio',
+            'cardioidLim', 'lemniscate', 'epicycloid', 'star', 'flower', 'octagram', 'decagram'
         ];
-        curveType = types[Math.floor(Math.random() * types.length)];
-        p1 = Math.floor(Math.random() * 5) + 1;
-        p2 = Math.floor(Math.random() * 4) + 2;
-        p3 = Math.floor(Math.random() * 3) + 1;
         
-        autoNormalizeCurve();
+        const allCurves = [
+            ...prettyCurves,
+            'harmonic', 'lissajous', 'butterfly', 'spirograph', 'gear',
+            'epitrochoid', 'hypotrochoid', 'cazoleta', 'logSpiral', 'cornu',
+            'astroide', 'deltoide', 'hypocycloid', 'polyRose', 'nephroid',
+            'limacon', 'parabolicHelix', 'superEllipse', 'sinusoidalGrid',
+            'toroidalWave', 'hyperbolicSpiral', 'omegaSpiral'
+        ];
+
+        let valid = false;
+        let attempts = 0;
+
+        // Bucle de seguridad para asegurar que la figura generada tiene tamaño óptimo y no sale diminuta
+        while (!valid && attempts < 30) {
+            attempts++;
+            const pool = (curveVarietyMode === 'pretty') ? prettyCurves : allCurves;
+            curveType = pool[Math.floor(Math.random() * pool.length)];
+            
+            p1 = Math.floor(Math.random() * 6) + 2;
+            p2 = Math.floor(Math.random() * 5) + 2;
+            p3 = Math.floor(Math.random() * 3) + 1;
+
+            if (autoNormalizeCurve()) {
+                valid = true;
+            }
+        }
     }
 
     function autoNormalizeCurve() {
         let maxVal = 0;
-        let testSteps = 100;
+        let minVal = 9999;
+        let testSteps = 120;
+        
         for (let i = 0; i < testSteps; i++) {
             let th = (i / testSteps) * Math.PI * 16;
             let rawR = Math.abs(getRawPolarRadius(th, 0));
-            if (rawR > maxVal && rawR < 1000) maxVal = rawR;
+            if (!isNaN(rawR) && rawR < 1000) {
+                if (rawR > maxVal) maxVal = rawR;
+                if (rawR < minVal) minVal = rawR;
+            }
         }
         
-        if (maxVal === 0 || isNaN(maxVal)) maxVal = 100;
-        let targetRadius = 155;
-        currentScale = targetRadius / (maxVal / 110 + 0.1);
-        if (currentScale < 80) currentScale = 80;
-        if (currentScale > 185) currentScale = 185;
+        // REQUISITO: Omitir o reintentar si el trazado resultante es demasiado pequeño (radio máximo menor a 35)
+        if (maxVal < 35 || isNaN(maxVal)) {
+            return false;
+        }
+
+        let targetRadius = 145;
+        currentScale = targetRadius / (maxVal / 100 + 0.05);
+        if (currentScale < 70) currentScale = 70;
+        if (currentScale > 180) currentScale = 180;
+
+        return true;
     }
 
     function getRawPolarRadius(th, currentAngle) {
         let t = th + currentAngle;
         switch(curveType) {
-            case 'roseFrac': return Math.sin((p1 * t) / p2) * 110;
-            case 'piWave': return Math.sin(p1 * Math.PI * t / p2) * 115;
-            case 'harmonic': return (Math.sin(p1 * t) + Math.cos(p2 * th) / p3) * 100;
-            case 'cardioidLim': return (1 + 0.6 * Math.cos(p1 * t)) * 110;
-            case 'lemniscate': return Math.sqrt(Math.abs(Math.cos(p1 * t))) * 125;
-            case 'epicycloid': return (Math.sin(p1 * t) * Math.cos(p2 * th)) * 115;
-            case 'lissajous': return Math.sin(p1 * t + Math.PI/p3) * Math.cos(p2 * t) * 115;
-            case 'butterfly': return (Math.exp(Math.cos(t)) - 2 * Math.cos(4*t)) * 55;
-            case 'spirograph': return (0.8 * Math.cos(p1 * t) + 0.3 * Math.cos(p2 * t)) * 115;
-            case 'gear': return (1 + 0.2 * Math.sin(p1 * p2 * t)) * 110;
-            case 'star': return (1 - 0.35 * Math.abs(Math.sin(p1 * t / 2))) * 115;
-            case 'flower': return (0.5 + 0.5 * Math.cos(p1 * t)) * 120;
-            case 'epitrochoid': return (1.2 * Math.cos(p1 * t) - 0.4 * Math.cos(p2 * t)) * 105;
-            case 'hypotrochoid': return (0.9 * Math.sin(p1 * t) + 0.3 * Math.sin(p3 * t)) * 110;
-            case 'cazoleta': return (Math.sin(p1 * t) * Math.sin(p2 * t)) * 115;
-            case 'grandisRose': return (Math.sin(p1 * t / 3) * Math.cos(p2 * t / 2)) * 115;
-            case 'trifolio': return Math.sin(3 * t) * 115;
-            case 'cuatrifolio': return Math.cos(2 * t) * 115;
-            case 'logSpiral': return Math.exp(0.08 * Math.sin(t)) * 95;
-            case 'cornu': return Math.sin(t * t * 0.08) * 110;
-            case 'astroide': return Math.pow(Math.abs(Math.cos(t)), 3) * 120;
-            case 'deltoide': return (2 * Math.cos(t) + Math.cos(2 * t)) * 70;
-            case 'hypocycloid': return ((p1-1)*Math.cos(t) + Math.cos((p1-1)*t)) * 60;
-            case 'polyRose': return (Math.sin(p1 * t) * Math.sin(p2 * t)) * 115;
-            case 'nephroid': return (1 + 2 * Math.sin(t/2)) * 75;
-            case 'limacon': return (0.5 + Math.cos(t)) * 110;
-            case 'parabolicHelix': return Math.tan(t * 0.1) * 45;
-            case 'rhodonea': return Math.cos(p1 * t / p2) * 115;
-            case 'superEllipse': return Math.pow(Math.abs(Math.cos(t)), 2/p1) * 110;
-            case 'sinusoidalGrid': return (Math.sin(p1*t) + Math.sin(p2*t)) * 100;
-            case 'toroidalWave': return (Math.cos(p1*t) * Math.sin(p2*t)) * 110;
-            case 'hyperbolicSpiral': return (70 / (t + 0.5));
-            case 'octagram': return Math.cos(4 * t) * 115;
-            case 'decagram': return Math.cos(5 * t) * 115;
-            case 'omegaSpiral': return (Math.sin(t) * Math.cos(t * 0.5)) * 110;
-            default: return Math.sin(p1 * t) * 110;
+            case 'rhodonea': return Math.cos((p1 * t) / p2) * 100;
+            case 'roseFrac': return Math.sin((p1 * t) / p2) * 100;
+            case 'piWave': return Math.sin(p1 * Math.PI * t / p2) * 105;
+            case 'grandisRose': return (Math.sin(p1 * t / 3) * Math.cos(p2 * t / 2)) * 100;
+            case 'trifolio': return Math.sin(3 * t) * 100;
+            case 'cuatrifolio': return Math.cos(2 * t) * 100;
+            case 'cardioidLim': return (1 + 0.6 * Math.cos(p1 * t)) * 95;
+            case 'lemniscate': return Math.sqrt(Math.abs(Math.cos(p1 * t))) * 110;
+            case 'epicycloid': return (Math.sin(p1 * t) * Math.cos(p2 * th)) * 100;
+            case 'star': return (1 - 0.35 * Math.abs(Math.sin(p1 * t / 2))) * 105;
+            case 'flower': return (0.5 + 0.5 * Math.cos(p1 * t)) * 110;
+            case 'octagram': return Math.cos(4 * t) * 105;
+            case 'decagram': return Math.cos(5 * t) * 105;
+            case 'harmonic': return (Math.sin(p1 * t) + Math.cos(p2 * th) / p3) * 90;
+            case 'lissajous': return Math.sin(p1 * t + Math.PI/p3) * Math.cos(p2 * t) * 100;
+            case 'butterfly': return (Math.exp(Math.cos(t)) - 2 * Math.cos(4*t)) * 45;
+            case 'spirograph': return (0.8 * Math.cos(p1 * t) + 0.3 * Math.cos(p2 * t)) * 100;
+            case 'gear': return (1 + 0.2 * Math.sin(p1 * p2 * t)) * 95;
+            case 'epitrochoid': return (1.2 * Math.cos(p1 * t) - 0.4 * Math.cos(p2 * t)) * 90;
+            case 'hypotrochoid': return (0.9 * Math.sin(p1 * t) + 0.3 * Math.sin(p3 * t)) * 95;
+            case 'cazoleta': return (Math.sin(p1 * t) * Math.sin(p2 * t)) * 100;
+            case 'logSpiral': return Math.exp(0.08 * Math.sin(t)) * 85;
+            case 'cornu': return Math.sin(t * t * 0.08) * 95;
+            case 'astroide': return Math.pow(Math.abs(Math.cos(t)), 3) * 105;
+            case 'deltoide': return (2 * Math.cos(t) + Math.cos(2 * t)) * 65;
+            case 'hypocycloid': return ((p1-1)*Math.cos(t) + Math.cos((p1-1)*t)) * 55;
+            case 'polyRose': return (Math.sin(p1 * t) * Math.sin(p2 * t)) * 100;
+            case 'nephroid': return (1 + 2 * Math.sin(t/2)) * 70;
+            case 'limacon': return (0.5 + Math.cos(t)) * 95;
+            case 'parabolicHelix': return Math.tan(t * 0.1) * 40;
+            case 'superEllipse': return Math.pow(Math.abs(Math.cos(t)), 2/p1) * 95;
+            case 'sinusoidalGrid': return (Math.sin(p1*t) + Math.sin(p2*t)) * 90;
+            case 'toroidalWave': return (Math.cos(p1*t) * Math.sin(p2*t)) * 95;
+            case 'hyperbolicSpiral': return (65 / (t + 0.5));
+            case 'omegaSpiral': return (Math.sin(t) * Math.cos(t * 0.5)) * 95;
+            default: return Math.sin(p1 * t) * 100;
         }
     }
 
     function calculatePolarRadius(th, currentAngle) {
         let raw = getRawPolarRadius(th, currentAngle);
-        return currentScale * (raw / 110);
-               }
+        return currentScale * (raw / 100);
+                            }
         function createExplosionParticles(x, y) {
         for (let i = 0; i < 15; i++) {
             let pAngle = Math.random() * Math.PI * 2;
@@ -533,6 +569,7 @@
     }
 
     function updateSettings() {
+        curveVarietyMode = document.getElementById('curveVarietySelect').value;
         requiredHitsForLevel = parseInt(document.getElementById('hitsPerLevelInput').value) || 1;
         maxFailsForPenalty = parseInt(document.getElementById('failsPerPenaltyInput').value) || 3;
         fxVolume = parseFloat(document.getElementById('fxVolInput').value);
@@ -661,7 +698,7 @@
     }
 
     window.addEventListener('pointerdown', (e) => {
-        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
         if (!autoMode && !isPaused && !relaxMode) checkAction();
     }, false);
 
