@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Single Node & Pause</title>
+    <title>Polar Infinity - Evolving Scale & Difficulty</title>
     <style>
         * {
             box-sizing: border-box;
@@ -47,10 +47,10 @@
             box-shadow: 0 0 35px rgba(0, 255, 204, 0.2);
             background: #080c16;
             border-radius: 50%;
-            width: 82vw;
-            height: 82vw;
-            max-width: 390px;
-            max-height: 390px;
+            width: 84vw;
+            height: 84vw;
+            max-width: 400px;
+            max-height: 400px;
             transition: box-shadow 0.5s ease;
         }
 
@@ -132,6 +132,7 @@
     let num = 4;
     let den = 5;
     let curveType = 'fraction';
+    let currentScale = 90; // Tamaño dinámico de la figura
 
     const neonPalettes = [
         { stroke: '#ff007f', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.7)', title: '#ff007f', glow: 'rgba(255, 0, 127, 0.3)' },
@@ -149,7 +150,6 @@
     let feedbackText = '';
     let feedbackColor = '#00ffcc';
 
-    // Un único punto objetivo dinámico que además orbita suavemente
     let target = {
         angle: Math.random() * Math.PI * 2,
         radius: 110,
@@ -158,8 +158,9 @@
 
     function resetTarget() {
         target.angle = Math.random() * Math.PI * 2;
-        target.radius = 70 + Math.random() * 90;
-        target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.003 + level * 0.001); // Se mueve más rápido en niveles altos
+        // El radio del punto objetivo se adapta dinámicamente al tamaño actual de la figura
+        target.radius = 45 + Math.random() * (currentScale - 20);
+        target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.004 + level * 0.0015);
         pulseRadius = 0;
     }
 
@@ -236,6 +237,10 @@
             formNameEl.innerText = `Rosa (${num} pétalos)`;
         }
 
+        // --- TAMAÑO DINÁMICO ---
+        // Varía drásticamente entre pequeño (60px) y grande (180px abarcando casi toda la pantalla)
+        currentScale = Math.floor(Math.random() * 120) + 65;
+
         let randomPaletteIndex = Math.floor(Math.random() * neonPalettes.length);
         currentPalette = neonPalettes[randomPaletteIndex];
         mainTitle.style.color = currentPalette.title;
@@ -273,18 +278,18 @@
 
         let diff = Math.abs(pulseRadius - target.radius);
         
-        // Margen de acierto ligeramente más exigente en niveles altos (infinito)
-        let tolerance = Math.max(20, 32 - level * 1.5);
+        // Dificultad real: el margen de tolerancia se vuelve más estricto conforme sube el nivel
+        let tolerance = Math.max(14, 30 - level * 2);
 
         if (diff < tolerance) {
-            score += 100;
+            score += 100 * level;
             fails = 0;
             feedbackText = "¡PERFECTO!";
             feedbackColor = currentPalette.stroke;
             playSynthTone(783.99, 'sine', 0.4); 
 
-            // Subir nivel cada 5 aciertos
-            if (score % 500 === 0) {
+            // Subir nivel cada 400 puntos acumulados
+            if (score >= level * 400) {
                 level++;
                 levelEl.innerText = level;
             }
@@ -293,12 +298,13 @@
             resetTarget();
         } else {
             fails++;
-            if (fails >= 5 && level > 1) {
-                level--; // Retrocedes un nivel tras 5 fallos
+            // Penalización por fallar 4 veces: retrocedes un nivel
+            if (fails >= 4 && level > 1) {
+                level--;
                 levelEl.innerText = level;
                 fails = 0;
             }
-            score = Math.max(0, score - 15);
+            score = Math.max(0, score - 20);
             feedbackText = "¡FALLO!";
             feedbackColor = "#ff0055";
             playSynthTone(130.81, 'sawtooth', 0.2);
@@ -322,23 +328,23 @@
     function update() {
         if (isPaused) return;
 
-        // El punto objetivo orbita lentamente alrededor del centro
         target.angle += target.speed;
 
-        // Velocidad de la onda expansiva aumenta ligeramente con el nivel
-        let pulseSpeed = 1.6 + (level - 1) * 0.15;
+        // Dificultad real: la velocidad de la onda expansiva aumenta claramente con cada nivel
+        let pulseSpeed = 1.4 + (level - 1) * 0.35;
         pulseRadius += pulseSpeed;
 
-        if (pulseRadius > 200) {
+        // Si la onda excede el radio máximo, cuenta como fallo
+        if (pulseRadius > 210) {
             if (!autoMode) {
                 fails++;
-                if (fails >= 5 && level > 1) {
+                if (fails >= 4 && level > 1) {
                     level--;
                     levelEl.innerText = level;
                     fails = 0;
                 }
             }
-            resetTarget(); // Reinicia la onda y cambia la posición del punto
+            resetTarget();
         }
         angle += 0.004;
         updateAutoMode();
@@ -359,26 +365,25 @@
             ctx.stroke();
         }
 
-        // Trazado de la figura geométrica polar
+        // Trazado de la figura geométrica polar usando el tamaño dinámico (currentScale)
         ctx.beginPath();
         ctx.strokeStyle = currentPalette.stroke;
         ctx.lineWidth = 2.4;
         ctx.shadowColor = currentPalette.stroke;
         ctx.shadowBlur = 12;
         
-        let scale = 85;
         let maxTheta = Math.PI * 20; 
         
         for (let th = 0; th < maxTheta; th += 0.005) {
             let r = 0;
             if (curveType === 'fraction') {
-                r = scale * Math.sin((num * (th + angle)) / den);
+                r = currentScale * Math.sin((num * (th + angle)) / den);
             } else if (curveType === 'pi') {
-                r = scale * Math.sin(num * (th + angle));
+                r = currentScale * Math.sin(num * (th + angle));
             } else if (curveType === 'multi') {
-                r = scale * (Math.sin(num * (th + angle)) + Math.cos(den * th));
+                r = currentScale * (Math.sin(num * (th + angle)) + Math.cos(den * th));
             } else {
-                r = scale * Math.cos(num * (th + angle));
+                r = currentScale * Math.cos(num * (th + angle));
             }
 
             let x = cx + r * Math.cos(th);
@@ -389,7 +394,7 @@
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Dibujar el ÚNICO punto objetivo en movimiento orbital
+        // Dibujar el punto objetivo dinámico adaptado al tamaño de la curva
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
         
@@ -408,7 +413,6 @@
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Texto de pausa en pantalla si está pausado
         if (isPaused) {
             ctx.font = 'bold 26px monospace';
             ctx.fillStyle = '#00ffcc';
