@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Ultimate Edition</title>
+    <title>Polar Infinity - MP3 Ultimate</title>
     <style>
         * {
             box-sizing: border-box;
@@ -183,7 +183,7 @@
         </div>
         <div class="setting-group">
             <label>Volumen Música:</label><br>
-            <input type="range" id="musicVolInput" min="0" max="1" step="0.1" value="0.1" onchange="updateSettings()">
+            <input type="range" id="musicVolInput" min="0" max="1" step="0.1" value="0.5" onchange="updateSettings()">
         </div>
         <div class="setting-group" style="margin-top: 15px;">
             <button class="btn" style="background: rgba(255,0,85,0.2); border-color: #ff0055; color: #ff0055;" onclick="resetAchievements()">RESETEAR LOGROS</button>
@@ -213,14 +213,13 @@
         <button class="btn" onclick="resetGame()">REINICIAR</button>
         <button class="btn" onclick="toggleModal('settingsModal')">AJUSTES</button>
         <button class="btn" onclick="openAchievements()">LOGROS</button>
-        <button id="musicBtn" class="btn" onclick="toggleMusic()">MÚSICA: OFF</button>
+        <button id="musicBtn" class="btn active" onclick="toggleMusic()">MÚSICA: SECUENCIAL</button>
         <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
         <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: RANDOM</button>
         <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
         <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
     </div>
-
-<script>
+    <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const statsRow = document.getElementById('statsRow');
@@ -240,7 +239,7 @@
     const achievementToast = document.getElementById('achievementToast');
 
     let score = 0;
-    let highScore = localStorage.getItem('polarHighScoreUltimate') || 0;
+    let highScore = localStorage.getItem('polarHighScoreMP3') || 0;
     document.getElementById('highScore').innerText = highScore;
 
     let level = 1;
@@ -252,8 +251,51 @@
     let requiredHitsForLevel = 1;
     let maxFailsForPenalty = 3;
     let fxVolume = 0.3;
-    let musicVolume = 0.1;
-    let musicEnabled = false; // Por defecto OFF
+    let musicVolume = 0.5;
+
+    // Configuración MP3 (Activo por defecto en modo Secuencial[span_2](start_span)[span_2](end_span))
+    let musicMode = 1; // 1: SECUENCIAL, 2: ALEATORIO, 0: OFF
+    let currentTrackIndex = 1;
+    const totalTracks = 53;
+    let mp3Player = new Audio();
+    mp3Player.volume = musicVolume;
+
+    mp3Player.addEventListener('ended', () => {
+        if (musicMode > 0) playNextTrack();
+    });
+
+    function toggleMusic() {
+        initAudioContext();
+        musicMode = (musicMode + 1) % 3;
+        if (musicMode === 0) {
+            musicBtn.classList.remove('active');
+            musicBtn.innerText = "MÚSICA: OFF";
+            mp3Player.pause();
+        } else if (musicMode === 1) {
+            musicBtn.classList.add('active');
+            musicBtn.innerText = "MÚSICA: SECUENCIAL";
+            playNextTrack();
+        } else {
+            musicBtn.classList.add('active');
+            musicBtn.innerText = "MÚSICA: ALEATORIO";
+            playNextTrack();
+        }
+    }
+
+    function playNextTrack() {
+        if (musicMode === 0) return;
+        
+        if (musicMode === 1) {
+            currentTrackIndex++;
+            if (currentTrackIndex > totalTracks) currentTrackIndex = 1;
+        } else if (musicMode === 2) {
+            currentTrackIndex = Math.floor(Math.random() * totalTracks) + 1;
+        }
+
+        let trackStr = String(currentTrackIndex).padStart(3, '0');
+        mp3Player.src = `multimedia/${trackStr}.mp3`;
+        mp3Player.play().catch(e => console.log("Reproducción pendiente de interacción:", e));
+    }
 
     let autoMode = false;
     let isPaused = false;
@@ -304,8 +346,9 @@
     ];
     let currentThemeIndex = 0;
     let theme = themes[0];
-    let isRandomThemeMode = true; // Por defecto en Aleatorio
-        let pulseRadius = 0;
+    let isRandomThemeMode = true;
+
+    let pulseRadius = 0;
     let feedbackTimer = 0;
     let feedbackText = '';
     let feedbackColor = '#00ffcc';
@@ -362,75 +405,12 @@
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
-    let musicInterval = null;
-    let seqStep = 0;
 
-    const musicScales = [
-        [65.41, 73.42, 77.78, 87.31],
-        [65.41, 73.42, 82.41, 98.00],
-        [65.41, 69.30, 77.78, 82.41],
-        [65.41, 77.78, 98.00, 103.83],
-        [73.42, 82.41, 87.31, 98.00]
-    ];
-    let currentScaleIndex = 0;
-    let currentBase = 0;
-
-    function initAudio() {
-        if (!audioCtx) {
-            audioCtx = new AudioContext();
-            startProceduralMusic();
-        }
+    function initAudioContext() {
+        if (!audioCtx) audioCtx = new AudioContext();
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
-    function toggleMusic() {
-        initAudio();
-        musicEnabled = !musicEnabled;
-        musicBtn.classList.toggle('active', musicEnabled);
-        musicBtn.innerText = musicEnabled ? "MÚSICA: ON" : "MÚSICA: OFF";
-    }
-
-    function playSynthTone(freq, type = 'sine', duration = 0.3, vol = fxVolume) {
-        try {
-            if (!audioCtx || isPaused || relaxMode) return;
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
-        } catch (e) {}
-    }
-
-    function startProceduralMusic() {
-        if (musicInterval) clearInterval(musicInterval);
-        musicInterval = setInterval(() => {
-            if (!audioCtx || audioCtx.state !== 'running' || isPaused || relaxMode || !musicEnabled) return;
-
-            let activeScale = musicScales[currentScaleIndex];
-            if (seqStep % 32 === 0) currentBase = (currentBase + 1) % activeScale.length;
-            let baseFreq = activeScale[currentBase] * (1 + (level % 3) * 0.25);
-
-            playSynthTone(baseFreq, 'sawtooth', 0.15, musicVolume * 0.9);
-            if (seqStep % 2 !== 0) playSynthTone(baseFreq * 2, 'sawtooth', 0.1, musicVolume * 0.6);
-
-            let arpOffset = Math.floor(Math.abs(Math.cos(target.angle + seqStep)) * 5) * 2;
-            let arpFreq = baseFreq * 4 * Math.pow(1.05946, arpOffset * 2);
-            playSynthTone(arpFreq, 'square', 0.1, musicVolume * 0.4);
-
-            if (seqStep % 16 === 0) {
-                playSynthTone(baseFreq * 2, 'triangle', 2.0, musicVolume * 0.5);
-                playSynthTone(baseFreq * 3, 'sine', 2.0, musicVolume * 0.4);
-            }
-            seqStep++;
-        }, 130);
-    }
-
-    // 24 Formas de Trazados Matemáticos Masivos
     function generateNewForm() {
         const types = [
             'roseFrac', 'piWave', 'harmonic', 'cardioidLim', 'lemniscate', 'epicycloid', 
@@ -460,7 +440,6 @@
             case 'gear': return currentScale * (1 + 0.15 * Math.sin(p1 * p2 * t));
             case 'star': return currentScale * (1 - 0.3 * Math.abs(Math.sin(p1 * t / 2)));
             case 'flower': return currentScale * (0.5 + 0.5 * Math.cos(p1 * t));
-            // Nuevos trazados
             case 'epitrochoid': return currentScale * (1.2 * Math.cos(p1 * t) - 0.4 * Math.cos(p2 * t));
             case 'hypotrochoid': return currentScale * (0.9 * Math.sin(p1 * t) + 0.3 * Math.sin(p3 * t));
             case 'cazoleta': return currentScale * (Math.sin(p1 * t) * Math.sin(p2 * t));
@@ -476,8 +455,7 @@
             default: return currentScale * Math.sin(p1 * t);
         }
     }
-
-    function createExplosionParticles(x, y) {
+            function createExplosionParticles(x, y) {
         for (let i = 0; i < 15; i++) {
             let pAngle = Math.random() * Math.PI * 2;
             let pSpeed = Math.random() * 3 + 1;
@@ -486,7 +464,7 @@
     }
 
     function toggleAutoMode() {
-        initAudio();
+        initAudioContext();
         autoMode = !autoMode;
         autoBtn.classList.toggle('active', autoMode);
         autoBtn.innerText = autoMode ? "AUTO: ON" : "AUTO: OFF";
@@ -494,7 +472,7 @@
     }
 
     function togglePause() {
-        initAudio();
+        initAudioContext();
         isPaused = !isPaused;
         pauseBtn.classList.toggle('active', isPaused);
         pauseBtn.innerText = isPaused ? "REANUDAR" : "PAUSA";
@@ -505,6 +483,7 @@
         maxFailsForPenalty = parseInt(document.getElementById('failsPerPenaltyInput').value) || 3;
         fxVolume = parseFloat(document.getElementById('fxVolInput').value);
         musicVolume = parseFloat(document.getElementById('musicVolInput').value);
+        mp3Player.volume = musicVolume;
     }
 
     function toggleGameMode() {
@@ -580,8 +559,9 @@
         
         themesExplored++;
         if (themesExplored >= 10) unlockAchievement('palette_master');
-                                         }
-        function changeSpeed() {
+    }
+
+    function changeSpeed() {
         if (gameSpeed === 1.0) gameSpeed = 1.5;
         else if (gameSpeed === 1.5) gameSpeed = 2.0;
         else if (gameSpeed === 2.0) { gameSpeed = 3.0; unlockAchievement('speed_demon'); }
@@ -599,8 +579,6 @@
         perfectStreak = 0;
         pulseRadius = 0;
         floatingTexts = [];
-        
-        currentScaleIndex = Math.floor(Math.random() * musicScales.length);
 
         if (gameMode === 'timeAttack') startTimeAttack();
         generateNewForm();
@@ -609,7 +587,7 @@
     }
 
     function toggleRelaxMode() {
-        initAudio();
+        initAudioContext();
         relaxMode = !relaxMode;
         relaxBtn.classList.toggle('active', relaxMode);
         if (relaxMode) {
@@ -635,7 +613,7 @@
 
     function checkAction() {
         if (isPaused || relaxMode) return;
-        initAudio();
+        initAudioContext();
         
         if(audioCtx && audioCtx.state === 'running') {
             let osc = audioCtx.createOscillator();
@@ -678,7 +656,7 @@
                 if (gameMode === 'timeAttack') timeAttackSeconds += 3;
                 if (score > highScore) {
                     highScore = score;
-                    localStorage.setItem('polarHighScoreUltimate', highScore);
+                    localStorage.setItem('polarHighScoreMP3', highScore);
                     if (highScore >= 1000) unlockAchievement('score_1000');
                     if (highScore >= 5000) unlockAchievement('score_5000');
                     if (highScore >= 10000) unlockAchievement('score_10000');
@@ -910,10 +888,17 @@
         requestAnimationFrame(loop);
     }
 
-    applyRandomTheme(); // Inicia con paleta aleatoria por defecto
+    applyRandomTheme();
     generateNewForm();
     resetTarget();
     loop();
+    
+    // Iniciar reproducción automática de música al primer toque/clic del usuario en la página
+    window.addEventListener('pointerdown', () => {
+        if (musicMode > 0 && mp3Player.paused) {
+            playNextTrack();
+        }
+    }, { once: true });
 </script>
 </body>
 </html>
