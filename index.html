@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Relax Mode & Floating Exit</title>
+    <title>Polar Infinity - Final Masterpiece</title>
     <style>
         * {
             box-sizing: border-box;
@@ -24,16 +24,19 @@
             user-select: none;
             -webkit-user-select: none;
             transition: background-color 0.5s ease;
+            padding: 5px;
         }
         #ui {
-            margin-top: 8px;
+            margin-top: 2px;
             text-align: center;
-            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.6);
             z-index: 10;
             transition: opacity 0.3s ease;
+            width: 100%;
         }
-        h1 { margin: 0; font-size: 1rem; letter-spacing: 2px; color: #ff007f; transition: color 0.5s ease; }
-        p { margin: 2px 0 0 0; font-size: 0.7rem; color: #8ab4f8; }
+        h1 { margin: 0; font-size: 1.1rem; letter-spacing: 2px; color: #ff007f; transition: color 0.5s ease; }
+        .stats-row { margin: 2px 0; font-size: 0.85rem; color: #ffffff; font-weight: bold; }
+        .info-row { margin: 1px 0; font-size: 0.75rem; color: #ff00aa; }
         
         .canvas-container {
             flex-grow: 1;
@@ -42,21 +45,22 @@
             align-items: center;
             width: 100%;
             position: relative;
+            min-height: 0;
         }
         
         canvas {
-            box-shadow: 0 0 35px rgba(0, 255, 204, 0.2);
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.25);
             background: #080c16;
             border-radius: 50%;
-            width: 82vw;
-            height: 82vw;
-            max-width: 380px;
-            max-height: 380px;
-            transition: width 0.3s ease, height 0.3s ease, box-shadow 0.5s ease;
+            width: 70vh;
+            height: 70vh;
+            max-width: 340px;
+            max-height: 340px;
+            transition: box-shadow 0.5s ease;
         }
 
         #controls-bar {
-            margin-bottom: 12px;
+            margin-bottom: 5px;
             display: flex;
             gap: 5px;
             align-items: center;
@@ -64,6 +68,7 @@
             flex-wrap: wrap;
             justify-content: center;
             transition: opacity 0.3s ease;
+            width: 100%;
         }
 
         .btn {
@@ -73,8 +78,8 @@
             padding: 5px 8px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
-            font-size: 0.58rem;
-            border-radius: 15px;
+            font-size: 0.6rem;
+            border-radius: 14px;
             cursor: pointer;
             box-shadow: 0 0 6px rgba(0, 255, 204, 0.3);
             transition: all 0.2s ease;
@@ -87,45 +92,74 @@
             box-shadow: 0 0 10px #ff007f;
         }
 
-        /* Botón flotante que aparece solo en Modo Relax para salir */
         #floatingExitBtn {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255, 0, 127, 0.25);
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 0, 127, 0.3);
             border: 2px solid #ff007f;
             color: #ff007f;
-            padding: 8px 12px;
+            padding: 6px 10px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
             font-size: 0.65rem;
-            border-radius: 20px;
+            border-radius: 16px;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
             z-index: 100;
-            display: none; /* Oculto por defecto */
+            display: none;
         }
 
         #instructions {
-            margin-bottom: 6px;
-            font-size: 0.55rem;
-            color: #5f6368;
-            text-align: center;
-            padding: 0 10px;
-            z-index: 10;
-            transition: opacity 0.3s ease;
+            display: none;
+        }
+
+        @media (orientation: landscape) {
+            body {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-around;
+                align-items: center;
+                padding: 10px;
+            }
+            #ui {
+                width: 45%;
+                text-align: left;
+                padding-left: 15px;
+            }
+            h1 { font-size: 1.2rem; }
+            .canvas-container {
+                width: 50%;
+                height: 100vh;
+            }
+            canvas {
+                width: 78dvh;
+                height: 78dvh;
+                max-width: 290px;
+                max-height: 290px;
+            }
+            #controls-bar {
+                width: 45%;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px;
+            }
+            .btn {
+                font-size: 0.7rem;
+                padding: 6px;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Botón flotante para salir del modo relax -->
     <button id="floatingExitBtn" onclick="toggleRelaxMode()">SALIR RELAX</button>
 
     <div id="ui">
         <h1 id="mainTitle">POLAR INFINITY</h1>
-        <p>Ptos: <span id="score">0</span> | Récord: <span id="highScore">0</span> | Nivel: <span id="level">1</span></p>
-        <p style="font-size: 0.65rem; color: #ff00aa;">Modo: <span id="modeLabel">Arcade</span> | Paleta: <span id="themeLabel">Cyber</span></p>
+        <div class="stats-row" id="statsRow">Ptos: <span id="score">0</span> | Récord: <span id="highScore">0</span> | Nivel: <span id="level">1</span></div>
+        <div class="info-row">Modo: <span id="modeLabel">Arcade</span> | Paleta: <span id="themeLabel">Cyber</span></div>
     </div>
 
     <div class="canvas-container">
@@ -134,20 +168,19 @@
 
     <div id="controls-bar">
         <button id="pauseBtn" class="btn" onclick="togglePause()">PAUSA</button>
+        <button id="modeBtn" class="btn" onclick="toggleGameMode()">MODO: ARCADE</button>
         <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
         <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: 1/10</button>
         <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
         <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
     </div>
-    
-    <div id="instructions">Toca la pantalla cuando el anillo coincida con el punto brillante</div>
-
-<script>
+    <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
     const highScoreEl = document.getElementById('highScore');
     const levelEl = document.getElementById('level');
+    const statsRow = document.getElementById('statsRow');
     const modeLabel = document.getElementById('modeLabel');
     const themeLabel = document.getElementById('themeLabel');
     const mainTitle = document.getElementById('mainTitle');
@@ -156,20 +189,21 @@
     const speedBtn = document.getElementById('speedBtn');
     const relaxBtn = document.getElementById('relaxBtn');
     const themeBtn = document.getElementById('themeBtn');
+    const modeBtn = document.getElementById('modeBtn');
     const uiContainer = document.getElementById('ui');
     const controlsBar = document.getElementById('controls-bar');
-    const instructions = document.getElementById('instructions');
     const floatingExitBtn = document.getElementById('floatingExitBtn');
 
     let score = 0;
     let highScore = localStorage.getItem('polarHighScore') || 0;
-    highScoreEl.innerText = highScore;
+    if (highScoreEl) highScoreEl.innerText = highScore;
 
     let level = 1;
     let fails = 0;
     let autoMode = false;
     let isPaused = false;
     let relaxMode = false;
+    let infiniteMode = false;
     let gameSpeed = 1.0;
     let angle = 0;
     
@@ -177,6 +211,7 @@
     let den = 5;
     let curveType = 'fraction';
     let currentScale = 90;
+    let relaxTimer = 0;
 
     const themes = [
         { name: 'Cyber', bg: '#080c16', stroke: '#ff007f', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.7)', glow: 'rgba(255, 0, 127, 0.3)' },
@@ -230,7 +265,7 @@
 
     function playSynthTone(freq, type = 'sine', duration = 0.3) {
         try {
-            if (!audioCtx || isPaused) return;
+            if (!audioCtx || isPaused || relaxMode) return;
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
 
@@ -281,7 +316,7 @@
             num = Math.floor(Math.random() * 7) + 2;
         }
 
-        currentScale = Math.floor(Math.random() * 130) + 60;
+        currentScale = Math.floor(Math.random() * 110) + 50;
     }
 
     function createExplosionParticles(x, y) {
@@ -312,6 +347,18 @@
         pauseBtn.innerText = isPaused ? "REANUDAR" : "PAUSA";
     }
 
+    function toggleGameMode() {
+        infiniteMode = !infiniteMode;
+        modeBtn.classList.toggle('active', infiniteMode);
+        if (infiniteMode) {
+            modeLabel.innerText = "Infinito";
+            statsRow.innerHTML = `Nivel: <span id="level">${level}</span>`;
+        } else {
+            modeLabel.innerText = "Arcade";
+            statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Nivel: <span id="level">${level}</span>`;
+        }
+    }
+
     function toggleRelaxMode() {
         initAudio();
         relaxMode = !relaxMode;
@@ -321,15 +368,13 @@
             uiContainer.style.pointerEvents = 'none';
             controlsBar.style.opacity = '0';
             controlsBar.style.pointerEvents = 'none';
-            instructions.style.opacity = '0';
-            floatingExitBtn.style.display = 'block'; // Muestra el botón flotante
+            floatingExitBtn.style.display = 'block';
         } else {
             uiContainer.style.opacity = '1';
             uiContainer.style.pointerEvents = 'auto';
             controlsBar.style.opacity = '1';
             controlsBar.style.pointerEvents = 'auto';
-            instructions.style.opacity = '1';
-            floatingExitBtn.style.display = 'none'; // Oculta el botón flotante
+            floatingExitBtn.style.display = 'none';
         }
     }
 
@@ -344,7 +389,7 @@
         themeLabel.innerText = theme.name;
         themeBtn.innerText = `PALETA: ${currentThemeIndex + 1}/10`;
         mainTitle.style.color = theme.stroke;
-        canvas.style.boxShadow = `0 0 35px ${theme.glow}`;
+        canvas.style.boxShadow = `0 0 30px ${theme.glow}`;
     }
 
     function changeSpeed() {
@@ -370,7 +415,14 @@
         let tolerance = Math.max(14, 30 - level * 1.5);
 
         if (diff < tolerance) {
-            score += Math.round(100 * level * gameSpeed);
+            if (!infiniteMode) {
+                score += Math.round(100 * level * gameSpeed);
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('polarHighScore', highScore);
+                }
+            }
+
             fails = 0;
             feedbackText = "¡PERFECTO!";
             feedbackColor = theme.stroke;
@@ -378,33 +430,35 @@
             createExplosionParticles(tx, ty);
             playSynthTone(783.99, 'sine', 0.4); 
 
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('polarHighScore', highScore);
-                highScoreEl.innerText = highScore;
-            }
-
-            if (score >= level * 400) {
-                level++;
-                levelEl.innerText = level;
+            level++;
+            
+            if (infiniteMode) {
+                const lvlSpan = document.getElementById('level');
+                if (lvlSpan) lvlSpan.innerText = level;
+            } else {
+                if(scoreEl) scoreEl.innerText = score;
+                if(highScoreEl) highScoreEl.innerText = highScore;
+                if(levelEl) levelEl.innerText = level;
             }
 
             generateNewForm();
             resetTarget();
         } else {
-            fails++;
-            if (fails >= 4 && level > 1) {
-                level--;
-                levelEl.innerText = level;
-                fails = 0;
+            if (!infiniteMode) {
+                fails++;
+                if (fails >= 4 && level > 1) {
+                    level--;
+                    fails = 0;
+                }
+                score = Math.max(0, score - 20);
+                if(scoreEl) scoreEl.innerText = score;
+                if(levelEl) levelEl.innerText = level;
             }
-            score = Math.max(0, score - 20);
             feedbackText = "¡FALLO!";
             feedbackColor = "#ff0055";
             playSynthTone(130.81, 'sawtooth', 0.2);
         }
         feedbackTimer = 25;
-        scoreEl.innerText = score;
     }
 
     function updateAutoMode() {
@@ -417,20 +471,32 @@
     function update() {
         if (isPaused) return;
 
+        if (relaxMode) {
+            relaxTimer++;
+            if (relaxTimer > 280) {
+                relaxTimer = 0;
+                generateNewForm();
+                changeTheme();
+            }
+        }
+
         target.angle += target.speed * gameSpeed;
 
-        let pulseSpeedMultiplier = autoMode ? 0.8 : gameSpeed;
-        let pulseSpeed = (1.2 + (level - 1) * 0.2) * pulseSpeedMultiplier;
+        let pulseSpeedMultiplier = (autoMode || relaxMode) ? 0.7 : gameSpeed;
+        let pulseSpeed = (1.2 + (level - 1) * 0.15) * pulseSpeedMultiplier;
         pulseRadius += pulseSpeed;
 
         if (pulseRadius > 230) {
-            if (!autoMode) {
+            if (!autoMode && !relaxMode && !infiniteMode) {
                 fails++;
                 if (fails >= 4 && level > 1) {
                     level--;
-                    levelEl.innerText = level;
                     fails = 0;
                 }
+            }
+            if (relaxMode) {
+                generateNewForm();
+                level = Math.floor(Math.random() * 8) + 1;
             }
             resetTarget();
         }
@@ -526,12 +592,12 @@
         ctx.stroke();
 
         if (isPaused) {
-            ctx.font = 'bold 26px monospace';
+            ctx.font = 'bold 24px monospace';
             ctx.fillStyle = theme.target;
             ctx.textAlign = 'center';
             ctx.fillText("JUEGO EN PAUSA", cx, cy);
         } else if (!relaxMode && feedbackTimer > 0) {
-            ctx.font = 'bold 20px monospace';
+            ctx.font = 'bold 18px monospace';
             ctx.fillStyle = feedbackColor;
             ctx.textAlign = 'center';
             ctx.fillText(feedbackText, cx, cy - 40);
