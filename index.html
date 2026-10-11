@@ -94,32 +94,32 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(8, 12, 22, 0.95);
-            border: 2px solid #ff007f;
+            border: 2px solid #00ffcc;
             padding: 20px;
             border-radius: 15px;
             z-index: 200;
-            box-shadow: 0 0 25px rgba(255, 0, 127, 0.5);
+            box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
             display: none;
             width: 85%;
             max-width: 320px;
             text-align: center;
         }
-        .modal h2 { margin-top: 0; color: #ff007f; font-size: 1.1rem; }
-        .setting-group { margin: 10px 0; font-size: 0.75rem; color: #00ffff; font-weight: bold; }
-        .setting-group input, .setting-group select { width: 130px; background: #05070d; border: 1px solid #00ffcc; color: #00ffcc; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; }
+        .modal h2 { margin-top: 0; color: #00ffcc; font-size: 1.1rem; text-shadow: 0 0 8px rgba(0,255,204,0.6); }
+        .setting-group { margin: 10px 0; font-size: 0.75rem; color: #ff00aa; font-weight: bold; }
+        .setting-group input, .setting-group select { width: 140px; background: #05070d; border: 1px solid #00ffcc; color: #00ffcc; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; }
 
         #achievementToast {
             position: absolute;
             top: -60px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 0, 127, 0.9);
-            color: #fff;
+            background: rgba(0, 255, 204, 0.9);
+            color: #05070d;
             padding: 8px 15px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: bold;
-            box-shadow: 0 0 15px #ff007f;
+            box-shadow: 0 0 15px #00ffcc;
             z-index: 300;
             transition: top 0.4s ease;
             pointer-events: none;
@@ -129,24 +129,28 @@
 
         #floatingControls {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             display: none;
-            gap: 6px;
+            gap: 8px;
             z-index: 100;
         }
 
         .floating-btn {
-            background: rgba(255, 0, 127, 0.3);
-            border: 2px solid #ff007f;
-            color: #ff007f;
-            padding: 6px 10px;
+            background: rgba(0, 255, 204, 0.2);
+            border: 2px solid #00ffcc;
+            color: #00ffcc;
+            padding: 8px 14px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             border-radius: 16px;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+            box-shadow: 0 0 12px rgba(0, 255, 204, 0.5);
+            text-shadow: 0 0 6px #00ffcc;
+        }
+        .floating-btn:hover {
+            background: rgba(0, 255, 204, 0.4);
         }
 
         @media (orientation: landscape) {
@@ -181,6 +185,14 @@
             <select id="curveVarietySelect" onchange="updateSettings()">
                 <option value="pretty">Solo Polares Bonitas</option>
                 <option value="all">Variedad Completa</option>
+            </select>
+        </div>
+        <div class="setting-group">
+            <label>Capas Superpuestas:</label><br>
+            <select id="layerCountSelect" onchange="updateSettings()">
+                <option value="1">1 (Normal)</option>
+                <option value="2">2 (Superpuestas)</option>
+                <option value="3">3 (Mandala Compleja)</option>
             </select>
         </div>
         <div class="setting-group">
@@ -267,9 +279,10 @@
     let maxFailsForPenalty = 3;
     let fxVolume = 0.3;
     let musicVolume = 0.5;
-    let curveVarietyMode = 'pretty'; // 'pretty' por defecto (solo polares bonitas)
+    let curveVarietyMode = 'pretty'; 
+    let layerCount = 1; // 1, 2 o 3 capas superpuestas
 
-    let musicMode = 1; // 1: SECUENCIAL, 2: ALEATORIO, 0: OFF
+    let musicMode = 1; 
     let currentTrackIndex = 1;
     const totalTracks = 53;
     let mp3Player = new Audio();
@@ -438,7 +451,6 @@
     }
 
     function generateNewForm() {
-        // Listas de curvas separadas: Polares bonitas simétricas vs Variedad completa
         const prettyCurves = [
             'rhodonea', 'roseFrac', 'piWave', 'grandisRose', 'trifolio', 'cuatrifolio',
             'cardioidLim', 'lemniscate', 'epicycloid', 'star', 'flower', 'octagram', 'decagram'
@@ -456,7 +468,6 @@
         let valid = false;
         let attempts = 0;
 
-        // Bucle de seguridad para asegurar que la figura generada tiene tamaño óptimo y no sale diminuta
         while (!valid && attempts < 30) {
             attempts++;
             const pool = (curveVarietyMode === 'pretty') ? prettyCurves : allCurves;
@@ -474,7 +485,6 @@
 
     function autoNormalizeCurve() {
         let maxVal = 0;
-        let minVal = 9999;
         let testSteps = 120;
         
         for (let i = 0; i < testSteps; i++) {
@@ -482,11 +492,10 @@
             let rawR = Math.abs(getRawPolarRadius(th, 0));
             if (!isNaN(rawR) && rawR < 1000) {
                 if (rawR > maxVal) maxVal = rawR;
-                if (rawR < minVal) minVal = rawR;
             }
         }
         
-        // REQUISITO: Omitir o reintentar si el trazado resultante es demasiado pequeño (radio máximo menor a 35)
+        // Evitar figuras diminutas
         if (maxVal < 35 || isNaN(maxVal)) {
             return false;
         }
@@ -541,10 +550,10 @@
         }
     }
 
-    function calculatePolarRadius(th, currentAngle) {
+    function calculatePolarRadius(th, currentAngle, scaleMultiplier = 1.0) {
         let raw = getRawPolarRadius(th, currentAngle);
-        return currentScale * (raw / 100);
-                            }
+        return currentScale * scaleMultiplier * (raw / 100);
+    }
         function createExplosionParticles(x, y) {
         for (let i = 0; i < 15; i++) {
             let pAngle = Math.random() * Math.PI * 2;
@@ -570,6 +579,7 @@
 
     function updateSettings() {
         curveVarietyMode = document.getElementById('curveVarietySelect').value;
+        layerCount = parseInt(document.getElementById('layerCountSelect').value) || 1;
         requiredHitsForLevel = parseInt(document.getElementById('hitsPerLevelInput').value) || 1;
         maxFailsForPenalty = parseInt(document.getElementById('failsPerPenaltyInput').value) || 3;
         fxVolume = parseFloat(document.getElementById('fxVolInput').value);
@@ -890,22 +900,31 @@
             ctx.stroke();
         }
 
-        ctx.beginPath();
-        ctx.strokeStyle = theme.stroke;
-        ctx.lineWidth = 2.5;
-        ctx.shadowColor = theme.stroke;
-        ctx.shadowBlur = 10;
-        
-        let maxTheta = Math.PI * 16;
-        for (let th = 0; th < maxTheta; th += 0.01) {
-            let r = calculatePolarRadius(th, angle);
-            let x = cx + r * Math.cos(th);
-            let y = cy + r * Math.sin(th);
-            if (th === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
+        // Renderizado de capas superpuestas (1, 2 o 3 funciones a diferentes radios y rotaciones)
+        let scales = [1.0, 0.75, 0.5];
+        let opacities = [1.0, 0.65, 0.4];
+        let rotations = [angle, -angle * 1.5, angle * 0.5 + Math.PI / 4];
+
+        for (let l = 0; l < layerCount; l++) {
+            ctx.beginPath();
+            ctx.strokeStyle = theme.stroke;
+            ctx.lineWidth = (l === 0) ? 2.5 : 1.8;
+            ctx.shadowColor = theme.stroke;
+            ctx.shadowBlur = (l === 0) ? 10 : 5;
+            ctx.globalAlpha = opacities[l];
+            
+            let maxTheta = Math.PI * 16;
+            for (let th = 0; th < maxTheta; th += 0.01) {
+                let r = calculatePolarRadius(th, rotations[l], scales[l]);
+                let x = cx + r * Math.cos(th);
+                let y = cy + r * Math.sin(th);
+                if (th === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
         }
-        ctx.stroke();
         ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1.0;
 
         for (let tp of targetParticles) {
             ctx.beginPath();
