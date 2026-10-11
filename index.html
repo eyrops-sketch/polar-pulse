@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Final Polish</title>
+    <title>Polar Infinity - Ultimate Masterpiece</title>
     <style>
         * {
             box-sizing: border-box;
@@ -36,7 +36,7 @@
         }
         h1 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; color: #ff007f; transition: color 0.5s ease; }
         .stats-row { margin: 4px 0; font-size: 0.95rem; color: #ffffff; font-weight: bold; }
-        .info-row { margin: 3px 0; font-size: 0.85rem; color: #ff00aa; font-weight: bold; } /* Línea ampliada y visible */
+        .info-row { margin: 3px 0; font-size: 0.85rem; color: #ff00aa; font-weight: bold; }
         
         .canvas-container {
             flex-grow: 1;
@@ -92,8 +92,8 @@
             box-shadow: 0 0 10px #ff007f;
         }
 
-        /* Modal de Configuración */
-        #settingsModal {
+        /* Modales de Configuración y Logros */
+        .modal {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -109,9 +109,31 @@
             max-width: 320px;
             text-align: center;
         }
-        #settingsModal h2 { margin-top: 0; color: #ff007f; font-size: 1.1rem; }
-        .setting-group { margin: 12px 0; font-size: 0.75rem; color: #8ab4f8; }
-        .setting-group input { width: 60px; background: #05070d; border: 1px solid #00ffcc; color: #00ffcc; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; }
+        .modal h2 { margin-top: 0; color: #ff007f; font-size: 1.1rem; }
+        .setting-group { margin: 10px 0; font-size: 0.75rem; color: #8ab4f8; }
+        .setting-group input, .setting-group select { width: 90px; background: #05070d; border: 1px solid #00ffcc; color: #00ffcc; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; }
+
+        /* Notificación Flotante de Logros */
+        #achievementToast {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 127, 0.9);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            box-shadow: 0 0 15px #ff007f;
+            z-index: 300;
+            transition: top 0.4s ease;
+            pointer-events: none;
+            text-align: center;
+        }
+        #achievementToast.show {
+            top: 15px;
+        }
 
         #floatingExitBtn {
             position: absolute;
@@ -172,21 +194,37 @@
 <body>
 
     <button id="floatingExitBtn" onclick="toggleRelaxMode()">SALIR RELAX</button>
+    <div id="achievementToast">🏆 ¡Logro Desbloqueado!</div>
 
-    <div id="settingsModal">
+    <!-- Modal de Ajustes -->
+    <div id="settingsModal" class="modal">
         <h2>AJUSTES DE JUEGO</h2>
         <div class="setting-group">
-            <label>Aciertos para Nivel:</label><br>
+            <label>Aciertos / Nivel:</label><br>
             <input type="number" id="hitsPerLevelInput" value="1" min="1" max="10" onchange="updateSettings()">
         </div>
         <div class="setting-group">
-            <label>Errores para Penalizar:</label><br>
+            <label>Errores Penalización:</label><br>
             <input type="number" id="failsPerPenaltyInput" value="3" min="1" max="10" onchange="updateSettings()">
         </div>
-        <button class="btn active" style="margin-top:10px;" onclick="toggleSettings()">CERRAR</button>
+        <div class="setting-group">
+            <label>Volumen FX:</label><br>
+            <input type="range" id="fxVolInput" min="0" max="1" step="0.1" value="0.3" onchange="updateSettings()">
+        </div>
+        <div class="setting-group">
+            <label>Volumen Música:</label><br>
+            <input type="range" id="musicVolInput" min="0" max="1" step="0.1" value="0.1" onchange="updateSettings()">
+        </div>
+        <button class="btn active" style="margin-top:10px;" onclick="toggleModal('settingsModal')">CERRAR</button>
     </div>
 
-    <div id="ui">
+    <!-- Modal de Logros -->
+    <div id="achievementsModal" class="modal">
+        <h2>LOGROS</h2>
+        <div id="achievementsList" style="font-size: 0.7rem; text-align: left; max-height: 180px; overflow-y: auto; margin-bottom: 10px;"></div>
+        <button class="btn active" onclick="toggleModal('achievementsModal')">CERRAR</button>
+    </div>
+       <div id="ui">
         <h1 id="mainTitle">POLAR INFINITY</h1>
         <div class="stats-row" id="statsRow">Ptos: <span id="score">0</span> | Récord: <span id="highScore">0</span> | Nivel: <span id="level">1</span></div>
         <div class="info-row">Modo: <span id="modeLabel">Arcade</span> | Paleta: <span id="themeLabel">Cyber</span></div>
@@ -200,13 +238,15 @@
         <button id="pauseBtn" class="btn" onclick="togglePause()">PAUSA</button>
         <button id="modeBtn" class="btn" onclick="toggleGameMode()">MODO: ARCADE</button>
         <button class="btn" onclick="resetGame()">REINICIAR</button>
-        <button class="btn" onclick="toggleSettings()">AJUSTES</button>
+        <button class="btn" onclick="toggleModal('settingsModal')">AJUSTES</button>
+        <button class="btn" onclick="openAchievements()">LOGROS</button>
         <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
         <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: 1/20</button>
         <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
         <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
     </div>
-    <script>
+
+<script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const statsRow = document.getElementById('statsRow');
@@ -222,7 +262,7 @@
     const uiContainer = document.getElementById('ui');
     const controlsBar = document.getElementById('controls-bar');
     const floatingExitBtn = document.getElementById('floatingExitBtn');
-    const settingsModal = document.getElementById('settingsModal');
+    const achievementToast = document.getElementById('achievementToast');
 
     let score = 0;
     let highScore = localStorage.getItem('polarHighScore') || 0;
@@ -233,11 +273,15 @@
     
     let requiredHitsForLevel = 1;
     let maxFailsForPenalty = 3;
+    let fxVolume = 0.3;
+    let musicVolume = 0.1;
 
     let autoMode = false;
     let isPaused = false;
     let relaxMode = false;
-    let infiniteMode = false; // False = Arcade, True = Infinito
+    let gameMode = 'arcade'; // 'arcade', 'infinite', 'timeAttack'
+    let timeAttackSeconds = 60;
+    let timeAttackTimer = null;
     let gameSpeed = 1.0;
     let angle = 0;
     
@@ -245,28 +289,38 @@
     let p1 = 4, p2 = 5, p3 = 1;
     let currentScale = 90;
     let relaxTimer = 0;
+    let screenShake = 0;
+
+    // Sistema de Logros
+    let achievements = [
+        { id: 'first_perfect', name: 'Primer Impacto', desc: 'Consigue tu primer acierto perfecto', unlocked: false },
+        { id: 'level_10', name: 'Explorador Polar', desc: 'Alcanza el nivel 10', unlocked: false },
+        { id: 'score_1000', name: 'Fiebre Neón', desc: 'Supera los 1000 puntos en Arcade', unlocked: false },
+        { id: 'speed_demon', name: 'Velocidad Luz', desc: 'Juega a velocidad 3.0x', unlocked: false },
+        { id: 'survivor', name: 'Superviviente', desc: 'Recupera el nivel tras una penalización', unlocked: false }
+    ];
 
     const themes = [
-        { name: 'Cyber', bg: '#080c16', stroke: '#ff007f', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.7)', glow: 'rgba(255, 0, 127, 0.3)' },
-        { name: 'Matrix', bg: '#020f04', stroke: '#00ff55', target: '#adff2f', wave: 'rgba(173, 255, 47, 0.7)', glow: 'rgba(0, 255, 85, 0.3)' },
-        { name: 'Laser', bg: '#0e0214', stroke: '#bf00ff', target: '#00ffff', wave: 'rgba(0, 255, 255, 0.7)', glow: 'rgba(191, 0, 255, 0.3)' },
-        { name: 'Retro 8b', bg: '#021008', stroke: '#33ff33', target: '#ffff33', wave: 'rgba(255, 255, 51, 0.7)', glow: 'rgba(51, 255, 51, 0.3)' },
-        { name: 'Sunset', bg: '#14050a', stroke: '#ff3366', target: '#ffcc00', wave: 'rgba(255, 204, 0, 0.7)', glow: 'rgba(255, 51, 102, 0.3)' },
-        { name: 'Acid', bg: '#0f1402', stroke: '#ccff00', target: '#ff00ff', wave: 'rgba(255, 0, 255, 0.7)', glow: 'rgba(204, 255, 0, 0.3)' },
-        { name: 'Gold', bg: '#120c02', stroke: '#ffaa00', target: '#ffffff', wave: 'rgba(255, 255, 255, 0.7)', glow: 'rgba(255, 170, 0, 0.3)' },
-        { name: 'Frost', bg: '#020a14', stroke: '#00ccff', target: '#ffffff', wave: 'rgba(0, 204, 255, 0.7)', glow: 'rgba(0, 204, 255, 0.3)' },
-        { name: 'Blood', bg: '#140202', stroke: '#ff0000', target: '#ff9999', wave: 'rgba(255, 153, 153, 0.7)', glow: 'rgba(255, 0, 0, 0.3)' },
-        { name: 'Neon Vio', bg: '#0a0214', stroke: '#9900ff', target: '#00ffaa', wave: 'rgba(0, 255, 170, 0.7)', glow: 'rgba(153, 0, 255, 0.3)' },
-        { name: 'Solar', bg: '#140a02', stroke: '#ff6600', target: '#ffff00', wave: 'rgba(255, 255, 0, 0.7)', glow: 'rgba(255, 102, 0, 0.3)' },
-        { name: 'Emerald', bg: '#02140d', stroke: '#00ffaa', target: '#00ffff', wave: 'rgba(0, 255, 170, 0.7)', glow: 'rgba(0, 255, 170, 0.3)' },
-        { name: 'Orchid', bg: '#120214', stroke: '#ff00cc', target: '#cc99ff', wave: 'rgba(204, 153, 255, 0.7)', glow: 'rgba(255, 0, 204, 0.3)' },
-        { name: 'Plasma', bg: '#0f0214', stroke: '#ff0066', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.7)', glow: 'rgba(255, 0, 102, 0.3)' },
-        { name: 'Deep Space', bg: '#010208', stroke: '#3388ff', target: '#ff33bb', wave: 'rgba(255, 51, 187, 0.7)', glow: 'rgba(51, 136, 255, 0.3)' },
-        { name: 'Cyberpunk', bg: '#120114', stroke: '#ff00ff', target: '#00ffff', wave: 'rgba(0, 255, 255, 0.7)', glow: 'rgba(255, 0, 255, 0.3)' },
-        { name: 'Toxic', bg: '#051202', stroke: '#33ff00', target: '#ff0066', wave: 'rgba(255, 0, 102, 0.7)', glow: 'rgba(51, 255, 0, 0.3)' },
-        { name: 'Magma', bg: '#140602', stroke: '#ff3300', target: '#ffcc00', wave: 'rgba(255, 204, 0, 0.7)', glow: 'rgba(255, 51, 0, 0.3)' },
-        { name: 'Arctic', bg: '#020f14', stroke: '#00ffcc', target: '#0055ff', wave: 'rgba(0, 85, 255, 0.7)', glow: 'rgba(0, 255, 204, 0.3)' },
-        { name: 'Amethyst', bg: '#0a0212', stroke: '#9933ff', target: '#ff99ff', wave: 'rgba(255, 153, 255, 0.7)', glow: 'rgba(153, 51, 255, 0.3)' }
+        { name: 'Cyber', bg: '#080c16', stroke: '#ff007f', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(255, 0, 127, 0.3)' },
+        { name: 'Matrix', bg: '#020f04', stroke: '#00ff55', target: '#adff2f', wave: 'rgba(173, 255, 47, 0.85)', glow: 'rgba(0, 255, 85, 0.3)' },
+        { name: 'Laser', bg: '#0e0214', stroke: '#bf00ff', target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(191, 0, 255, 0.3)' },
+        { name: 'Retro 8b', bg: '#021008', stroke: '#33ff33', target: '#ffff33', wave: 'rgba(255, 255, 51, 0.85)', glow: 'rgba(51, 255, 51, 0.3)' },
+        { name: 'Sunset', bg: '#14050a', stroke: '#ff3366', target: '#ffcc00', wave: 'rgba(255, 204, 0, 0.85)', glow: 'rgba(255, 51, 102, 0.3)' },
+        { name: 'Acid', bg: '#0f1402', stroke: '#ccff00', target: '#ff00ff', wave: 'rgba(255, 0, 255, 0.85)', glow: 'rgba(204, 255, 0, 0.3)' },
+        { name: 'Gold', bg: '#120c02', stroke: '#ffaa00', target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(255, 170, 0, 0.3)' },
+        { name: 'Frost', bg: '#020a14', stroke: '#00ccff', target: '#ffffff', wave: 'rgba(0, 204, 255, 0.85)', glow: 'rgba(0, 204, 255, 0.3)' },
+        { name: 'Blood', bg: '#140202', stroke: '#ff0000', target: '#ff9999', wave: 'rgba(255, 153, 153, 0.85)', glow: 'rgba(255, 0, 0, 0.3)' },
+        { name: 'Neon Vio', bg: '#0a0214', stroke: '#9900ff', target: '#00ffaa', wave: 'rgba(0, 255, 170, 0.85)', glow: 'rgba(153, 0, 255, 0.3)' },
+        { name: 'Solar', bg: '#140a02', stroke: '#ff6600', target: '#ffff00', wave: 'rgba(255, 255, 0, 0.85)', glow: 'rgba(255, 102, 0, 0.3)' },
+        { name: 'Emerald', bg: '#02140d', stroke: '#00ffaa', target: '#00ffff', wave: 'rgba(0, 255, 170, 0.85)', glow: 'rgba(0, 255, 170, 0.3)' },
+        { name: 'Orchid', bg: '#120214', stroke: '#ff00cc', target: '#cc99ff', wave: 'rgba(204, 153, 255, 0.85)', glow: 'rgba(255, 0, 204, 0.3)' },
+        { name: 'Plasma', bg: '#0f0214', stroke: '#ff0066', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(255, 0, 102, 0.3)' },
+        { name: 'Deep Space', bg: '#010208', stroke: '#3388ff', target: '#ff33bb', wave: 'rgba(255, 51, 187, 0.85)', glow: 'rgba(51, 136, 255, 0.3)' },
+        { name: 'Cyberpunk', bg: '#120114', stroke: '#ff00ff', target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(255, 0, 255, 0.3)' },
+        { name: 'Toxic', bg: '#051202', stroke: '#33ff00', target: '#ff0066', wave: 'rgba(255, 0, 102, 0.85)', glow: 'rgba(51, 255, 0, 0.3)' },
+        { name: 'Magma', bg: '#140602', stroke: '#ff3300', target: '#ffcc00', wave: 'rgba(255, 204, 0, 0.85)', glow: 'rgba(255, 51, 0, 0.3)' },
+        { name: 'Arctic', bg: '#020f14', stroke: '#00ffcc', target: '#0055ff', wave: 'rgba(0, 85, 255, 0.85)', glow: 'rgba(0, 255, 204, 0.3)' },
+        { name: 'Amethyst', bg: '#0a0212', stroke: '#9933ff', target: '#ff99ff', wave: 'rgba(255, 153, 255, 0.85)', glow: 'rgba(153, 51, 255, 0.3)' }
     ];
     let currentThemeIndex = 0;
     let theme = themes[0];
@@ -276,14 +330,38 @@
     let feedbackText = '';
     let feedbackColor = '#00ffcc';
     let screenFlash = 0;
-
     let particles = [];
+    let targetParticles = [];
 
     let target = {
         angle: Math.random() * Math.PI * 2,
         radius: 110,
         speed: 0.005
     };
+    <script>
+    function unlockAchievement(id) {
+        let ach = achievements.find(a => a.id === id);
+        if (ach && !ach.unlocked) {
+            ach.unlocked = true;
+            achievementToast.innerText = `🏆 ¡Logro: ${ach.name}!`;
+            achievementToast.classList.add('show');
+            setTimeout(() => achievementToast.classList.remove('show'), 3500);
+        }
+    }
+
+    function openAchievements() {
+        let listEl = document.getElementById('achievementsList');
+        listEl.innerHTML = '';
+        achievements.forEach(a => {
+            listEl.innerHTML += `<div style="margin:6px 0; color:${a.unlocked ? '#00ffcc' : '#666'}"><b>${a.name}</b> (${a.unlocked ? '✔' : '🔒'})<br><span style="font-size:0.6rem; color:#aaa;">${a.desc}</span></div>`;
+        });
+        toggleModal('achievementsModal');
+    }
+
+    function toggleModal(id) {
+        let m = document.getElementById(id);
+        m.style.display = (m.style.display === 'block') ? 'none' : 'block';
+    }
 
     function resetTarget() {
         target.angle = Math.random() * Math.PI * 2;
@@ -315,7 +393,7 @@
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.setValueAtTime(fxVolume, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
 
             osc.connect(gain);
@@ -332,8 +410,18 @@
         musicInterval = setInterval(() => {
             if (!audioCtx || audioCtx.state !== 'running' || isPaused) return;
             let modFreq = backgroundScale[Math.floor(Math.random() * backgroundScale.length)] * (1 + Math.sin(target.angle) * 0.1);
-            playSynthTone(modFreq, 'sine', 2.2);
-            setTimeout(() => playSynthTone(modFreq * 1.5, 'triangle', 1.5), 1000);
+            try {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(modFreq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(musicVolume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2.2);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 2.2);
+            } catch(e) {}
         }, 3500);
     }
 
@@ -356,29 +444,21 @@
     function calculatePolarRadius(th, currentAngle) {
         let t = th + currentAngle;
         switch(curveType) {
-            case 'roseFrac':
-                return currentScale * Math.sin((p1 * t) / p2);
-            case 'piWave':
-                return currentScale * Math.sin(p1 * Math.PI * t / p2);
-            case 'harmonic':
-                return currentScale * (Math.sin(p1 * t) + Math.cos(p2 * th) / p3);
-            case 'cardioidLim':
-                return currentScale * (1 + (p1 / p2) * Math.cos(p1 * t));
-            case 'lemniscate':
-                return currentScale * Math.sqrt(Math.abs(Math.cos(p1 * t)));
-            case 'spiralHarmonic':
-                return currentScale * (0.3 + 0.1 * t) * Math.sin(p1 * t);
-            case 'epicycloid':
-                return currentScale * (Math.sin(p1 * t) * Math.cos(p2 * th));
-            default:
-                return currentScale * Math.sin(p1 * t);
+            case 'roseFrac': return currentScale * Math.sin((p1 * t) / p2);
+            case 'piWave': return currentScale * Math.sin(p1 * Math.PI * t / p2);
+            case 'harmonic': return currentScale * (Math.sin(p1 * t) + Math.cos(p2 * th) / p3);
+            case 'cardioidLim': return currentScale * (1 + (p1 / p2) * Math.cos(p1 * t));
+            case 'lemniscate': return currentScale * Math.sqrt(Math.abs(Math.cos(p1 * t)));
+            case 'spiralHarmonic': return currentScale * (0.3 + 0.1 * t) * Math.sin(p1 * t);
+            case 'epicycloid': return currentScale * (Math.sin(p1 * t) * Math.cos(p2 * th));
+            default: return currentScale * Math.sin(p1 * t);
         }
     }
 
     function createExplosionParticles(x, y) {
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < 18; i++) {
             let pAngle = Math.random() * Math.PI * 2;
-            let pSpeed = Math.random() * 3 + 1;
+            let pSpeed = Math.random() * 3.5 + 1;
             particles.push({
                 x: x, y: y,
                 vx: Math.cos(pAngle) * pSpeed,
@@ -403,32 +483,55 @@
         pauseBtn.innerText = isPaused ? "REANUDAR" : "PAUSA";
     }
 
-    function toggleSettings() {
-        if (settingsModal.style.display === 'block') {
-            settingsModal.style.display = 'none';
-        } else {
-            settingsModal.style.display = 'block';
-        }
-    }
-
     function updateSettings() {
         requiredHitsForLevel = parseInt(document.getElementById('hitsPerLevelInput').value) || 1;
         maxFailsForPenalty = parseInt(document.getElementById('failsPerPenaltyInput').value) || 3;
+        fxVolume = parseFloat(document.getElementById('fxVolInput').value);
+        musicVolume = parseFloat(document.getElementById('musicVolInput').value);
     }
 
     function toggleGameMode() {
-        infiniteMode = !infiniteMode;
-        modeBtn.classList.toggle('active', infiniteMode);
-        modeBtn.innerText = infiniteMode ? "MODO: INFINITO" : "MODO: ARCADE";
+        if (gameMode === 'arcade') {
+            gameMode = 'infinite';
+            modeBtn.innerText = "MODO: INFINITO";
+        } else if (gameMode === 'infinite') {
+            gameMode = 'timeAttack';
+            modeBtn.innerText = "MODO: CONTRARELOJ";
+            startTimeAttack();
+        } else {
+            gameMode = 'arcade';
+            modeBtn.innerText = "MODO: ARCADE";
+            if (timeAttackTimer) clearInterval(timeAttackTimer);
+        }
+        modeBtn.classList.add('active');
         consecutiveFails = 0;
         successfulHits = 0;
         updateDOMStats();
     }
 
+    function startTimeAttack() {
+        timeAttackSeconds = 60;
+        if (timeAttackTimer) clearInterval(timeAttackTimer);
+        timeAttackTimer = setInterval(() => {
+            if (!isPaused && !relaxMode && gameMode === 'timeAttack') {
+                timeAttackSeconds--;
+                updateDOMStats();
+                if (timeAttackSeconds <= 0) {
+                    clearInterval(timeAttackTimer);
+                    alert("¡Tiempo agotado! Puntuación final: " + score);
+                    resetGame();
+                }
+            }
+        }, 1000);
+    }
+
     function updateDOMStats() {
-        if (infiniteMode) {
+        if (gameMode === 'infinite') {
             modeLabel.innerText = "Infinito";
             statsRow.innerHTML = `Nivel: <span id="level">${level}</span>`;
+        } else if (gameMode === 'timeAttack') {
+            modeLabel.innerText = "Contrarreloj";
+            statsRow.innerHTML = `Tiempo: ${timeAttackSeconds}s | Ptos: ${score} | Nivel: <span id="level">${level}</span>`;
         } else {
             modeLabel.innerText = "Arcade";
             statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Nivel: <span id="level">${level}</span>`;
@@ -441,6 +544,7 @@
         consecutiveFails = 0;
         successfulHits = 0;
         pulseRadius = 0;
+        if (gameMode === 'timeAttack') startTimeAttack();
         generateNewForm();
         resetTarget();
         updateDOMStats();
@@ -482,7 +586,7 @@
     function changeSpeed() {
         if (gameSpeed === 1.0) gameSpeed = 1.5;
         else if (gameSpeed === 1.5) gameSpeed = 2.0;
-        else if (gameSpeed === 2.0) gameSpeed = 3.0;
+        else if (gameSpeed === 2.0) { gameSpeed = 3.0; unlockAchievement('speed_demon'); }
         else if (gameSpeed === 3.0) gameSpeed = 0.25;
         else if (gameSpeed === 0.25) gameSpeed = 0.5;
         else gameSpeed = 1.0;
@@ -506,12 +610,15 @@
         if (diff < tolerance) {
             consecutiveFails = 0;
             successfulHits++;
+            unlockAchievement('first_perfect');
 
-            if (!infiniteMode) {
-                score += 100 + (level * 15);
+            if (gameMode !== 'infinite') {
+                score += 100 + (level * (gameMode === 'timeAttack' ? 25 : 15));
+                if (gameMode === 'timeAttack') timeAttackSeconds += 3; // Bonificación de tiempo
                 if (score > highScore) {
                     highScore = score;
                     localStorage.setItem('polarHighScore', highScore);
+                    if (highScore >= 1000) unlockAchievement('score_1000');
                 }
             }
 
@@ -524,17 +631,19 @@
             if (successfulHits >= requiredHitsForLevel) {
                 level++;
                 successfulHits = 0;
+                if (level >= 10) unlockAchievement('level_10');
             }
 
             generateNewForm();
             resetTarget();
         } else {
             consecutiveFails++;
+            screenShake = 12; // Vibración de pantalla al fallar
 
             if (consecutiveFails >= maxFailsForPenalty) {
                 consecutiveFails = 0;
                 successfulHits = 0;
-                if (infiniteMode) {
+                if (gameMode === 'infinite') {
                     level = Math.max(1, level - 1);
                     feedbackText = "¡BAJAS NIVEL!";
                 } else {
@@ -542,9 +651,10 @@
                     feedbackText = "¡PUNTOS A CERO!";
                 }
             } else {
-                if (!infiniteMode) {
+                if (gameMode !== 'infinite') {
                     score = Math.max(0, score - 15);
                 }
+                unlockAchievement('survivor');
                 feedbackText = "¡FALLO!";
             }
 
@@ -566,6 +676,9 @@
     function update() {
         if (isPaused) return;
 
+        if (screenShake > 0) screenShake *= 0.85;
+        if (screenShake < 0.5) screenShake = 0;
+
         if (relaxMode) {
             relaxTimer++;
             if (relaxTimer > 250) {
@@ -577,6 +690,18 @@
 
         target.angle += target.speed * gameSpeed;
 
+        // Estela de partículas luminosas en el objetivo móvil
+        let cx = canvas.width / 2;
+        let cy = canvas.height / 2;
+        let tx = cx + target.radius * Math.cos(target.angle);
+        let ty = cy + target.radius * Math.sin(target.angle);
+        targetParticles.push({ x: tx, y: ty, life: 1.0 });
+
+        for (let i = targetParticles.length - 1; i >= 0; i--) {
+            targetParticles[i].life -= 0.08;
+            if (targetParticles[i].life <= 0) targetParticles.splice(i, 1);
+        }
+
         let pulseSpeedMultiplier = (autoMode || relaxMode) ? 0.7 : gameSpeed;
         let pulseSpeed = (1.1 + (level * 0.1)) * pulseSpeedMultiplier;
         pulseRadius += pulseSpeed;
@@ -584,10 +709,11 @@
         if (pulseRadius > 230) {
             if (!autoMode && !relaxMode) {
                 consecutiveFails++;
+                screenShake = 12;
                 if (consecutiveFails >= maxFailsForPenalty) {
                     consecutiveFails = 0;
                     successfulHits = 0;
-                    if (infiniteMode) {
+                    if (gameMode === 'infinite') {
                         level = Math.max(1, level - 1);
                     } else {
                         score = 0;
@@ -614,8 +740,17 @@
     }
 
     function draw() {
+        ctx.save();
+        if (screenShake > 0) {
+            let sx = (Math.random() - 0.5) * screenShake;
+            let sy = (Math.random() - 0.5) * screenShake;
+            ctx.translate(sx, sy);
+        }
+
         ctx.fillStyle = theme.bg;
+        ctx.globalAlpha = 0.25;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1.0;
 
         if (screenFlash > 0) {
             ctx.fillStyle = theme.stroke;
@@ -628,7 +763,7 @@
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
         ctx.lineWidth = 1;
         for (let r = 50; r <= 200; r += 50) {
             ctx.beginPath();
@@ -653,6 +788,16 @@
         }
         ctx.stroke();
         ctx.shadowBlur = 0;
+
+        // Estela del objetivo
+        for (let tp of targetParticles) {
+            ctx.beginPath();
+            ctx.arc(tp.x, tp.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = theme.target;
+            ctx.globalAlpha = tp.life * 0.5;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+        }
 
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
@@ -679,8 +824,11 @@
         ctx.beginPath();
         ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
         ctx.strokeStyle = theme.wave;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
+        ctx.shadowColor = theme.wave;
+        ctx.shadowBlur = 10;
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
         if (isPaused) {
             ctx.font = 'bold 24px monospace';
@@ -694,6 +842,8 @@
             ctx.fillText(feedbackText, cx, cy - 40);
             feedbackTimer--;
         }
+
+        ctx.restore();
     }
 
     function loop() {
