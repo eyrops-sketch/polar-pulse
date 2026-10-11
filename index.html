@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Pulse - Mobile</title>
+    <title>Polar Infinity - Synth & Sound</title>
     <style>
         * {
             box-sizing: border-box;
-            touch-action: manipulation; /* Evita zooms por doble toque */
+            touch-action: manipulation;
         }
         body {
             margin: 0;
-            background-color: #070913;
+            background-color: #05070d;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
             height: 100vh;
-            height: 100dvh; /* Altura dinámica real en móviles */
+            height: 100dvh;
             overflow: hidden;
             color: #00ffcc;
             font-family: 'Courier New', Courier, monospace;
@@ -25,13 +25,13 @@
             -webkit-user-select: none;
         }
         #ui {
-            margin-top: 20px;
+            margin-top: 15px;
             text-align: center;
             text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
             z-index: 10;
         }
-        h1 { margin: 0; font-size: 1.4rem; letter-spacing: 2px; color: #ff007f; }
-        p { margin: 5px 0 0 0; font-size: 0.95rem; color: #8ab4f8; }
+        h1 { margin: 0; font-size: 1.3rem; letter-spacing: 2px; color: #ff007f; }
+        p { margin: 4px 0 0 0; font-size: 0.85rem; color: #8ab4f8; }
         
         .canvas-container {
             flex-grow: 1;
@@ -42,17 +42,17 @@
         }
         
         canvas {
-            box-shadow: 0 0 25px rgba(255, 0, 127, 0.25);
-            background: #0b0f19;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.15);
+            background: #080c16;
             border-radius: 50%;
-            width: 85vw;
-            height: 85vw;
-            max-width: 400px;
-            max-height: 400px;
+            width: 86vw;
+            height: 86vw;
+            max-width: 410px;
+            max-height: 410px;
         }
         #instructions {
             margin-bottom: 20px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #5f6368;
             text-align: center;
             padding: 0 20px;
@@ -63,33 +63,113 @@
 <body>
 
     <div id="ui">
-        <h1>POLAR PULSE</h1>
-        <p>Puntos: <span id="score">0</span> | Nivel k: <span id="levelK">3</span></p>
+        <h1>POLAR INFINITY</h1>
+        <p>Puntos: <span id="score">0</span> | Forma: <span id="formName">Armónica</span></p>
     </div>
 
     <div class="canvas-container">
         <canvas id="gameCanvas" width="500" height="500"></canvas>
     </div>
     
-    <div id="instructions">Toca la pantalla cuando el anillo exterior coincida con el nodo brillante</div>
+    <div id="instructions">Toca la pantalla cuando el anillo coincida con el nodo brillante</div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
-    const levelKEl = document.getElementById('levelK');
+    const formNameEl = document.getElementById('formName');
 
     let score = 0;
-    let k = 3; // Parámetro de la rosa polar
     let angle = 0;
     
+    // Parámetros matemáticos avanzados
+    let num = 5;
+    let den = 4;
+    let curveType = 'fraction';
+
+    // Paleta de colores de neón dinámicos
+    const neonColors = [
+        '#ff007f', '#00ffcc', '#7f00ff', '#ff5500', 
+        '#00ff66', '#ffff00', '#00ccff', '#ff00aa', '#adff2f'
+    ];
+    let currentColor = '#ff007f';
+    let targetColor = '#00ffcc';
+
     let pulseRadius = 0;
     let targetRadius = 120;
     let feedbackTimer = 0;
     let feedbackText = '';
     let feedbackColor = '#00ffcc';
-
     let targetAngle = Math.random() * Math.PI * 2;
+
+    // --- SISTEMA DE AUDIO PROCEDURAL (Web Audio API) ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function playSynthTone(freq, type = 'sine', duration = 0.4) {
+        try {
+            initAudio();
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch (e) {
+            // Previene errores de políticas de autoplay en algunos navegadores móviles
+        }
+    }
+
+    // Escala pentatónica espacial en Hz para notas procedurales
+    const synthNotes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+
+    function getRandomNote() {
+        return synthNotes[Math.floor(Math.random() * synthNotes.length)];
+    }
+    // ---------------------------------------------------
+
+    function getRandomColor() {
+        return neonColors[Math.floor(Math.random() * neonColors.length)];
+    }
+
+    function generateNewForm() {
+        const types = ['fraction', 'pi', 'multi', 'rose'];
+        curveType = types[Math.floor(Math.random() * types.length)];
+
+        if (curveType === 'fraction') {
+            num = Math.floor(Math.random() * 7) + 1;
+            den = Math.floor(Math.random() * 5) + 2;
+            formNameEl.innerText = `${num}θ / ${den}`;
+        } else if (curveType === 'pi') {
+            num = (Math.random() * 3 + 0.5).toFixed(2);
+            formNameEl.innerText = `${num}πθ`;
+        } else if (curveType === 'multi') {
+            num = Math.floor(Math.random() * 6) + 2;
+            den = Math.floor(Math.random() * 4) + 1;
+            formNameEl.innerText = `Armónica ${num}:${den}`;
+        } else {
+            num = Math.floor(Math.random() * 8) + 2;
+            formNameEl.innerText = `Rosa (${num} pétalos)`;
+        }
+
+        currentColor = targetColor;
+        targetColor = getRandomColor();
+    }
 
     function resetTarget() {
         targetAngle = Math.random() * Math.PI * 2;
@@ -98,52 +178,60 @@
     }
 
     function triggerAction(e) {
-        if (e) e.preventDefault(); // Previene comportamientos táctiles raros
+        if (e) e.preventDefault();
+        initAudio(); // Asegura el desbloqueo de audio al tocar
         
+        // Sonido al pulsar la pantalla
+        playSynthNote(getRandomNote(), 'triangle', 0.25);
+
         let diff = Math.abs(pulseRadius - targetRadius);
         
         if (diff < 22) {
             score += 100;
             feedbackText = "¡PERFECTO!";
             feedbackColor = "#00ffcc";
-            k = (k % 6) + 2; // Cambia la forma geométrica al acertar
-            levelKEl.innerText = k;
+            
+            // Sonido agudo extra al acertar
+            playSynthNote(783.99, 'sine', 0.5); 
+
+            generateNewForm();
             resetTarget();
         } else {
             score = Math.max(0, score - 25);
             feedbackText = "¡FALLO!";
             feedbackColor = "#ff007f";
+            
+            // Sonido grave de fallo
+            playSynthNote(130.81, 'sawtooth', 0.3);
         }
         feedbackTimer = 25;
         scoreEl.innerText = score;
     }
 
-    // Soporte tanto para toque en móvil como clic de ratón
     window.addEventListener('touchstart', triggerAction, { passive: false });
     window.addEventListener('click', (e) => {
-        // Evita doble disparo si el navegador emula click tras touchstart
         if (e.pointerType === 'mouse' || !window.matchMedia('(pointer: coarse)').matches) {
             triggerAction(e);
         }
     });
 
     function update() {
-        pulseRadius += 1.8; // Velocidad de expansión adaptada a móvil
+        pulseRadius += 1.8;
         if (pulseRadius > 200) {
             pulseRadius = 0; 
         }
-        angle += 0.012; // Rotación suave de la gráfica
+        angle += 0.008;
     }
 
     function draw() {
-        ctx.fillStyle = 'rgba(11, 15, 25, 0.35)';
+        ctx.fillStyle = 'rgba(5, 7, 13, 0.4)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
         // 1. Rejilla polar de fondo
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.lineWidth = 1;
         for (let r = 50; r <= 180; r += 50) {
             ctx.beginPath();
@@ -151,42 +239,56 @@
             ctx.stroke();
         }
 
-        // 2. Gráfica Rosa Polar (r = a * cos(k * theta))
+        // 2. Gráfica Polar Compleja
         ctx.beginPath();
-        ctx.strokeStyle = '#ff007f';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = currentColor;
+        ctx.shadowBlur = 10;
         
-        let scale = 100;
-        for (let th = 0; th < Math.PI * 2; th += 0.01) {
-            let r = scale * Math.cos(k * (th + angle));
+        let scale = 90;
+        let maxTheta = (curveType === 'fraction' || curveType === 'multi') ? Math.PI * 8 : Math.PI * 2;
+        
+        for (let th = 0; th < maxTheta; th += 0.005) {
+            let r = 0;
+            if (curveType === 'fraction') {
+                r = scale * Math.sin((num * (th + angle)) / den);
+            } else if (curveType === 'pi') {
+                r = scale * Math.sin(num * (th + angle));
+            } else if (curveType === 'multi') {
+                r = scale * (Math.sin(num * (th + angle)) + Math.cos(den * th));
+            } else {
+                r = scale * Math.cos(num * (th + angle));
+            }
+
             let x = cx + r * Math.cos(th);
             let y = cy + r * Math.sin(th);
             if (th === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
-        ctx.closePath();
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
         // 3. Nodo objetivo
         let tx = cx + targetRadius * Math.cos(targetAngle);
         let ty = cy + targetRadius * Math.sin(targetAngle);
         
         ctx.beginPath();
-        ctx.arc(tx, ty, 9, 0, Math.PI * 2);
-        ctx.fillStyle = '#00ffcc';
-        ctx.shadowColor = '#00ffcc';
-        ctx.shadowBlur = 12;
+        ctx.arc(tx, ty, 8, 0, Math.PI * 2);
+        ctx.fillStyle = targetColor;
+        ctx.shadowColor = targetColor;
+        ctx.shadowBlur = 15;
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // 4. Onda expansiva táctil
+        // 4. Onda expansiva
         ctx.beginPath();
         ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(0, 255, 204, 0.65)';
-        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 2;
         ctx.stroke();
 
-        // 5. Mensaje flotante de feedback
+        // 5. Feedback visual
         if (feedbackTimer > 0) {
             ctx.font = 'bold 22px monospace';
             ctx.fillStyle = feedbackColor;
@@ -202,9 +304,9 @@
         requestAnimationFrame(loop);
     }
 
+    generateNewForm();
     loop();
 </script>
 
 </body>
 </html>
-
