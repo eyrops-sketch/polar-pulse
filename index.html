@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Deep Edition</title>
+    <title>Polar Infinity - Relax Mode & Floating Exit</title>
     <style>
         * {
             box-sizing: border-box;
@@ -30,6 +30,7 @@
             text-align: center;
             text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
             z-index: 10;
+            transition: opacity 0.3s ease;
         }
         h1 { margin: 0; font-size: 1rem; letter-spacing: 2px; color: #ff007f; transition: color 0.5s ease; }
         p { margin: 2px 0 0 0; font-size: 0.7rem; color: #8ab4f8; }
@@ -62,6 +63,7 @@
             z-index: 10;
             flex-wrap: wrap;
             justify-content: center;
+            transition: opacity 0.3s ease;
         }
 
         .btn {
@@ -85,6 +87,25 @@
             box-shadow: 0 0 10px #ff007f;
         }
 
+        /* Botón flotante que aparece solo en Modo Relax para salir */
+        #floatingExitBtn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 0, 127, 0.25);
+            border: 2px solid #ff007f;
+            color: #ff007f;
+            padding: 8px 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 0.65rem;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+            z-index: 100;
+            display: none; /* Oculto por defecto */
+        }
+
         #instructions {
             margin-bottom: 6px;
             font-size: 0.55rem;
@@ -92,15 +113,19 @@
             text-align: center;
             padding: 0 10px;
             z-index: 10;
+            transition: opacity 0.3s ease;
         }
     </style>
 </head>
 <body>
 
+    <!-- Botón flotante para salir del modo relax -->
+    <button id="floatingExitBtn" onclick="toggleRelaxMode()">SALIR RELAX</button>
+
     <div id="ui">
-        <h1 id="mainTitle">POLAR INFINITY DEEP</h1>
+        <h1 id="mainTitle">POLAR INFINITY</h1>
         <p>Ptos: <span id="score">0</span> | Récord: <span id="highScore">0</span> | Nivel: <span id="level">1</span></p>
-        <p style="font-size: 0.65rem; color: #ff00aa;">Modo: <span id="modeLabel">Normal</span> | Tema: <span id="themeLabel">Cyber</span></p>
+        <p style="font-size: 0.65rem; color: #ff00aa;">Modo: <span id="modeLabel">Arcade</span> | Paleta: <span id="themeLabel">Cyber</span></p>
     </div>
 
     <div class="canvas-container">
@@ -109,9 +134,8 @@
 
     <div id="controls-bar">
         <button id="pauseBtn" class="btn" onclick="togglePause()">PAUSA</button>
-        <button id="modeBtn" class="btn" onclick="toggleMode()">MODO: ARCADE</button>
-        <button id="themeBtn" class="btn" onclick="changeTheme()">TEMA: CYBER</button>
-        <button id="zoomBtn" class="btn" onclick="changeZoom()">ZOOM: MED</button>
+        <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
+        <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: 1/10</button>
         <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
         <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
     </div>
@@ -130,9 +154,12 @@
     const autoBtn = document.getElementById('autoBtn');
     const pauseBtn = document.getElementById('pauseBtn');
     const speedBtn = document.getElementById('speedBtn');
-    const zoomBtn = document.getElementById('zoomBtn');
-    const modeBtn = document.getElementById('modeBtn');
+    const relaxBtn = document.getElementById('relaxBtn');
     const themeBtn = document.getElementById('themeBtn');
+    const uiContainer = document.getElementById('ui');
+    const controlsBar = document.getElementById('controls-bar');
+    const instructions = document.getElementById('instructions');
+    const floatingExitBtn = document.getElementById('floatingExitBtn');
 
     let score = 0;
     let highScore = localStorage.getItem('polarHighScore') || 0;
@@ -142,9 +169,8 @@
     let fails = 0;
     let autoMode = false;
     let isPaused = false;
-    let hardcoreMode = false; // Modo Supervivencia (1 vida)
+    let relaxMode = false;
     let gameSpeed = 1.0;
-    let zoomLevel = 1;
     let angle = 0;
     
     let num = 4;
@@ -152,23 +178,27 @@
     let curveType = 'fraction';
     let currentScale = 90;
 
-    // Temas visuales avanzados
-    let currentThemeIndex = 0;
     const themes = [
         { name: 'Cyber', bg: '#080c16', stroke: '#ff007f', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.7)', glow: 'rgba(255, 0, 127, 0.3)' },
         { name: 'Matrix', bg: '#020f04', stroke: '#00ff55', target: '#adff2f', wave: 'rgba(173, 255, 47, 0.7)', glow: 'rgba(0, 255, 85, 0.3)' },
         { name: 'Laser', bg: '#0e0214', stroke: '#bf00ff', target: '#00ffff', wave: 'rgba(0, 255, 255, 0.7)', glow: 'rgba(191, 0, 255, 0.3)' },
-        { name: 'Retro 8b', bg: '#021008', stroke: '#33ff33', target: '#ffff33', wave: 'rgba(255, 255, 51, 0.7)', glow: 'rgba(51, 255, 51, 0.3)' }
+        { name: 'Retro 8b', bg: '#021008', stroke: '#33ff33', target: '#ffff33', wave: 'rgba(255, 255, 51, 0.7)', glow: 'rgba(51, 255, 51, 0.3)' },
+        { name: 'Sunset', bg: '#14050a', stroke: '#ff3366', target: '#ffcc00', wave: 'rgba(255, 204, 0, 0.7)', glow: 'rgba(255, 51, 102, 0.3)' },
+        { name: 'Acid', bg: '#0f1402', stroke: '#ccff00', target: '#ff00ff', wave: 'rgba(255, 0, 255, 0.7)', glow: 'rgba(204, 255, 0, 0.3)' },
+        { name: 'Gold', bg: '#120c02', stroke: '#ffaa00', target: '#ffffff', wave: 'rgba(255, 255, 255, 0.7)', glow: 'rgba(255, 170, 0, 0.3)' },
+        { name: 'Frost', bg: '#020a14', stroke: '#00ccff', target: '#ffffff', wave: 'rgba(0, 204, 255, 0.7)', glow: 'rgba(0, 204, 255, 0.3)' },
+        { name: 'Blood', bg: '#140202', stroke: '#ff0000', target: '#ff9999', wave: 'rgba(255, 153, 153, 0.7)', glow: 'rgba(255, 0, 0, 0.3)' },
+        { name: 'Neon Vio', bg: '#0a0214', stroke: '#9900ff', target: '#00ffaa', wave: 'rgba(0, 255, 170, 0.7)', glow: 'rgba(153, 0, 255, 0.3)' }
     ];
+    let currentThemeIndex = 0;
     let theme = themes[0];
 
     let pulseRadius = 0;
     let feedbackTimer = 0;
     let feedbackText = '';
     let feedbackColor = '#00ffcc';
-    let screenFlash = 0; // Efecto de destello al acertar
+    let screenFlash = 0;
 
-    // Sistema de partículas estelares polares
     let particles = [];
 
     let target = {
@@ -180,11 +210,10 @@
     function resetTarget() {
         target.angle = Math.random() * Math.PI * 2;
         target.radius = 45 + Math.random() * (currentScale - 20);
-        target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.004 + level * 0.001);
+        target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.003 + level * 0.0008);
         pulseRadius = 0;
     }
 
-    // --- AUDIO Y MÚSICA ESPACIAL PROCEDURAL ---
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
     let musicInterval = null;
@@ -224,20 +253,17 @@
         if (musicInterval) return;
         musicInterval = setInterval(() => {
             if (!audioCtx || audioCtx.state !== 'running' || isPaused) return;
-            // Frecuencias sutilmente moduladas por el ángulo orbital del objetivo
             let modFreq = backgroundScale[Math.floor(Math.random() * backgroundScale.length)] * (1 + Math.sin(target.angle) * 0.1);
             playSynthTone(modFreq, 'sine', 2.2);
             setTimeout(() => playSynthTone(modFreq * 1.5, 'triangle', 1.5), 1000);
         }, 3500);
     }
 
-    // Frecuencias dinámicas basadas en el ángulo del punto objetivo
     function getDynamicNote() {
         const baseNotes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 659.25, 783.99];
         let index = Math.floor(Math.abs(Math.sin(target.angle)) * baseNotes.length);
         return baseNotes[index % baseNotes.length];
     }
-    // -----------------------------------------------------------------
 
     function generateNewForm() {
         const types = ['fraction', 'pi', 'multi', 'rose'];
@@ -259,12 +285,11 @@
     }
 
     function createExplosionParticles(x, y) {
-        for (let i = 0; i < 18; i++) {
+        for (let i = 0; i < 16; i++) {
             let pAngle = Math.random() * Math.PI * 2;
-            let pSpeed = Math.random() * 3.5 + 1;
+            let pSpeed = Math.random() * 3 + 1;
             particles.push({
-                x: x,
-                y: y,
+                x: x, y: y,
                 vx: Math.cos(pAngle) * pSpeed,
                 vy: Math.sin(pAngle) * pSpeed,
                 life: 1.0,
@@ -287,17 +312,37 @@
         pauseBtn.innerText = isPaused ? "REANUDAR" : "PAUSA";
     }
 
-    function toggleMode() {
-        hardcoreMode = !hardcoreMode;
-        modeBtn.classList.toggle('active', hardcoreMode);
-        modeLabel.innerText = hardcoreMode ? "EXTREMO (1 Vvida)" : "Arcade";
+    function toggleRelaxMode() {
+        initAudio();
+        relaxMode = !relaxMode;
+        relaxBtn.classList.toggle('active', relaxMode);
+        if (relaxMode) {
+            uiContainer.style.opacity = '0';
+            uiContainer.style.pointerEvents = 'none';
+            controlsBar.style.opacity = '0';
+            controlsBar.style.pointerEvents = 'none';
+            instructions.style.opacity = '0';
+            floatingExitBtn.style.display = 'block'; // Muestra el botón flotante
+        } else {
+            uiContainer.style.opacity = '1';
+            uiContainer.style.pointerEvents = 'auto';
+            controlsBar.style.opacity = '1';
+            controlsBar.style.pointerEvents = 'auto';
+            instructions.style.opacity = '1';
+            floatingExitBtn.style.display = 'none'; // Oculta el botón flotante
+        }
     }
+
+    window.addEventListener('pointerdown', (e) => {
+        if (e.target.tagName === 'BUTTON') return;
+        if (!autoMode && !isPaused && !relaxMode) checkAction();
+    }, false);
 
     function changeTheme() {
         currentThemeIndex = (currentThemeIndex + 1) % themes.length;
         theme = themes[currentThemeIndex];
         themeLabel.innerText = theme.name;
-        themeBtn.innerText = 'TEMA: ' + theme.name;
+        themeBtn.innerText = `PALETA: ${currentThemeIndex + 1}/10`;
         mainTitle.style.color = theme.stroke;
         canvas.style.boxShadow = `0 0 35px ${theme.glow}`;
     }
@@ -311,42 +356,8 @@
         speedBtn.innerText = 'VEL: ' + gameSpeed.toFixed(1) + 'x';
     }
 
-    function changeZoom() {
-        zoomLevel = (zoomLevel + 1) % 3;
-        if (zoomLevel === 0) {
-            canvas.style.width = '68vw'; canvas.style.height = '68vw';
-            canvas.style.maxWidth = '310px'; canvas.style.maxHeight = '310px';
-            zoomBtn.innerText = 'ZOOM: MIN';
-        } else if (zoomLevel === 1) {
-            canvas.style.width = '82vw'; canvas.style.height = '82vw';
-            canvas.style.maxWidth = '380px'; canvas.style.maxHeight = '380px';
-            zoomBtn.innerText = 'ZOOM: MED';
-        } else {
-            canvas.style.width = '94vw'; canvas.style.height = '94vw';
-            canvas.style.maxWidth = '450px'; canvas.style.maxHeight = '450px';
-            zoomBtn.innerText = 'ZOOM: MAX';
-        }
-    }
-
-    function triggerGameOver() {
-        playSynthTone(90, 'sawtooth', 0.6);
-        if (score > highScore) {
-            highScore = score;
-            localStorage.setItem('polarHighScore', highScore);
-            highScoreEl.innerText = highScore;
-        }
-        score = 0;
-        level = 1;
-        fails = 0;
-        scoreEl.innerText = score;
-        levelEl.innerText = level;
-        feedbackText = "¡GAME OVER!";
-        feedbackColor = "#ff0000";
-        feedbackTimer = 40;
-    }
-
     function checkAction() {
-        if (isPaused) return;
+        if (isPaused || relaxMode) return;
         initAudio();
         playSynthTone(getDynamicNote(), 'triangle', 0.2);
 
@@ -363,7 +374,7 @@
             fails = 0;
             feedbackText = "¡PERFECTO!";
             feedbackColor = theme.stroke;
-            screenFlash = 0.4; // Destello de pantalla
+            screenFlash = 0.4;
             createExplosionParticles(tx, ty);
             playSynthTone(783.99, 'sine', 0.4); 
 
@@ -381,10 +392,6 @@
             generateNewForm();
             resetTarget();
         } else {
-            if (hardcoreMode) {
-                triggerGameOver();
-                return;
-            }
             fails++;
             if (fails >= 4 && level > 1) {
                 level--;
@@ -401,31 +408,22 @@
     }
 
     function updateAutoMode() {
-        if (!autoMode || isPaused) return;
+        if (!autoMode || isPaused || relaxMode) return;
         if (Math.abs(pulseRadius - target.radius) < 2) {
             checkAction();
         }
     }
-
-    window.addEventListener('pointerdown', (e) => {
-        if (e.target.tagName === 'BUTTON') return;
-        if (!autoMode && !isPaused) checkAction();
-    }, false);
 
     function update() {
         if (isPaused) return;
 
         target.angle += target.speed * gameSpeed;
 
-        let pulseSpeed = (1.4 + (level - 1) * 0.3) * gameSpeed;
+        let pulseSpeedMultiplier = autoMode ? 0.8 : gameSpeed;
+        let pulseSpeed = (1.2 + (level - 1) * 0.2) * pulseSpeedMultiplier;
         pulseRadius += pulseSpeed;
 
         if (pulseRadius > 230) {
-            if (hardcoreMode) {
-                triggerGameOver();
-                resetTarget();
-                return;
-            }
             if (!autoMode) {
                 fails++;
                 if (fails >= 4 && level > 1) {
@@ -437,21 +435,18 @@
             resetTarget();
         }
 
-        // Actualizar partículas estelares
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
-            p.x += p.vx;
-            p.y += p.vy;
+            p.x += p.vx; p.y += p.vy;
             p.life -= 0.03;
             if (p.life <= 0) particles.splice(i, 1);
         }
 
-        angle += 0.004 * gameSpeed;
+        angle += 0.003 * gameSpeed;
         updateAutoMode();
     }
 
     function draw() {
-        // Fondo con estela de movimiento y destello de impacto
         ctx.fillStyle = theme.bg;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -474,7 +469,6 @@
             ctx.stroke();
         }
 
-        // Trazado de la figura polar geométrica
         ctx.beginPath();
         ctx.strokeStyle = theme.stroke;
         ctx.lineWidth = 2.4;
@@ -503,19 +497,19 @@
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Dibujar el punto objetivo dinámico
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
         
-        ctx.beginPath();
-        ctx.arc(tx, ty, 9, 0, Math.PI * 2);
-        ctx.fillStyle = theme.target;
-        ctx.shadowColor = theme.target;
-        ctx.shadowBlur = 15;
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        if (!relaxMode) {
+            ctx.beginPath();
+            ctx.arc(tx, ty, 9, 0, Math.PI * 2);
+            ctx.fillStyle = theme.target;
+            ctx.shadowColor = theme.target;
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
 
-        // Renderizar partículas de explosión estelar
         for (let p of particles) {
             ctx.beginPath();
             ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
@@ -525,7 +519,6 @@
             ctx.globalAlpha = 1.0;
         }
 
-        // Onda expansiva principal
         ctx.beginPath();
         ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
         ctx.strokeStyle = theme.wave;
@@ -537,7 +530,7 @@
             ctx.fillStyle = theme.target;
             ctx.textAlign = 'center';
             ctx.fillText("JUEGO EN PAUSA", cx, cy);
-        } else if (feedbackTimer > 0) {
+        } else if (!relaxMode && feedbackTimer > 0) {
             ctx.font = 'bold 20px monospace';
             ctx.fillStyle = feedbackColor;
             ctx.textAlign = 'center';
