@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Arcade & Auto Mode</title>
+    <title>Polar Infinity - Single Node & Pause</title>
     <style>
         * {
             box-sizing: border-box;
@@ -57,7 +57,7 @@
         #controls-bar {
             margin-bottom: 15px;
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
             z-index: 10;
         }
@@ -69,7 +69,7 @@
             padding: 8px 16px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             border-radius: 20px;
             cursor: pointer;
             box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
@@ -97,7 +97,7 @@
 
     <div id="ui">
         <h1 id="mainTitle">POLAR INFINITY</h1>
-        <p>Puntos: <span id="score">0</span> | Nivel: <span id="level">1</span> | Nodos: <span id="nodeCount">1</span></p>
+        <p>Puntos: <span id="score">0</span> | Nivel: <span id="level">1</span></p>
         <p style="font-size: 0.75rem; color: #ff00aa;">Forma: <span id="formName">Armónica</span></p>
     </div>
 
@@ -106,25 +106,27 @@
     </div>
 
     <div id="controls-bar">
+        <button id="pauseBtn" class="btn" onclick="togglePause()">PAUSA</button>
         <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
     </div>
     
-    <div id="instructions">Toca la pantalla cuando el anillo coincida con un nodo brillante</div>
+    <div id="instructions">Toca la pantalla cuando el anillo coincida con el punto brillante</div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
     const levelEl = document.getElementById('level');
-    const nodeCountEl = document.getElementById('nodeCount');
     const formNameEl = document.getElementById('formName');
     const mainTitle = document.getElementById('mainTitle');
     const autoBtn = document.getElementById('autoBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
 
     let score = 0;
     let level = 1;
     let fails = 0;
     let autoMode = false;
+    let isPaused = false;
     let angle = 0;
     
     let num = 4;
@@ -147,24 +149,21 @@
     let feedbackText = '';
     let feedbackColor = '#00ffcc';
 
-    // Lista múltiple de nodos objetivos según el nivel
-    let targets = [];
+    // Un único punto objetivo dinámico que además orbita suavemente
+    let target = {
+        angle: Math.random() * Math.PI * 2,
+        radius: 110,
+        speed: 0.005
+    };
 
-    function initTargets() {
-        targets = [];
-        let count = level; // Un nodo por nivel
-        nodeCountEl.innerText = count;
-        for (let i = 0; i < count; i++) {
-            targets.push({
-                angle: Math.random() * Math.PI * 2,
-                radius: 65 + Math.random() * 110,
-                hit: false
-            });
-        }
+    function resetTarget() {
+        target.angle = Math.random() * Math.PI * 2;
+        target.radius = 70 + Math.random() * 90;
+        target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.003 + level * 0.001); // Se mueve más rápido en niveles altos
         pulseRadius = 0;
     }
 
-    // --- MÚSICA PROCEDURAL Y AUDIO EFECTOS (Web Audio API) ---
+    // --- MÚSICA PROCEDURAL Y AUDIO (Web Audio API) ---
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
     let musicInterval = null;
@@ -181,7 +180,7 @@
 
     function playSynthTone(freq, type = 'sine', duration = 0.3) {
         try {
-            if (!audioCtx) return;
+            if (!audioCtx || isPaused) return;
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
 
@@ -199,16 +198,14 @@
         } catch (e) {}
     }
 
-    // Generador de música de fondo procedural ambiental infinita
-    const backgroundScale = [130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63]; // Escala armónica de Do Mayor grave
+    const backgroundScale = [130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63];
     function startProceduralMusic() {
         if (musicInterval) return;
         musicInterval = setInterval(() => {
-            if (!audioCtx || audioCtx.state !== 'running') return;
-            // Notas aleatorias ambientales relajantes en bucle
+            if (!audioCtx || audioCtx.state !== 'running' || isPaused) return;
             let note1 = backgroundScale[Math.floor(Math.random() * backgroundScale.length)];
             let note2 = backgroundScale[Math.floor(Math.random() * backgroundScale.length)];
-            playSynthTone(note1, 'sine', 2.0);
+            playSynthTone(note1, 'sine', 2.2);
             setTimeout(() => playSynthTone(note2 * 1.5, 'triangle', 1.5), 1000);
         }, 3500);
     }
@@ -224,18 +221,18 @@
         curveType = types[Math.floor(Math.random() * types.length)];
 
         if (curveType === 'fraction') {
-            num = Math.floor(Math.random() * 7) + 1;
+            num = Math.floor(Math.random() * 6) + 1;
             den = Math.floor(Math.random() * 5) + 2;
-            formNameEl.innerText = `${num}θ / ${den} (Compleja)`;
+            formNameEl.innerText = `${num}θ / ${den}`;
         } else if (curveType === 'pi') {
             num = (Math.random() * 2 + 0.8).toFixed(1);
             formNameEl.innerText = `${num}πθ (Mandala)`;
         } else if (curveType === 'multi') {
-            num = Math.floor(Math.random() * 6) + 2;
-            den = Math.floor(Math.random() * 4) + 1;
+            num = Math.floor(Math.random() * 5) + 2;
+            den = Math.floor(Math.random() * 3) + 1;
             formNameEl.innerText = `Armónica ${num}:${den}`;
         } else {
-            num = Math.floor(Math.random() * 8) + 2;
+            num = Math.floor(Math.random() * 7) + 2;
             formNameEl.innerText = `Rosa (${num} pétalos)`;
         }
 
@@ -257,43 +254,44 @@
         }
     }
 
+    function togglePause() {
+        initAudio();
+        isPaused = !isPaused;
+        if (isPaused) {
+            pauseBtn.classList.add('active');
+            pauseBtn.innerText = "REANUDAR";
+        } else {
+            pauseBtn.classList.remove('active');
+            pauseBtn.innerText = "PAUSA";
+        }
+    }
+
     function checkAction() {
+        if (isPaused) return;
         initAudio();
         playSynthTone(getRandomNote(), 'triangle', 0.2);
 
-        let hitAny = false;
+        let diff = Math.abs(pulseRadius - target.radius);
         
-        // Comprobar si la onda expansiva coincide con alguno de los nodos activos
-        for (let target of targets) {
-            if (!target.hit) {
-                let diff = Math.abs(pulseRadius - target.radius);
-                if (diff < 32) {
-                    target.hit = true;
-                    hitAny = true;
-                }
-            }
-        }
+        // Margen de acierto ligeramente más exigente en niveles altos (infinito)
+        let tolerance = Math.max(20, 32 - level * 1.5);
 
-        // Si todos los nodos del nivel han sido acertados
-        let allCleared = targets.length > 0 && targets.every(t => t.hit);
-
-        if (allCleared || (autoMode && hitAny)) {
-            score += 100 * level;
+        if (diff < tolerance) {
+            score += 100;
             fails = 0;
             feedbackText = "¡PERFECTO!";
             feedbackColor = currentPalette.stroke;
             playSynthTone(783.99, 'sine', 0.4); 
 
-            // Subir nivel cada 10 aciertos (cada 1000 puntos aprox o incrementos de nivel)
+            // Subir nivel cada 5 aciertos
             if (score % 500 === 0) {
                 level++;
                 levelEl.innerText = level;
             }
 
             generateNewForm();
-            initTargets();
-        } else if (!hitAny && !autoMode) {
-            // Si fallas al pulsar sin tocar ningún nodo
+            resetTarget();
+        } else {
             fails++;
             if (fails >= 5 && level > 1) {
                 level--; // Retrocedes un nivel tras 5 fallos
@@ -309,27 +307,30 @@
         scoreEl.innerText = score;
     }
 
-    // Modo automático que simula aciertos perfectos matemáticos
     function updateAutoMode() {
-        if (!autoMode) return;
-        for (let target of targets) {
-            if (!target.hit && Math.abs(pulseRadius - target.radius) < 2) {
-                checkAction();
-            }
+        if (!autoMode || isPaused) return;
+        if (Math.abs(pulseRadius - target.radius) < 2) {
+            checkAction();
         }
     }
 
     window.addEventListener('pointerdown', (e) => {
-        // Evitar que el clic active los botones de UI
         if (e.target.tagName === 'BUTTON') return;
-        if (!autoMode) checkAction();
+        if (!autoMode && !isPaused) checkAction();
     }, false);
 
     function update() {
-        pulseRadius += 1.6;
+        if (isPaused) return;
+
+        // El punto objetivo orbita lentamente alrededor del centro
+        target.angle += target.speed;
+
+        // Velocidad de la onda expansiva aumenta ligeramente con el nivel
+        let pulseSpeed = 1.6 + (level - 1) * 0.15;
+        pulseRadius += pulseSpeed;
+
         if (pulseRadius > 200) {
-            // Si la onda se pasa sin pulsar, cuenta como fallo en modo manual
-            if (!autoMode && targets.some(t => !t.hit)) {
+            if (!autoMode) {
                 fails++;
                 if (fails >= 5 && level > 1) {
                     level--;
@@ -337,7 +338,7 @@
                     fails = 0;
                 }
             }
-            initTargets(); // Reinicia la onda y posiciones
+            resetTarget(); // Reinicia la onda y cambia la posición del punto
         }
         angle += 0.004;
         updateAutoMode();
@@ -358,7 +359,7 @@
             ctx.stroke();
         }
 
-        // Trazado de la figura geométrica polar de máxima belleza y color
+        // Trazado de la figura geométrica polar
         ctx.beginPath();
         ctx.strokeStyle = currentPalette.stroke;
         ctx.lineWidth = 2.4;
@@ -388,21 +389,17 @@
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Dibujar múltiples nodos objetivos según el nivel actual
-        for (let target of targets) {
-            if (!target.hit) {
-                let tx = cx + target.radius * Math.cos(target.angle);
-                let ty = cy + target.radius * Math.sin(target.angle);
-                
-                ctx.beginPath();
-                ctx.arc(tx, ty, 8, 0, Math.PI * 2);
-                ctx.fillStyle = currentPalette.target;
-                ctx.shadowColor = currentPalette.target;
-                ctx.shadowBlur = 14;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-        }
+        // Dibujar el ÚNICO punto objetivo en movimiento orbital
+        let tx = cx + target.radius * Math.cos(target.angle);
+        let ty = cy + target.radius * Math.sin(target.angle);
+        
+        ctx.beginPath();
+        ctx.arc(tx, ty, 9, 0, Math.PI * 2);
+        ctx.fillStyle = currentPalette.target;
+        ctx.shadowColor = currentPalette.target;
+        ctx.shadowBlur = 15;
+        ctx.fill();
+        ctx.shadowBlur = 0;
 
         // Onda expansiva principal
         ctx.beginPath();
@@ -411,7 +408,13 @@
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        if (feedbackTimer > 0) {
+        // Texto de pausa en pantalla si está pausado
+        if (isPaused) {
+            ctx.font = 'bold 26px monospace';
+            ctx.fillStyle = '#00ffcc';
+            ctx.textAlign = 'center';
+            ctx.fillText("JUEGO EN PAUSA", cx, cy);
+        } else if (feedbackTimer > 0) {
             ctx.font = 'bold 20px monospace';
             ctx.fillStyle = feedbackColor;
             ctx.textAlign = 'center';
@@ -427,7 +430,7 @@
     }
 
     generateNewForm();
-    initTargets();
+    resetTarget();
     loop();
 </script>
 
