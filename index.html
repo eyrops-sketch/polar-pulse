@@ -115,8 +115,8 @@
             text-align: center;
         }
         .modal h2 { margin-top: 0; color: #00ffff; font-size: 1.1rem; text-shadow: 0 0 10px rgba(0,255,255,0.8); }
-        .setting-group { margin: 10px 0; font-size: 0.75rem; color: #ffffff; font-weight: bold; }
-        .setting-group input, .setting-group select { width: 140px; background: #03060d; border: 1px solid #00ffff; color: #00ffff; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; }
+        .setting-group { margin: 10px 0; font-size: 0.75rem; color: #ffffff; font-weight: bold; text-align: left; }
+        .setting-group input, .setting-group select { width: 100%; background: #03060d; border: 1px solid #00ffff; color: #00ffff; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; margin-top: 4px; }
 
         #achievementToast {
             position: absolute;
@@ -136,6 +136,25 @@
             text-align: center;
         }
         #achievementToast.show { top: 15px; }
+
+        #trackToast {
+            position: absolute;
+            top: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 234, 0.85);
+            color: #ffffff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255, 0, 234, 0.6);
+            z-index: 150;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        #trackToast.show { opacity: 1; }
 
         #floatingControls {
             position: absolute;
@@ -184,18 +203,19 @@
         <button class="floating-btn" onclick="toggleRelaxMode()">SALIR</button>
     </div>
     <div id="achievementToast">🏆 ¡Logro Desbloqueado!</div>
+    <div id="trackToast">🎵 Reproduciendo pista</div>
 
     <div id="settingsModal" class="modal">
-        <h2>AJUSTES DE JUEGO</h2>
+        <h2>AJUSTES Y MODIFICADORES</h2>
         <div class="setting-group">
-            <label>Tipo de Trazados:</label><br>
+            <label>Tipo de Trazados:</label>
             <select id="curveVarietySelect" onchange="updateSettings()">
                 <option value="pretty">Solo Polares Bonitas</option>
                 <option value="all">Variedad Completa</option>
             </select>
         </div>
         <div class="setting-group">
-            <label>Capas Superpuestas:</label><br>
+            <label>Capas Superpuestas:</label>
             <select id="layerCountSelect" onchange="updateSettings()">
                 <option value="1">1 (Normal)</option>
                 <option value="2">2 (Doble)</option>
@@ -203,26 +223,22 @@
                 <option value="4">4 (Cuádruple Mandala)</option>
             </select>
         </div>
-        <div class="setting-group">
-            <label>Aciertos / Nivel:</label><br>
-            <input type="number" id="hitsPerLevelInput" value="1" min="1" max="10" onchange="updateSettings()">
+        <div class="setting-group" id="modContainer" style="border-top: 1px dashed #00ffff; padding-top: 8px; margin-top: 10px;">
+            <label style="color: #ff00ea;">Modificadores Desbloqueables:</label><br>
+            <label style="font-size:0.65rem;"><input type="checkbox" id="modMirror" onchange="updateSettings()" disabled> Espejo Inverso (🔒)</label><br>
+            <label style="font-size:0.65rem;"><input type="checkbox" id="modDoublePulse" onchange="updateSettings()" disabled> Pulso Dual (🔒)</label>
         </div>
         <div class="setting-group">
-            <label>Errores Penalización:</label><br>
-            <input type="number" id="failsPerPenaltyInput" value="3" min="1" max="10" onchange="updateSettings()">
+            <label>Volumen FX / Música:</label>
+            <div style="display:flex; gap:5px;">
+                <input type="range" id="fxVolInput" min="0" max="1" step="0.1" value="0.3" onchange="updateSettings()">
+                <input type="range" id="musicVolInput" min="0" max="1" step="0.1" value="0.5" onchange="updateSettings()">
+            </div>
         </div>
-        <div class="setting-group">
-            <label>Volumen FX:</label><br>
-            <input type="range" id="fxVolInput" min="0" max="1" step="0.1" value="0.3" onchange="updateSettings()">
+        <div style="margin-top: 12px;">
+            <button class="btn" style="background: rgba(255,0,234,0.25); border-color: #ff00ea; color: #ffffff; max-width: 100%; margin-bottom: 6px;" onclick="resetAchievements()">RESETEAR LOGROS</button>
+            <button class="btn active" style="max-width: 100%;" onclick="toggleModal('settingsModal')">CERRAR</button>
         </div>
-        <div class="setting-group">
-            <label>Volumen Música:</label><br>
-            <input type="range" id="musicVolInput" min="0" max="1" step="0.1" value="0.5" onchange="updateSettings()">
-        </div>
-        <div class="setting-group" style="margin-top: 15px;">
-            <button class="btn" style="background: rgba(255,0,234,0.25); border-color: #ff00ea; color: #ffffff; max-width: 100%;" onclick="resetAchievements()">RESETEAR LOGROS</button>
-        </div>
-        <button class="btn active" style="margin-top:10px; max-width: 100%;" onclick="toggleModal('settingsModal')">CERRAR</button>
     </div>
 
     <div id="achievementsModal" class="modal">
@@ -260,8 +276,8 @@
         <div class="button-row">
             <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
             <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
-            <button class="btn" style="background: rgba(0,255,170,0.25); border-color: #00ffaa; color: #ffffff;" onclick="document.getElementById('localMusicInput').click()">CARPETA 📂</button>
-            <input type="file" id="localMusicInput" webkitdirectory directory multiple accept="audio/*" style="display: none;" onchange="loadLocalMusic(event)">
+            <button class="btn" style="background: rgba(0,255,170,0.25); border-color: #00ffaa; color: #ffffff;" onclick="document.getElementById('localMusicInput').click()">LOCAL 📂</button>
+            <input type="file" id="localMusicInput" multiple accept="audio/*" style="display: none;" onchange="loadLocalMusic(event)">
         </div>
     </div>
    <script>
@@ -282,6 +298,7 @@
     const controlsBar = document.getElementById('controls-bar');
     const floatingControls = document.getElementById('floatingControls');
     const achievementToast = document.getElementById('achievementToast');
+    const trackToast = document.getElementById('trackToast');
 
     let score = 0;
     let highScore = localStorage.getItem('polarHighScorePro') || 0;
@@ -301,7 +318,7 @@
     let layerCount = 1; 
 
     let musicMode = 1; // 1: SECUENCIAL, 2: ALEATORIO, 0: OFF
-    let currentTrackIndex = 1;
+    let currentTrackIndex = 0;
     const totalTracks = 53;
     let mp3Player = new Audio();
     mp3Player.volume = musicVolume;
@@ -309,24 +326,24 @@
     let localPlaylist = [];
     let isUsingLocalMusic = false;
 
+    function showTrackBanner(name) {
+        trackToast.innerText = `🎵 ${name}`;
+        trackToast.classList.add('show');
+        setTimeout(() => trackToast.classList.remove('show'), 3500);
+    }
+
     function loadLocalMusic(event) {
         const files = event.target.files;
         if (files.length > 0) {
             localPlaylist = [];
             for (let i = 0; i < files.length; i++) {
-                if (files[i].type.startsWith('audio/') || files[i].name.match(/\.(mp3|wav|ogg|m4a|flac)$/i)) {
-                    localPlaylist.push(URL.createObjectURL(files[i]));
-                }
+                localPlaylist.push({ url: URL.createObjectURL(files[i]), name: files[i].name });
             }
-            if (localPlaylist.length > 0) {
-                isUsingLocalMusic = true;
-                currentTrackIndex = 0;
-                musicBtn.classList.add('active');
-                musicBtn.innerText = musicMode === 1 ? `CARP: SEC` : `CARP: ALE`;
-                playTrack();
-            } else {
-                alert("No se encontraron archivos de audio válidos en la carpeta seleccionada.");
-            }
+            isUsingLocalMusic = true;
+            currentTrackIndex = 0;
+            musicBtn.classList.add('active');
+            musicBtn.innerText = musicMode === 1 ? `LOC: SEC` : `LOC: ALE`;
+            playTrack();
         }
     }
 
@@ -336,8 +353,10 @@
             if (musicMode === 2) {
                 currentTrackIndex = Math.floor(Math.random() * localPlaylist.length);
             }
-            mp3Player.src = localPlaylist[currentTrackIndex];
-            mp3Player.play().catch(e => console.log("Reproducción automática pendiente de interacción del navegador", e));
+            let track = localPlaylist[currentTrackIndex];
+            mp3Player.src = track.url;
+            mp3Player.play().catch(e => console.log("Reproducción local pendiente", e));
+            showTrackBanner(track.name);
             if (musicMode === 1) {
                 currentTrackIndex = (currentTrackIndex + 1) % localPlaylist.length;
             }
@@ -351,7 +370,8 @@
             }
             let trackStr = String(currentTrackIndex).padStart(3, '0');
             mp3Player.src = `multimedia/${trackStr}.mp3`;
-            mp3Player.play().catch(e => console.log("Reproducción automática pendiente de interacción del navegador", e));
+            mp3Player.play().catch(e => console.log("Reproducción pendiente", e));
+            showTrackBanner(`Pista #${trackStr}.mp3`);
         }
     }
 
@@ -362,7 +382,7 @@
     function toggleMusic() {
         initAudioContext();
         musicMode = (musicMode + 1) % 3;
-        let prefix = isUsingLocalMusic ? "CARP" : "MÚSICA";
+        let prefix = isUsingLocalMusic ? "LOC" : "MÚSICA";
         if (musicMode === 0) {
             musicBtn.classList.remove('active');
             musicBtn.innerText = `${prefix}: OFF`;
@@ -411,8 +431,8 @@
         { id: 'streak_7', name: 'Racha de Plata', desc: 'Consigue 7 aciertos seguidos', unlocked: false },
         { id: 'streak_15', name: 'Racha de Oro', desc: 'Consigue 15 aciertos seguidos', unlocked: false },
         { id: 'level_10', name: 'Explorador Polar', desc: 'Alcanza el nivel 10', unlocked: false },
-        { id: 'level_25', name: 'Maestro Polar', desc: 'Alcanza el nivel 25', unlocked: false },
-        { id: 'level_50', name: 'Leyenda Viva', desc: 'Alcanza el nivel 50', unlocked: false },
+        { id: 'level_25', name: 'Maestro Polar', desc: 'Alcanza el nivel 25 (Desbloquea Espejo)', unlocked: false, reward: 'mirror' },
+        { id: 'level_50', name: 'Leyenda Viva', desc: 'Alcanza el nivel 50 (Desbloquea Pulso Dual)', unlocked: false, reward: 'doublePulse' },
         { id: 'score_1000', name: 'Fiebre Neón', desc: 'Supera los 1.000 puntos', unlocked: false },
         { id: 'score_5000', name: 'Dios del Neón', desc: 'Supera los 5.000 puntos', unlocked: false },
         { id: 'score_10000', name: 'Infinito', desc: 'Supera los 10.000 puntos', unlocked: false },
@@ -440,6 +460,7 @@
     let isRandomThemeMode = true;
 
     let pulseRadius = 0;
+    let pulseRadius2 = 0; // Para el modificador de pulso dual
     let feedbackTimer = 0;
     let feedbackText = '';
     let feedbackColor = '#00ffff';
@@ -455,6 +476,12 @@
 
     function resetAchievements() {
         achievements.forEach(a => a.unlocked = false);
+        document.getElementById('modMirror').disabled = true;
+        document.getElementById('modMirror').checked = false;
+        document.getElementById('modMirror').parentElement.innerHTML = '<input type="checkbox" id="modMirror" onchange="updateSettings()" disabled> Espejo Inverso (🔒)';
+        document.getElementById('modDoublePulse').disabled = true;
+        document.getElementById('modDoublePulse').checked = false;
+        document.getElementById('modDoublePulse').parentElement.innerHTML = '<input type="checkbox" id="modDoublePulse" onchange="updateSettings()" disabled> Pulso Dual (🔒)';
         achievementToast.innerText = "¡Logros Reseteados!";
         achievementToast.classList.add('show');
         setTimeout(() => achievementToast.classList.remove('show'), 3000);
@@ -470,6 +497,17 @@
             achievementToast.innerText = `🏆 ¡Logro: ${ach.name}!`;
             achievementToast.classList.add('show');
             setTimeout(() => achievementToast.classList.remove('show'), 3500);
+
+            if (ach.reward === 'mirror') {
+                let box = document.getElementById('modMirror');
+                box.disabled = false;
+                box.parentElement.innerHTML = '<input type="checkbox" id="modMirror" onchange="updateSettings()"> Espejo Inverso (✔ Desbloqueado)';
+            }
+            if (ach.reward === 'doublePulse') {
+                let box = document.getElementById('modDoublePulse');
+                box.disabled = false;
+                box.parentElement.innerHTML = '<input type="checkbox" id="modDoublePulse" onchange="updateSettings()"> Pulso Dual (✔ Desbloqueado)';
+            }
         }
     }
 
@@ -492,6 +530,7 @@
         target.radius = 65 + Math.random() * 100;
         target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.003 + (level * 0.0007));
         pulseRadius = 0;
+        pulseRadius2 = -60;
     }
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -629,12 +668,21 @@
             default: raw = Math.sin(tp1 * t) * 100; break;
         }
         return curve.scale * (raw / 100);
-         }
-           function createExplosionParticles(x, y) {
-        for (let i = 0; i < 15; i++) {
+        }
+            function createExplosionParticles(x, y) {
+        let count = perfectStreak >= 3 ? 25 : 15;
+        for (let i = 0; i < count; i++) {
             let pAngle = Math.random() * Math.PI * 2;
-            let pSpeed = Math.random() * 3 + 1;
-            particles.push({ x: x, y: y, vx: Math.cos(pAngle) * pSpeed, vy: Math.sin(pAngle) * pSpeed, life: 1.0, color: theme.target });
+            let pSpeed = Math.random() * 3.5 + 1;
+            particles.push({ 
+                x: x, 
+                y: y, 
+                vx: Math.cos(pAngle) * pSpeed, 
+                vy: Math.sin(pAngle) * pSpeed, 
+                life: 1.0, 
+                color: theme.target,
+                size: Math.random() * 2 + 2
+            });
         }
     }
 
@@ -656,8 +704,6 @@
     function updateSettings() {
         curveVarietyMode = document.getElementById('curveVarietySelect').value;
         layerCount = parseInt(document.getElementById('layerCountSelect').value) || 1;
-        requiredHitsForLevel = parseInt(document.getElementById('hitsPerLevelInput').value) || 1;
-        maxFailsForPenalty = parseInt(document.getElementById('failsPerPenaltyInput').value) || 3;
         fxVolume = parseFloat(document.getElementById('fxVolInput').value);
         musicVolume = parseFloat(document.getElementById('musicVolInput').value);
         mp3Player.volume = musicVolume;
@@ -716,13 +762,14 @@
 
     function applyRandomTheme() {
         let randomHex = () => '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+        let waveColorHex = randomHex();
         theme = {
             name: 'Aleatorio',
             bg: '#03060d',
             strokes: [randomHex(), randomHex(), randomHex(), randomHex()],
             target: randomHex(),
-            wave: 'rgba(0, 255, 255, 0.85)',
-            glow: 'rgba(0, 255, 255, 0.35)'
+            wave: waveColorHex,
+            glow: waveColorHex + '55'
         };
         mainTitle.style.color = theme.strokes[0];
         canvas.style.boxShadow = `0 0 35px ${theme.glow}`;
@@ -758,6 +805,7 @@
         successfulHits = 0;
         perfectStreak = 0;
         pulseRadius = 0;
+        pulseRadius2 = -60;
         floatingTexts = [];
 
         if (gameMode === 'timeAttack') startTimeAttack();
@@ -814,9 +862,10 @@
         let ty = cy + target.radius * Math.sin(target.angle);
 
         let diff = Math.abs(pulseRadius - target.radius);
+        let diff2 = document.getElementById('modDoublePulse').checked ? Math.abs(pulseRadius2 - target.radius) : 999;
         let tolerance = 25;
 
-        if (diff < tolerance) {
+        if (diff < tolerance || diff2 < tolerance) {
             consecutiveFails = 0;
             successfulHits++;
             perfectStreak++;
@@ -845,7 +894,7 @@
 
             feedbackText = "¡PERFECTO!";
             feedbackColor = theme.strokes[0];
-            screenFlash = 0.4;
+            screenFlash = 0.25; // Destello suave y seguro
             createExplosionParticles(tx, ty);
 
             if (successfulHits >= requiredHitsForLevel) {
@@ -862,7 +911,7 @@
         } else {
             consecutiveFails++;
             perfectStreak = 0;
-            screenShake = 10;
+            screenShake = 6;
 
             if (consecutiveFails >= maxFailsForPenalty) {
                 consecutiveFails = 0;
@@ -884,7 +933,7 @@
         
         updateDOMStats();
         feedbackTimer = 35;
-    }
+       }
            function update() {
         if (isPaused) return;
         if (screenShake > 0) screenShake *= 0.85;
@@ -898,7 +947,8 @@
             }
         }
 
-        target.angle += target.speed * gameSpeed;
+        let mirrorMod = document.getElementById('modMirror').checked ? -1 : 1;
+        target.angle += target.speed * gameSpeed * mirrorMod;
 
         let cx = canvas.width / 2;
         let cy = canvas.height / 2;
@@ -923,6 +973,9 @@
         }
 
         pulseRadius += (1.2 + (level * 0.05)) * gameSpeed;
+        if (document.getElementById('modDoublePulse').checked) {
+            pulseRadius2 += (1.2 + (level * 0.05)) * gameSpeed;
+        }
 
         if (pulseRadius > 230) {
             consecutiveFails++;
@@ -940,12 +993,33 @@
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
             p.x += p.vx; p.y += p.vy;
-            p.life -= 0.04;
+            p.life -= 0.03; // Desvanecimiento suave sin parpadeo
             if (p.life <= 0) particles.splice(i, 1);
         }
 
-        angle += 0.003 * gameSpeed;
-        if (autoMode && Math.abs(pulseRadius - target.radius) < 2) checkAction();
+        angle += 0.003 * gameSpeed * mirrorMod;
+        if (autoMode && (Math.abs(pulseRadius - target.radius) < 2 || Math.abs(pulseRadius2 - target.radius) < 2)) checkAction();
+    }
+
+    function drawRetroBackground(cx, cy) {
+        ctx.strokeStyle = theme.wave;
+        ctx.globalAlpha = 0.06;
+        ctx.lineWidth = 1;
+        // Retícula de perspectiva Synthwave de fondo
+        let gridOffset = (angle * 20) % 20;
+        for (let y = cy; y < canvas.height; y += 12) {
+            ctx.beginPath();
+            ctx.moveTo(0, y + gridOffset);
+            ctx.lineTo(canvas.width, y + gridOffset);
+            ctx.stroke();
+        }
+        for (let x = -canvas.width; x < canvas.width * 2; x += 35) {
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1.0;
     }
 
     function draw() {
@@ -964,11 +1038,13 @@
             ctx.globalAlpha = screenFlash;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.globalAlpha = 1.0;
-            screenFlash -= 0.05;
+            screenFlash -= 0.04;
         }
 
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
+
+        drawRetroBackground(cx, cy);
 
         ctx.strokeStyle = 'rgba(0, 255, 255, 0.08)';
         ctx.lineWidth = 1;
@@ -982,12 +1058,12 @@
         let rotations = [angle, -angle * 1.2, angle * 0.7 + Math.PI / 4, -angle * 0.4];
 
         for (let l = 0; l < Math.min(layerCount, activeCurves.length); l++) {
-            let curve = activeCurves.get ? activeCurves[l] : activeCurves[l];
+            let curve = activeCurves[l];
             ctx.beginPath();
             ctx.strokeStyle = theme.strokes[l % theme.strokes.length];
             ctx.lineWidth = (l === 0) ? 2.5 : 1.8;
             ctx.shadowColor = ctx.strokeStyle;
-            ctx.shadowBlur = (l === 0) ? 12 : 5;
+            ctx.shadowBlur = (l === 0) ? 10 : 4;
             ctx.globalAlpha = opacities[l];
             
             let maxTheta = Math.PI * 16;
@@ -1007,7 +1083,7 @@
             ctx.beginPath();
             ctx.arc(tp.x, tp.y, 4, 0, Math.PI * 2);
             ctx.fillStyle = theme.target;
-            ctx.globalAlpha = tp.life * 0.5;
+            ctx.globalAlpha = tp.life * 0.4;
             ctx.fill();
             ctx.globalAlpha = 1.0;
         }
@@ -1021,14 +1097,14 @@
             ctx.arc(tx, ty, 8, 0, Math.PI * 2);
             ctx.fillStyle = theme.target;
             ctx.shadowColor = theme.target;
-            ctx.shadowBlur = 15;
+            ctx.shadowBlur = 12;
             ctx.fill();
             ctx.shadowBlur = 0;
         }
 
         for (let p of particles) {
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, p.size || 3, 0, Math.PI * 2);
             ctx.fillStyle = p.color;
             ctx.globalAlpha = p.life;
             ctx.fill();
@@ -1041,13 +1117,21 @@
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
+        if (document.getElementById('modDoublePulse').checked && pulseRadius2 > 0) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, pulseRadius2, 0, Math.PI * 2);
+            ctx.strokeStyle = theme.target;
+            ctx.lineWidth = 2.0;
+            ctx.stroke();
+        }
+
         for (let ft of floatingTexts) {
             ctx.font = 'bold 15px monospace';
             ctx.fillStyle = ft.color;
             ctx.globalAlpha = ft.life;
             ctx.textAlign = 'center';
             ctx.shadowColor = ft.color;
-            ctx.shadowBlur = 10;
+            ctx.shadowBlur = 8;
             ctx.fillText(ft.text, ft.x, ft.y);
             ctx.shadowBlur = 0;
             ctx.globalAlpha = 1.0;
@@ -1072,18 +1156,15 @@
     function loop() {
         update();
         draw();
-    requestAnimationFrame(loop);
-    }
-
-    applyRandomTheme();
+        requestAnimationFrame(loop);
+                                  }
+          applyRandomTheme();
     generateNewForm();
     resetTarget();
     loop();
 
-    // Intento de reproducción automática inicial al cargar la página
     playTrack();
     
-    // Gestor universal: si el navegador bloquea el audio al cargar, suena al primer toque en cualquier parte de la pantalla
     window.addEventListener('pointerdown', () => {
         initAudioContext();
         if (musicMode > 0 && mp3Player.paused) {
