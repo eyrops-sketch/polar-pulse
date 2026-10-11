@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Final Fix</title>
+    <title>Polar Infinity - Synthwave Edition</title>
     <style>
         * {
             box-sizing: border-box;
@@ -105,7 +105,7 @@
             text-align: center;
         }
         .modal h2 { margin-top: 0; color: #ff007f; font-size: 1.1rem; }
-        .setting-group { margin: 10px 0; font-size: 0.75rem; color: #8ab4f8; }
+        .setting-group { margin: 10px 0; font-size: 0.75rem; color: #00ffff; font-weight: bold; }
         .setting-group input { width: 90px; background: #05070d; border: 1px solid #00ffcc; color: #00ffcc; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; }
 
         #achievementToast {
@@ -185,12 +185,15 @@
             <label>Volumen Música:</label><br>
             <input type="range" id="musicVolInput" min="0" max="1" step="0.1" value="0.1" onchange="updateSettings()">
         </div>
+        <div class="setting-group" style="margin-top: 15px;">
+            <button class="btn" style="background: rgba(255,0,85,0.2); border-color: #ff0055; color: #ff0055;" onclick="resetAchievements()">RESETEAR LOGROS</button>
+        </div>
         <button class="btn active" style="margin-top:10px;" onclick="toggleModal('settingsModal')">CERRAR</button>
     </div>
 
     <div id="achievementsModal" class="modal">
-        <h2>LOGROS</h2>
-        <div id="achievementsList" style="font-size: 0.7rem; text-align: left; max-height: 180px; overflow-y: auto; margin-bottom: 10px;"></div>
+        <h2>LOGROS (15)</h2>
+        <div id="achievementsList" style="font-size: 0.7rem; text-align: left; max-height: 220px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;"></div>
         <button class="btn active" onclick="toggleModal('achievementsModal')">CERRAR</button>
     </div>
 
@@ -211,7 +214,7 @@
         <button class="btn" onclick="toggleModal('settingsModal')">AJUSTES</button>
         <button class="btn" onclick="openAchievements()">LOGROS</button>
         <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
-        <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: 1/20</button>
+        <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: 1/40</button>
         <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
         <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
     </div>
@@ -235,12 +238,14 @@
     const achievementToast = document.getElementById('achievementToast');
 
     let score = 0;
-    let highScore = localStorage.getItem('polarHighScore') || 0;
+    let highScore = localStorage.getItem('polarHighScoreGhost') || 0;
     document.getElementById('highScore').innerText = highScore;
 
     let level = 1;
     let successfulHits = 0;
     let consecutiveFails = 0;
+    let perfectStreak = 0; 
+    let themesExplored = 0;
     
     let requiredHitsForLevel = 1;
     let maxFailsForPenalty = 3;
@@ -262,11 +267,24 @@
     let relaxTimer = 0;
     let screenShake = 0;
 
+    let floatingTexts = [];
+
     let achievements = [
-        { id: 'first_perfect', name: 'Primer Impacto', desc: 'Consigue tu primer acierto perfecto', unlocked: false },
+        { id: 'first_perfect', name: 'Primer Impacto', desc: 'Consigue tu primer acierto', unlocked: false },
+        { id: 'streak_3', name: 'Racha de Bronce', desc: 'Consigue 3 aciertos seguidos', unlocked: false },
+        { id: 'streak_7', name: 'Racha de Plata', desc: 'Consigue 7 aciertos seguidos', unlocked: false },
+        { id: 'streak_15', name: 'Racha de Oro', desc: 'Consigue 15 aciertos seguidos', unlocked: false },
         { id: 'level_10', name: 'Explorador Polar', desc: 'Alcanza el nivel 10', unlocked: false },
-        { id: 'score_1000', name: 'Fiebre Neón', desc: 'Supera los 1000 puntos en Arcade', unlocked: false },
-        { id: 'speed_demon', name: 'Velocidad Luz', desc: 'Juega a velocidad 3.0x', unlocked: false }
+        { id: 'level_25', name: 'Maestro Polar', desc: 'Alcanza el nivel 25', unlocked: false },
+        { id: 'level_50', name: 'Leyenda Viva', desc: 'Alcanza el nivel 50', unlocked: false },
+        { id: 'score_1000', name: 'Fiebre Neón', desc: 'Supera los 1.000 puntos', unlocked: false },
+        { id: 'score_5000', name: 'Dios del Neón', desc: 'Supera los 5.000 puntos', unlocked: false },
+        { id: 'score_10000', name: 'Infinito', desc: 'Supera los 10.000 puntos', unlocked: false },
+        { id: 'speed_demon', name: 'Velocidad Luz', desc: 'Juega a velocidad 3.0x', unlocked: false },
+        { id: 'zen_mode', name: 'Modo Zen', desc: 'Activa el modo Relax', unlocked: false },
+        { id: 'auto_pilot', name: 'Piloto', desc: 'Activa el modo Auto', unlocked: false },
+        { id: 'palette_master', name: 'Coleccionista', desc: 'Explora 10 paletas distintas', unlocked: false },
+        { id: 'survivor', name: 'Resiliencia', desc: 'Sobrevive a una penalización', unlocked: false }
     ];
 
     const themes = [
@@ -289,7 +307,27 @@
         { name: 'Toxic', bg: '#051202', stroke: '#33ff00', target: '#ff0066', wave: 'rgba(255, 0, 102, 0.85)', glow: 'rgba(51, 255, 0, 0.3)' },
         { name: 'Magma', bg: '#140602', stroke: '#ff3300', target: '#ffcc00', wave: 'rgba(255, 204, 0, 0.85)', glow: 'rgba(255, 51, 0, 0.3)' },
         { name: 'Arctic', bg: '#020f14', stroke: '#00ffcc', target: '#0055ff', wave: 'rgba(0, 85, 255, 0.85)', glow: 'rgba(0, 204, 255, 0.3)' },
-        { name: 'Amethyst', bg: '#0a0212', stroke: '#9933ff', target: '#ff99ff', wave: 'rgba(255, 153, 255, 0.85)', glow: 'rgba(153, 51, 255, 0.3)' }
+        { name: 'Amethyst', bg: '#0a0212', stroke: '#9933ff', target: '#ff99ff', wave: 'rgba(255, 153, 255, 0.85)', glow: 'rgba(153, 51, 255, 0.3)' },
+        { name: 'Vaporwave', bg: '#0c0714', stroke: '#ff71ce', target: '#01cdfe', wave: 'rgba(1, 205, 254, 0.85)', glow: 'rgba(255, 113, 206, 0.3)' },
+        { name: 'Outrun', bg: '#12020a', stroke: '#f5d300', target: '#ff00a0', wave: 'rgba(255, 0, 160, 0.85)', glow: 'rgba(245, 211, 0, 0.3)' },
+        { name: 'Glitch', bg: '#040404', stroke: '#00ff00', target: '#ff00ff', wave: 'rgba(255, 0, 255, 0.85)', glow: 'rgba(0, 255, 0, 0.3)' },
+        { name: 'Supernova', bg: '#0a041c', stroke: '#ff3366', target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(255, 51, 102, 0.3)' },
+        { name: 'Hologram', bg: '#051114', stroke: '#00e5ff', target: '#d500f9', wave: 'rgba(213, 0, 249, 0.85)', glow: 'rgba(0, 229, 255, 0.3)' },
+        { name: 'Abyss', bg: '#010812', stroke: '#0044ff', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(0, 68, 255, 0.3)' },
+        { name: 'Quantum', bg: '#141414', stroke: '#ffaa00', target: '#ff0055', wave: 'rgba(255, 0, 85, 0.85)', glow: 'rgba(255, 170, 0, 0.3)' },
+        { name: 'Ghost', bg: '#0d0d0d', stroke: '#ffffff', target: '#aaffff', wave: 'rgba(170, 255, 255, 0.85)', glow: 'rgba(255, 255, 255, 0.3)' },
+        { name: 'Volcano', bg: '#1a0500', stroke: '#ff4400', target: '#ffaa00', wave: 'rgba(255, 170, 0, 0.85)', glow: 'rgba(255, 68, 0, 0.3)' },
+        { name: 'Nebula', bg: '#0b0214', stroke: '#aa00ff', target: '#ff00aa', wave: 'rgba(255, 0, 170, 0.85)', glow: 'rgba(170, 0, 255, 0.3)' },
+        { name: 'Cobalt', bg: '#020b14', stroke: '#0066ff', target: '#00e5ff', wave: 'rgba(0, 229, 255, 0.85)', glow: 'rgba(0, 102, 255, 0.3)' },
+        { name: 'Crimson', bg: '#140005', stroke: '#ff0044', target: '#ffaaaa', wave: 'rgba(255, 170, 170, 0.85)', glow: 'rgba(255, 0, 68, 0.3)' },
+        { name: 'Jade', bg: '#021207', stroke: '#00ff66', target: '#ccffaa', wave: 'rgba(204, 255, 170, 0.85)', glow: 'rgba(0, 255, 102, 0.3)' },
+        { name: 'Inferno', bg: '#140200', stroke: '#ff2200', target: '#ffff00', wave: 'rgba(255, 255, 0, 0.85)', glow: 'rgba(255, 34, 0, 0.3)' },
+        { name: 'Stardust', bg: '#101014', stroke: '#ccccff', target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(204, 204, 255, 0.3)' },
+        { name: 'Mutant', bg: '#081402', stroke: '#88ff00', target: '#ff0088', wave: 'rgba(255, 0, 136, 0.85)', glow: 'rgba(136, 255, 0, 0.3)' },
+        { name: 'Midnight', bg: '#020214', stroke: '#3333ff', target: '#cc00ff', wave: 'rgba(204, 0, 255, 0.85)', glow: 'rgba(51, 51, 255, 0.3)' },
+        { name: 'Nova', bg: '#140e02', stroke: '#ffcc00', target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(255, 204, 0, 0.3)' },
+        { name: 'Banshee', bg: '#0c0214', stroke: '#ff00aa', target: '#00ffaa', wave: 'rgba(0, 255, 170, 0.85)', glow: 'rgba(255, 0, 170, 0.3)' },
+        { name: 'Spectre', bg: '#050a0a', stroke: '#00ffcc', target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(0, 255, 204, 0.3)' }
     ];
     let currentThemeIndex = 0;
     let theme = themes[0];
@@ -301,11 +339,21 @@
     let screenFlash = 0;
     let particles = [];
     let targetParticles = [];
-        let target = {
+
+    let target = {
         angle: Math.random() * Math.PI * 2,
         radius: 110,
         speed: 0.005
     };
+       function resetAchievements() {
+        achievements.forEach(a => a.unlocked = false);
+        achievementToast.innerText = "¡Logros Reseteados!";
+        achievementToast.classList.add('show');
+        setTimeout(() => achievementToast.classList.remove('show'), 3000);
+        if(document.getElementById('achievementsModal').style.display === 'block') {
+            openAchievements();
+        }
+    }
 
     function unlockAchievement(id) {
         let ach = achievements.find(a => a.id === id);
@@ -321,7 +369,7 @@
         let listEl = document.getElementById('achievementsList');
         listEl.innerHTML = '';
         achievements.forEach(a => {
-            listEl.innerHTML += `<div style="margin:6px 0; color:${a.unlocked ? '#00ffcc' : '#666'}"><b>${a.name}</b> (${a.unlocked ? '✔' : '🔒'})<br><span style="font-size:0.6rem; color:#aaa;">${a.desc}</span></div>`;
+            listEl.innerHTML += `<div style="margin:6px 0; color:${a.unlocked ? '#00ffcc' : '#666'}; border-bottom: 1px solid #111; padding-bottom: 4px;"><b>${a.name}</b> (${a.unlocked ? '✔' : '🔒'})<br><span style="font-size:0.6rem; color:#aaa;">${a.desc}</span></div>`;
         });
         toggleModal('achievementsModal');
     }
@@ -341,6 +389,7 @@
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
     let musicInterval = null;
+    let seqStep = 0;
 
     function initAudio() {
         if (!audioCtx) {
@@ -350,14 +399,14 @@
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
-    function playSynthTone(freq, type = 'sine', duration = 0.3) {
+    function playSynthTone(freq, type = 'sine', duration = 0.3, vol = fxVolume) {
         try {
             if (!audioCtx || isPaused || relaxMode) return;
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(fxVolume, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
@@ -366,33 +415,38 @@
         } catch (e) {}
     }
 
-    const backgroundScale = [130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63];
+    const baseFreqs = [65.41, 73.42, 77.78, 87.31];
+    let currentBase = 0;
+
     function startProceduralMusic() {
-        if (musicInterval) return;
+        if (musicInterval) clearInterval(musicInterval);
         musicInterval = setInterval(() => {
-            if (!audioCtx || audioCtx.state !== 'running' || isPaused) return;
-            let modFreq = backgroundScale[Math.floor(Math.random() * backgroundScale.length)] * (1 + Math.sin(target.angle) * 0.1);
-            try {
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(modFreq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(musicVolume, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2.2);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 2.2);
-            } catch(e) {}
-        }, 3500);
+            if (!audioCtx || audioCtx.state !== 'running' || isPaused || relaxMode) return;
+
+            if (seqStep % 32 === 0) currentBase = (currentBase + 1) % baseFreqs.length;
+            let baseFreq = baseFreqs[currentBase] * (1 + (level % 3) * 0.25);
+
+            playSynthTone(baseFreq, 'sawtooth', 0.15, musicVolume * 0.9);
+            if (seqStep % 2 !== 0) playSynthTone(baseFreq * 2, 'sawtooth', 0.1, musicVolume * 0.6);
+
+            let arpOffset = Math.floor(Math.abs(Math.cos(target.angle + seqStep)) * 5) * 2;
+            let arpFreq = baseFreq * 4 * Math.pow(1.05946, arpOffset * 2);
+            playSynthTone(arpFreq, 'square', 0.1, musicVolume * 0.4);
+
+            if (seqStep % 16 === 0) {
+                playSynthTone(baseFreq * 2, 'triangle', 2.0, musicVolume * 0.5);
+                playSynthTone(baseFreq * 3, 'sine', 2.0, musicVolume * 0.4);
+            }
+            seqStep++;
+        }, 130);
     }
 
     function generateNewForm() {
-        const types = ['roseFrac', 'piWave', 'harmonic', 'cardioidLim', 'lemniscate', 'epicycloid'];
+        const types = ['roseFrac', 'piWave', 'harmonic', 'cardioidLim', 'lemniscate', 'epicycloid', 'lissajous', 'butterfly', 'spirograph', 'gear', 'star', 'flower'];
         curveType = types[Math.floor(Math.random() * types.length)];
         p1 = Math.floor(Math.random() * 6) + 1;
         p2 = Math.floor(Math.random() * 4) + 2;
-        p3 = Math.floor(Math.random() * 2) + 1;
+        p3 = Math.floor(Math.random() * 3) + 1;
         currentScale = Math.floor(Math.random() * 90) + 60;
     }
 
@@ -405,6 +459,12 @@
             case 'cardioidLim': return currentScale * (1 + 0.5 * Math.cos(p1 * t));
             case 'lemniscate': return currentScale * Math.sqrt(Math.abs(Math.cos(p1 * t)));
             case 'epicycloid': return currentScale * (Math.sin(p1 * t) * Math.cos(p2 * th));
+            case 'lissajous': return currentScale * Math.sin(p1 * t + Math.PI/p3) * Math.cos(p2 * t);
+            case 'butterfly': return currentScale * (Math.exp(Math.cos(t)) - 2 * Math.cos(4*t)) * 0.3;
+            case 'spirograph': return currentScale * (0.8 * Math.cos(p1 * t) + 0.2 * Math.cos(p2 * t));
+            case 'gear': return currentScale * (1 + 0.15 * Math.sin(p1 * p2 * t));
+            case 'star': return currentScale * (1 - 0.3 * Math.abs(Math.sin(p1 * t / 2)));
+            case 'flower': return currentScale * (0.5 + 0.5 * Math.cos(p1 * t));
             default: return currentScale * Math.sin(p1 * t);
         }
     }
@@ -422,6 +482,7 @@
         autoMode = !autoMode;
         autoBtn.classList.toggle('active', autoMode);
         autoBtn.innerText = autoMode ? "AUTO: ON" : "AUTO: OFF";
+        if (autoMode) unlockAchievement('auto_pilot');
     }
 
     function togglePause() {
@@ -446,14 +507,18 @@
             gameMode = 'timeAttack';
             modeBtn.innerText = "MODO: CONTRARELOJ";
             startTimeAttack();
+        } else if (gameMode === 'timeAttack') {
+            gameMode = 'ghost';
+            modeBtn.innerText = "MODO: FANTASMA";
+            if (timeAttackTimer) clearInterval(timeAttackTimer);
         } else {
             gameMode = 'arcade';
             modeBtn.innerText = "MODO: ARCADE";
-            if (timeAttackTimer) clearInterval(timeAttackTimer);
         }
         modeBtn.classList.add('active');
         consecutiveFails = 0;
         successfulHits = 0;
+        perfectStreak = 0;
         updateDOMStats();
     }
 
@@ -476,13 +541,16 @@
     function updateDOMStats() {
         if (gameMode === 'infinite') {
             modeLabel.innerText = "Infinito";
-            statsRow.innerHTML = `Nivel: <span id="level">${level}</span>`;
+            statsRow.innerHTML = `Nivel: <span id="level">${level}</span> | Racha: ${perfectStreak}`;
         } else if (gameMode === 'timeAttack') {
             modeLabel.innerText = "Contrarreloj";
-            statsRow.innerHTML = `Tiempo: ${timeAttackSeconds}s | Ptos: ${score} | Nivel: <span id="level">${level}</span>`;
+            statsRow.innerHTML = `T: ${timeAttackSeconds}s | Ptos: ${score} | Lvl: <span id="level">${level}</span>`;
+        } else if (gameMode === 'ghost') {
+            modeLabel.innerText = "Fantasma";
+            statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Lvl: <span id="level">${level}</span>`;
         } else {
             modeLabel.innerText = "Arcade";
-            statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Nivel: <span id="level">${level}</span>`;
+            statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Lvl: <span id="level">${level}</span>`;
         }
     }
 
@@ -491,7 +559,9 @@
         level = 1;
         consecutiveFails = 0;
         successfulHits = 0;
+        perfectStreak = 0;
         pulseRadius = 0;
+        floatingTexts = [];
         if (gameMode === 'timeAttack') startTimeAttack();
         generateNewForm();
         resetTarget();
@@ -503,6 +573,7 @@
         relaxMode = !relaxMode;
         relaxBtn.classList.toggle('active', relaxMode);
         if (relaxMode) {
+            unlockAchievement('zen_mode');
             uiContainer.style.opacity = '0';
             uiContainer.style.pointerEvents = 'none';
             controlsBar.style.opacity = '0';
@@ -526,9 +597,11 @@
         currentThemeIndex = (currentThemeIndex + 1) % themes.length;
         theme = themes[currentThemeIndex];
         themeLabel.innerText = theme.name;
-        themeBtn.innerText = `PALETA: ${currentThemeIndex + 1}/20`;
+        themeBtn.innerText = `PALETA: ${currentThemeIndex + 1}/40`;
         mainTitle.style.color = theme.stroke;
         canvas.style.boxShadow = `0 0 30px ${theme.glow}`;
+        themesExplored++;
+        if (themesExplored >= 10) unlockAchievement('palette_master');
     }
 
     function changeSpeed() {
@@ -538,11 +611,9 @@
         else if (gameSpeed === 3.0) gameSpeed = 0.25;
         else if (gameSpeed === 0.25) gameSpeed = 0.5;
         else gameSpeed = 1.0;
-
         speedBtn.innerText = 'VEL: ' + gameSpeed.toFixed(2).replace(/\.?0+$/, '') + 'x';
-    }
-
-    function checkAction() {
+                }
+                function checkAction() {
         if (isPaused || relaxMode) return;
         initAudio();
         playSynthTone(440, 'triangle', 0.2);
@@ -558,15 +629,27 @@
         if (diff < tolerance) {
             consecutiveFails = 0;
             successfulHits++;
+            perfectStreak++;
+            
             unlockAchievement('first_perfect');
+            if (perfectStreak >= 3) unlockAchievement('streak_3');
+            if (perfectStreak >= 7) unlockAchievement('streak_7');
+            if (perfectStreak >= 15) unlockAchievement('streak_15');
+
+            if (perfectStreak > 1) {
+                floatingTexts.push({ x: cx, y: cy - 30, text: `COMBO x${perfectStreak}!`, life: 1.0, color: theme.stroke });
+            }
 
             if (gameMode !== 'infinite') {
-                score += 100 + (level * (gameMode === 'timeAttack' ? 25 : 10));
+                let ghostBonus = (gameMode === 'ghost') ? 50 : 0;
+                score += 100 + ghostBonus + (level * (gameMode === 'timeAttack' ? 25 : 10)) + (perfectStreak * 10);
                 if (gameMode === 'timeAttack') timeAttackSeconds += 3;
                 if (score > highScore) {
                     highScore = score;
-                    localStorage.setItem('polarHighScore', highScore);
+                    localStorage.setItem('polarHighScoreGhost', highScore);
                     if (highScore >= 1000) unlockAchievement('score_1000');
+                    if (highScore >= 5000) unlockAchievement('score_5000');
+                    if (highScore >= 10000) unlockAchievement('score_10000');
                 }
             }
 
@@ -579,18 +662,22 @@
                 level++;
                 successfulHits = 0;
                 if (level >= 10) unlockAchievement('level_10');
+                if (level >= 25) unlockAchievement('level_25');
+                if (level >= 50) unlockAchievement('level_50');
             }
 
             generateNewForm();
             resetTarget();
         } else {
             consecutiveFails++;
+            perfectStreak = 0;
             screenShake = 10;
 
             if (consecutiveFails >= maxFailsForPenalty) {
                 consecutiveFails = 0;
                 successfulHits = 0;
-                if (gameMode === 'infinite') {
+                if (gameMode === 'infinite' || gameMode === 'arcade' || gameMode === 'ghost') {
+                    if (level > 1) unlockAchievement('survivor');
                     level = Math.max(1, level - 1);
                     feedbackText = "¡BAJAS NIVEL!";
                 } else {
@@ -601,12 +688,11 @@
                 if (gameMode !== 'infinite') score = Math.max(0, score - 15);
                 feedbackText = "¡FALLO!";
             }
-
             feedbackColor = "#ff0055";
         }
         
         updateDOMStats();
-        feedbackTimer = 25;
+        feedbackTimer = 35;
     }
 
     function update() {
@@ -628,19 +714,32 @@
         let cy = canvas.height / 2;
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
-        targetParticles.push({ x: tx, y: ty, life: 1.0 });
+        
+        let isGhostInvisible = (gameMode === 'ghost' && pulseRadius > 80);
+        
+        if (!isGhostInvisible) {
+            targetParticles.push({ x: tx, y: ty, life: 1.0 });
+        }
 
         for (let i = targetParticles.length - 1; i >= 0; i--) {
             targetParticles[i].life -= 0.1;
             if (targetParticles[i].life <= 0) targetParticles.splice(i, 1);
         }
 
+        for (let i = floatingTexts.length - 1; i >= 0; i--) {
+            floatingTexts[i].y -= 0.8;
+            floatingTexts[i].life -= 0.02;
+            if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
+        }
+
         pulseRadius += (1.2 + (level * 0.05)) * gameSpeed;
 
         if (pulseRadius > 220) {
             consecutiveFails++;
+            perfectStreak = 0;
             if (consecutiveFails >= maxFailsForPenalty) {
                 consecutiveFails = 0;
+                if (level > 1) unlockAchievement('survivor');
                 if (gameMode === 'infinite') level = Math.max(1, level - 1);
                 else score = 0;
                 updateDOMStats();
@@ -715,9 +814,11 @@
             ctx.globalAlpha = 1.0;
         }
 
+        let isGhostInvisible = (gameMode === 'ghost' && pulseRadius > 80);
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
-        if (!relaxMode) {
+        
+        if (!relaxMode && !isGhostInvisible) {
             ctx.beginPath();
             ctx.arc(tx, ty, 8, 0, Math.PI * 2);
             ctx.fillStyle = theme.target;
@@ -742,6 +843,18 @@
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
+        for (let ft of floatingTexts) {
+            ctx.font = 'bold 15px monospace';
+            ctx.fillStyle = ft.color;
+            ctx.globalAlpha = ft.life;
+            ctx.textAlign = 'center';
+            ctx.shadowColor = ft.color;
+            ctx.shadowBlur = 10;
+            ctx.fillText(ft.text, ft.x, ft.y);
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1.0;
+        }
+
         if (isPaused) {
             ctx.font = 'bold 22px monospace';
             ctx.fillStyle = theme.target;
@@ -751,7 +864,7 @@
             ctx.font = 'bold 18px monospace';
             ctx.fillStyle = feedbackColor;
             ctx.textAlign = 'center';
-            ctx.fillText(feedbackText, cx, cy - 40);
+            ctx.fillText(feedbackText, cx, cy + 40);
             feedbackTimer--;
         }
 
