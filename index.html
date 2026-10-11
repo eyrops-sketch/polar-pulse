@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Custom Settings & Expanded Palette</title>
+    <title>Polar Infinity - Final Polish</title>
     <style>
         * {
             box-sizing: border-box;
@@ -34,9 +34,9 @@
             transition: opacity 0.3s ease;
             width: 100%;
         }
-        h1 { margin: 0; font-size: 1.1rem; letter-spacing: 2px; color: #ff007f; transition: color 0.5s ease; }
-        .stats-row { margin: 3px 0; font-size: 0.9rem; color: #ffffff; font-weight: bold; }
-        .info-row { margin: 2px 0; font-size: 0.75rem; color: #ff00aa; }
+        h1 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; color: #ff007f; transition: color 0.5s ease; }
+        .stats-row { margin: 4px 0; font-size: 0.95rem; color: #ffffff; font-weight: bold; }
+        .info-row { margin: 3px 0; font-size: 0.85rem; color: #ff00aa; font-weight: bold; } /* Línea ampliada y visible */
         
         .canvas-container {
             flex-grow: 1;
@@ -92,7 +92,7 @@
             box-shadow: 0 0 10px #ff007f;
         }
 
-        /* Panel de Configuración flotante */
+        /* Modal de Configuración */
         #settingsModal {
             position: absolute;
             top: 50%;
@@ -173,7 +173,6 @@
 
     <button id="floatingExitBtn" onclick="toggleRelaxMode()">SALIR RELAX</button>
 
-    <!-- Modal de Configuración -->
     <div id="settingsModal">
         <h2>AJUSTES DE JUEGO</h2>
         <div class="setting-group">
@@ -200,13 +199,14 @@
     <div id="controls-bar">
         <button id="pauseBtn" class="btn" onclick="togglePause()">PAUSA</button>
         <button id="modeBtn" class="btn" onclick="toggleGameMode()">MODO: ARCADE</button>
+        <button class="btn" onclick="resetGame()">REINICIAR</button>
         <button class="btn" onclick="toggleSettings()">AJUSTES</button>
         <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
         <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: 1/20</button>
         <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
         <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
     </div>
-   <script>
+    <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const statsRow = document.getElementById('statsRow');
@@ -228,17 +228,16 @@
     let highScore = localStorage.getItem('polarHighScore') || 0;
 
     let level = 1;
-    let successfulHits = 0; // Conteo de aciertos para subir de nivel
+    let successfulHits = 0;
     let consecutiveFails = 0;
     
-    // Configuración ajustable por el usuario (Por defecto: 1 acierto y 3 errores)
     let requiredHitsForLevel = 1;
     let maxFailsForPenalty = 3;
 
     let autoMode = false;
     let isPaused = false;
     let relaxMode = false;
-    let infiniteMode = false;
+    let infiniteMode = false; // False = Arcade, True = Infinito
     let gameSpeed = 1.0;
     let angle = 0;
     
@@ -247,7 +246,6 @@
     let currentScale = 90;
     let relaxTimer = 0;
 
-    // Ampliado a 20 Paletas de Colores Neón Únicas
     const themes = [
         { name: 'Cyber', bg: '#080c16', stroke: '#ff007f', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.7)', glow: 'rgba(255, 0, 127, 0.3)' },
         { name: 'Matrix', bg: '#020f04', stroke: '#00ff55', target: '#adff2f', wave: 'rgba(173, 255, 47, 0.7)', glow: 'rgba(0, 255, 85, 0.3)' },
@@ -421,6 +419,7 @@
     function toggleGameMode() {
         infiniteMode = !infiniteMode;
         modeBtn.classList.toggle('active', infiniteMode);
+        modeBtn.innerText = infiniteMode ? "MODO: INFINITO" : "MODO: ARCADE";
         consecutiveFails = 0;
         successfulHits = 0;
         updateDOMStats();
@@ -434,6 +433,17 @@
             modeLabel.innerText = "Arcade";
             statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Nivel: <span id="level">${level}</span>`;
         }
+    }
+
+    function resetGame() {
+        score = 0;
+        level = 1;
+        consecutiveFails = 0;
+        successfulHits = 0;
+        pulseRadius = 0;
+        generateNewForm();
+        resetTarget();
+        updateDOMStats();
     }
 
     function toggleRelaxMode() {
@@ -470,7 +480,6 @@
     }
 
     function changeSpeed() {
-        // Rango ampliado de velocidades: 0.25x, 0.5x, 1.0x, 1.5x, 2.0x, 3.0x
         if (gameSpeed === 1.0) gameSpeed = 1.5;
         else if (gameSpeed === 1.5) gameSpeed = 2.0;
         else if (gameSpeed === 2.0) gameSpeed = 3.0;
@@ -512,7 +521,6 @@
             createExplosionParticles(tx, ty);
             playSynthTone(783.99, 'sine', 0.4); 
 
-            // Subir de nivel según el número de aciertos configurados
             if (successfulHits >= requiredHitsForLevel) {
                 level++;
                 successfulHits = 0;
