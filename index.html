@@ -23,7 +23,6 @@
             font-family: 'Courier New', Courier, monospace;
             user-select: none;
             -webkit-user-select: none;
-            transition: background-color 0.5s ease;
             padding: 5px;
         }
         #ui {
@@ -31,10 +30,9 @@
             text-align: center;
             text-shadow: 0 0 10px rgba(0, 255, 204, 0.6);
             z-index: 10;
-            transition: opacity 0.3s ease;
             width: 100%;
         }
-        h1 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; color: #ff007f; transition: color 0.5s ease; }
+        h1 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; color: #ff007f; }
         .stats-row { margin: 4px 0; font-size: 0.95rem; color: #ffffff; font-weight: bold; }
         .info-row { margin: 3px 0; font-size: 0.85rem; color: #ff00aa; font-weight: bold; }
         
@@ -56,7 +54,6 @@
             height: 70vh;
             max-width: 340px;
             max-height: 340px;
-            transition: box-shadow 0.5s ease;
         }
 
         #controls-bar {
@@ -67,7 +64,6 @@
             z-index: 10;
             flex-wrap: wrap;
             justify-content: center;
-            transition: opacity 0.3s ease;
             width: 100%;
         }
 
@@ -92,7 +88,6 @@
             box-shadow: 0 0 10px #ff007f;
         }
 
-        /* Modales de Configuración y Logros */
         .modal {
             position: absolute;
             top: 50%;
@@ -111,9 +106,8 @@
         }
         .modal h2 { margin-top: 0; color: #ff007f; font-size: 1.1rem; }
         .setting-group { margin: 10px 0; font-size: 0.75rem; color: #8ab4f8; }
-        .setting-group input, .setting-group select { width: 90px; background: #05070d; border: 1px solid #00ffcc; color: #00ffcc; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; }
+        .setting-group input { width: 90px; background: #05070d; border: 1px solid #00ffcc; color: #00ffcc; text-align: center; font-family: inherit; padding: 4px; border-radius: 5px; }
 
-        /* Notificación Flotante de Logros */
         #achievementToast {
             position: absolute;
             top: -60px;
@@ -131,9 +125,7 @@
             pointer-events: none;
             text-align: center;
         }
-        #achievementToast.show {
-            top: 15px;
-        }
+        #achievementToast.show { top: 15px; }
 
         #floatingExitBtn {
             position: absolute;
@@ -161,33 +153,12 @@
                 align-items: center;
                 padding: 10px;
             }
-            #ui {
-                width: 45%;
-                text-align: left;
-                padding-left: 15px;
-            }
+            #ui { width: 45%; text-align: left; padding-left: 15px; }
             h1 { font-size: 1.2rem; }
-            .canvas-container {
-                width: 50%;
-                height: 100vh;
-            }
-            canvas {
-                width: 78dvh;
-                height: 78dvh;
-                max-width: 290px;
-                max-height: 290px;
-            }
-            #controls-bar {
-                width: 45%;
-                flex-direction: column;
-                align-items: stretch;
-                gap: 4px;
-            }
-            .btn {
-                font-size: 0.7rem;
-                padding: 6px;
-                text-align: center;
-            }
+            .canvas-container { width: 50%; height: 100vh; }
+            canvas { width: 78dvh; height: 78dvh; max-width: 290px; max-height: 290px; }
+            #controls-bar { width: 45%; flex-direction: column; align-items: stretch; gap: 4px; }
+            .btn { font-size: 0.7rem; padding: 6px; text-align: center; }
         }
     </style>
 </head>
@@ -196,7 +167,6 @@
     <button id="floatingExitBtn" onclick="toggleRelaxMode()">SALIR RELAX</button>
     <div id="achievementToast">🏆 ¡Logro Desbloqueado!</div>
 
-    <!-- Modal de Ajustes -->
     <div id="settingsModal" class="modal">
         <h2>AJUSTES DE JUEGO</h2>
         <div class="setting-group">
@@ -218,13 +188,12 @@
         <button class="btn active" style="margin-top:10px;" onclick="toggleModal('settingsModal')">CERRAR</button>
     </div>
 
-    <!-- Modal de Logros -->
     <div id="achievementsModal" class="modal">
         <h2>LOGROS</h2>
         <div id="achievementsList" style="font-size: 0.7rem; text-align: left; max-height: 180px; overflow-y: auto; margin-bottom: 10px;"></div>
         <button class="btn active" onclick="toggleModal('achievementsModal')">CERRAR</button>
     </div>
-       <div id="ui">
+        <div id="ui">
         <h1 id="mainTitle">POLAR INFINITY</h1>
         <div class="stats-row" id="statsRow">Ptos: <span id="score">0</span> | Récord: <span id="highScore">0</span> | Nivel: <span id="level">1</span></div>
         <div class="info-row">Modo: <span id="modeLabel">Arcade</span> | Paleta: <span id="themeLabel">Cyber</span></div>
@@ -266,6 +235,7 @@
 
     let score = 0;
     let highScore = localStorage.getItem('polarHighScore') || 0;
+    document.getElementById('highScore').innerText = highScore;
 
     let level = 1;
     let successfulHits = 0;
@@ -279,7 +249,7 @@
     let autoMode = false;
     let isPaused = false;
     let relaxMode = false;
-    let gameMode = 'arcade'; // 'arcade', 'infinite', 'timeAttack'
+    let gameMode = 'arcade';
     let timeAttackSeconds = 60;
     let timeAttackTimer = null;
     let gameSpeed = 1.0;
@@ -291,13 +261,11 @@
     let relaxTimer = 0;
     let screenShake = 0;
 
-    // Sistema de Logros
     let achievements = [
         { id: 'first_perfect', name: 'Primer Impacto', desc: 'Consigue tu primer acierto perfecto', unlocked: false },
         { id: 'level_10', name: 'Explorador Polar', desc: 'Alcanza el nivel 10', unlocked: false },
         { id: 'score_1000', name: 'Fiebre Neón', desc: 'Supera los 1000 puntos en Arcade', unlocked: false },
-        { id: 'speed_demon', name: 'Velocidad Luz', desc: 'Juega a velocidad 3.0x', unlocked: false },
-        { id: 'survivor', name: 'Superviviente', desc: 'Recupera el nivel tras una penalización', unlocked: false }
+        { id: 'speed_demon', name: 'Velocidad Luz', desc: 'Juega a velocidad 3.0x', unlocked: false }
     ];
 
     const themes = [
@@ -319,7 +287,7 @@
         { name: 'Cyberpunk', bg: '#120114', stroke: '#ff00ff', target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(255, 0, 255, 0.3)' },
         { name: 'Toxic', bg: '#051202', stroke: '#33ff00', target: '#ff0066', wave: 'rgba(255, 0, 102, 0.85)', glow: 'rgba(51, 255, 0, 0.3)' },
         { name: 'Magma', bg: '#140602', stroke: '#ff3300', target: '#ffcc00', wave: 'rgba(255, 204, 0, 0.85)', glow: 'rgba(255, 51, 0, 0.3)' },
-        { name: 'Arctic', bg: '#020f14', stroke: '#00ffcc', target: '#0055ff', wave: 'rgba(0, 85, 255, 0.85)', glow: 'rgba(0, 255, 204, 0.3)' },
+        { name: 'Arctic', bg: '#020f14', stroke: '#00ffcc', target: '#0055ff', wave: 'rgba(0, 85, 255, 0.85)', glow: 'rgba(0, 204, 255, 0.3)' },
         { name: 'Amethyst', bg: '#0a0212', stroke: '#9933ff', target: '#ff99ff', wave: 'rgba(255, 153, 255, 0.85)', glow: 'rgba(153, 51, 255, 0.3)' }
     ];
     let currentThemeIndex = 0;
@@ -379,9 +347,7 @@
             audioCtx = new AudioContext();
             startProceduralMusic();
         }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
     function playSynthTone(freq, type = 'sine', duration = 0.3) {
@@ -389,16 +355,12 @@
             if (!audioCtx || isPaused || relaxMode) return;
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
-
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
             gain.gain.setValueAtTime(fxVolume, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-
             osc.start();
             osc.stop(audioCtx.currentTime + duration);
         } catch (e) {}
@@ -425,20 +387,13 @@
         }, 3500);
     }
 
-    function getDynamicNote() {
-        const baseNotes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 659.25, 783.99];
-        let index = Math.floor(Math.abs(Math.sin(target.angle)) * baseNotes.length);
-        return baseNotes[index % baseNotes.length];
-    }
-
     function generateNewForm() {
-        const types = ['roseFrac', 'piWave', 'harmonic', 'cardioidLim', 'lemniscate', 'spiralHarmonic', 'epicycloid'];
+        const types = ['roseFrac', 'piWave', 'harmonic', 'cardioidLim', 'lemniscate', 'epicycloid'];
         curveType = types[Math.floor(Math.random() * types.length)];
-
-        p1 = Math.floor(Math.random() * 7) + 1;
-        p2 = Math.floor(Math.random() * 5) + 2;
-        p3 = Math.floor(Math.random() * 3) + 1;
-        currentScale = Math.floor(Math.random() * 110) + 50;
+        p1 = Math.floor(Math.random() * 6) + 1;
+        p2 = Math.floor(Math.random() * 4) + 2;
+        p3 = Math.floor(Math.random() * 2) + 1;
+        currentScale = Math.floor(Math.random() * 90) + 60;
     }
 
     function calculatePolarRadius(th, currentAngle) {
@@ -447,25 +402,18 @@
             case 'roseFrac': return currentScale * Math.sin((p1 * t) / p2);
             case 'piWave': return currentScale * Math.sin(p1 * Math.PI * t / p2);
             case 'harmonic': return currentScale * (Math.sin(p1 * t) + Math.cos(p2 * th) / p3);
-            case 'cardioidLim': return currentScale * (1 + (p1 / p2) * Math.cos(p1 * t));
+            case 'cardioidLim': return currentScale * (1 + 0.5 * Math.cos(p1 * t));
             case 'lemniscate': return currentScale * Math.sqrt(Math.abs(Math.cos(p1 * t)));
-            case 'spiralHarmonic': return currentScale * (0.3 + 0.1 * t) * Math.sin(p1 * t);
             case 'epicycloid': return currentScale * (Math.sin(p1 * t) * Math.cos(p2 * th));
             default: return currentScale * Math.sin(p1 * t);
         }
     }
 
     function createExplosionParticles(x, y) {
-        for (let i = 0; i < 18; i++) {
+        for (let i = 0; i < 15; i++) {
             let pAngle = Math.random() * Math.PI * 2;
-            let pSpeed = Math.random() * 3.5 + 1;
-            particles.push({
-                x: x, y: y,
-                vx: Math.cos(pAngle) * pSpeed,
-                vy: Math.sin(pAngle) * pSpeed,
-                life: 1.0,
-                color: theme.target
-            });
+            let pSpeed = Math.random() * 3 + 1;
+            particles.push({ x: x, y: y, vx: Math.cos(pAngle) * pSpeed, vy: Math.sin(pAngle) * pSpeed, life: 1.0, color: theme.target });
         }
     }
 
@@ -597,7 +545,7 @@
     function checkAction() {
         if (isPaused || relaxMode) return;
         initAudio();
-        playSynthTone(getDynamicNote(), 'triangle', 0.2);
+        playSynthTone(440, 'triangle', 0.2);
 
         let cx = canvas.width / 2;
         let cy = canvas.height / 2;
@@ -605,7 +553,7 @@
         let ty = cy + target.radius * Math.sin(target.angle);
 
         let diff = Math.abs(pulseRadius - target.radius);
-        let tolerance = Math.max(12, 28 - (level * 0.6));
+        let tolerance = 25;
 
         if (diff < tolerance) {
             consecutiveFails = 0;
@@ -613,8 +561,8 @@
             unlockAchievement('first_perfect');
 
             if (gameMode !== 'infinite') {
-                score += 100 + (level * (gameMode === 'timeAttack' ? 25 : 15));
-                if (gameMode === 'timeAttack') timeAttackSeconds += 3; // Bonificación de tiempo
+                score += 100 + (level * (gameMode === 'timeAttack' ? 25 : 10));
+                if (gameMode === 'timeAttack') timeAttackSeconds += 3;
                 if (score > highScore) {
                     highScore = score;
                     localStorage.setItem('polarHighScore', highScore);
@@ -626,7 +574,6 @@
             feedbackColor = theme.stroke;
             screenFlash = 0.4;
             createExplosionParticles(tx, ty);
-            playSynthTone(783.99, 'sine', 0.4); 
 
             if (successfulHits >= requiredHitsForLevel) {
                 level++;
@@ -638,7 +585,7 @@
             resetTarget();
         } else {
             consecutiveFails++;
-            screenShake = 12; // Vibración de pantalla al fallar
+            screenShake = 10;
 
             if (consecutiveFails >= maxFailsForPenalty) {
                 consecutiveFails = 0;
@@ -651,33 +598,21 @@
                     feedbackText = "¡PUNTOS A CERO!";
                 }
             } else {
-                if (gameMode !== 'infinite') {
-                    score = Math.max(0, score - 15);
-                }
-                unlockAchievement('survivor');
+                if (gameMode !== 'infinite') score = Math.max(0, score - 15);
                 feedbackText = "¡FALLO!";
             }
 
             feedbackColor = "#ff0055";
-            playSynthTone(130.81, 'sawtooth', 0.2);
         }
         
         updateDOMStats();
         feedbackTimer = 25;
     }
 
-    function updateAutoMode() {
-        if (!autoMode || isPaused || relaxMode) return;
-        if (Math.abs(pulseRadius - target.radius) < 2) {
-            checkAction();
-        }
-    }
-
     function update() {
         if (isPaused) return;
 
         if (screenShake > 0) screenShake *= 0.85;
-        if (screenShake < 0.5) screenShake = 0;
 
         if (relaxMode) {
             relaxTimer++;
@@ -690,7 +625,6 @@
 
         target.angle += target.speed * gameSpeed;
 
-        // Estela de partículas luminosas en el objetivo móvil
         let cx = canvas.width / 2;
         let cy = canvas.height / 2;
         let tx = cx + target.radius * Math.cos(target.angle);
@@ -698,32 +632,19 @@
         targetParticles.push({ x: tx, y: ty, life: 1.0 });
 
         for (let i = targetParticles.length - 1; i >= 0; i--) {
-            targetParticles[i].life -= 0.08;
+            targetParticles[i].life -= 0.1;
             if (targetParticles[i].life <= 0) targetParticles.splice(i, 1);
         }
 
-        let pulseSpeedMultiplier = (autoMode || relaxMode) ? 0.7 : gameSpeed;
-        let pulseSpeed = (1.1 + (level * 0.1)) * pulseSpeedMultiplier;
-        pulseRadius += pulseSpeed;
+        pulseRadius += (1.2 + (level * 0.05)) * gameSpeed;
 
-        if (pulseRadius > 230) {
-            if (!autoMode && !relaxMode) {
-                consecutiveFails++;
-                screenShake = 12;
-                if (consecutiveFails >= maxFailsForPenalty) {
-                    consecutiveFails = 0;
-                    successfulHits = 0;
-                    if (gameMode === 'infinite') {
-                        level = Math.max(1, level - 1);
-                    } else {
-                        score = 0;
-                    }
-                    updateDOMStats();
-                }
-            }
-            if (relaxMode) {
-                generateNewForm();
-                level = Math.floor(Math.random() * 8) + 1;
+        if (pulseRadius > 220) {
+            consecutiveFails++;
+            if (consecutiveFails >= maxFailsForPenalty) {
+                consecutiveFails = 0;
+                if (gameMode === 'infinite') level = Math.max(1, level - 1);
+                else score = 0;
+                updateDOMStats();
             }
             resetTarget();
         }
@@ -731,24 +652,22 @@
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
             p.x += p.vx; p.y += p.vy;
-            p.life -= 0.03;
+            p.life -= 0.04;
             if (p.life <= 0) particles.splice(i, 1);
         }
 
         angle += 0.003 * gameSpeed;
-        updateAutoMode();
+        if (autoMode && Math.abs(pulseRadius - target.radius) < 2) checkAction();
     }
 
     function draw() {
         ctx.save();
         if (screenShake > 0) {
-            let sx = (Math.random() - 0.5) * screenShake;
-            let sy = (Math.random() - 0.5) * screenShake;
-            ctx.translate(sx, sy);
+            ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
         }
 
         ctx.fillStyle = theme.bg;
-        ctx.globalAlpha = 0.25;
+        ctx.globalAlpha = 0.3;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.globalAlpha = 1.0;
 
@@ -763,7 +682,7 @@
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.lineWidth = 1;
         for (let r = 50; r <= 200; r += 50) {
             ctx.beginPath();
@@ -773,13 +692,12 @@
 
         ctx.beginPath();
         ctx.strokeStyle = theme.stroke;
-        ctx.lineWidth = 2.4;
+        ctx.lineWidth = 2.5;
         ctx.shadowColor = theme.stroke;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 10;
         
-        let maxTheta = Math.PI * 20; 
-        
-        for (let th = 0; th < maxTheta; th += 0.005) {
+        let maxTheta = Math.PI * 16;
+        for (let th = 0; th < maxTheta; th += 0.01) {
             let r = calculatePolarRadius(th, angle);
             let x = cx + r * Math.cos(th);
             let y = cy + r * Math.sin(th);
@@ -789,10 +707,9 @@
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Estela del objetivo
         for (let tp of targetParticles) {
             ctx.beginPath();
-            ctx.arc(tp.x, tp.y, 5, 0, Math.PI * 2);
+            ctx.arc(tp.x, tp.y, 4, 0, Math.PI * 2);
             ctx.fillStyle = theme.target;
             ctx.globalAlpha = tp.life * 0.5;
             ctx.fill();
@@ -801,10 +718,9 @@
 
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
-        
         if (!relaxMode) {
             ctx.beginPath();
-            ctx.arc(tx, ty, 9, 0, Math.PI * 2);
+            ctx.arc(tx, ty, 8, 0, Math.PI * 2);
             ctx.fillStyle = theme.target;
             ctx.shadowColor = theme.target;
             ctx.shadowBlur = 15;
@@ -824,14 +740,11 @@
         ctx.beginPath();
         ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
         ctx.strokeStyle = theme.wave;
-        ctx.lineWidth = 3;
-        ctx.shadowColor = theme.wave;
-        ctx.shadowBlur = 10;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
-        ctx.shadowBlur = 0;
 
         if (isPaused) {
-            ctx.font = 'bold 24px monospace';
+            ctx.font = 'bold 22px monospace';
             ctx.fillStyle = theme.target;
             ctx.textAlign = 'center';
             ctx.fillText("JUEGO EN PAUSA", cx, cy);
