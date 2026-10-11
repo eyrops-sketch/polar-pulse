@@ -50,42 +50,53 @@
             box-shadow: 0 0 35px rgba(0, 255, 255, 0.3);
             background: #050a14;
             border-radius: 50%;
-            width: 70vh;
-            height: 70vh;
-            max-width: 340px;
-            max-height: 340px;
+            width: 65vh;
+            height: 65vh;
+            max-width: 320px;
+            max-height: 320px;
         }
 
+        /* Controles distribuidos en filas amplias para mayor tamaño y legibilidad */
         #controls-bar {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             display: flex;
-            gap: 4px;
+            flex-direction: column;
+            gap: 6px;
             align-items: center;
             z-index: 10;
-            flex-wrap: wrap;
+            width: 100%;
+            padding: 0 10px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 6px;
             justify-content: center;
             width: 100%;
         }
 
         .btn {
-            background: rgba(0, 255, 255, 0.15);
+            background: rgba(0, 255, 255, 0.18);
             border: 2px solid #00ffff;
-            color: #00ffff;
-            padding: 5px 7px;
+            color: #ffffff;
+            padding: 8px 10px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
-            font-size: 0.55rem;
-            border-radius: 12px;
+            font-size: 0.7rem;
+            border-radius: 10px;
             cursor: pointer;
-            box-shadow: 0 0 8px rgba(0, 255, 255, 0.35);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
             transition: all 0.2s ease;
+            flex: 1;
+            max-width: 110px;
+            text-align: center;
         }
 
         .btn.active {
             background: #ff00ea;
             border-color: #ff00ea;
             color: #ffffff;
-            box-shadow: 0 0 12px #ff00ea;
+            box-shadow: 0 0 15px #ff00ea;
         }
 
         .modal {
@@ -149,9 +160,6 @@
             box-shadow: 0 0 12px rgba(0, 255, 255, 0.6);
             text-shadow: 0 0 8px #00ffff;
         }
-        .floating-btn:hover {
-            background: rgba(0, 255, 255, 0.45);
-        }
 
         @media (orientation: landscape) {
             body {
@@ -164,9 +172,9 @@
             #ui { width: 45%; text-align: left; padding-left: 15px; }
             h1 { font-size: 1.2rem; }
             .canvas-container { width: 50%; height: 100vh; }
-            canvas { width: 78dvh; height: 78dvh; max-width: 290px; max-height: 290px; }
-            #controls-bar { width: 45%; flex-direction: column; align-items: stretch; gap: 4px; }
-            .btn { font-size: 0.65rem; padding: 5px; text-align: center; }
+            canvas { width: 75dvh; height: 75dvh; max-width: 270px; max-height: 270px; }
+            #controls-bar { width: 45%; }
+            .btn { font-size: 0.6rem; padding: 6px; }
         }
     </style>
 </head>
@@ -213,15 +221,15 @@
             <input type="range" id="musicVolInput" min="0" max="1" step="0.1" value="0.5" onchange="updateSettings()">
         </div>
         <div class="setting-group" style="margin-top: 15px;">
-            <button class="btn" style="background: rgba(255,0,234,0.25); border-color: #ff00ea; color: #ffffff;" onclick="resetAchievements()">RESETEAR LOGROS</button>
+            <button class="btn" style="background: rgba(255,0,234,0.25); border-color: #ff00ea; color: #ffffff; max-width: 100%;" onclick="resetAchievements()">RESETEAR LOGROS</button>
         </div>
-        <button class="btn active" style="margin-top:10px;" onclick="toggleModal('settingsModal')">CERRAR</button>
+        <button class="btn active" style="margin-top:10px; max-width: 100%;" onclick="toggleModal('settingsModal')">CERRAR</button>
     </div>
 
     <div id="achievementsModal" class="modal">
         <h2>LOGROS (15)</h2>
         <div id="achievementsList" style="font-size: 0.7rem; text-align: left; max-height: 220px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;"></div>
-        <button class="btn active" onclick="toggleModal('achievementsModal')">CERRAR</button>
+        <button class="btn active" style="max-width: 100%;" onclick="toggleModal('achievementsModal')">CERRAR</button>
     </div>
 
     <div id="ui">
@@ -234,20 +242,29 @@
         <canvas id="gameCanvas" width="500" height="500"></canvas>
     </div>
 
+    <!-- Controles distribuidos en 4 filas organizadas con botones grandes -->
     <div id="controls-bar">
-        <button id="pauseBtn" class="btn" onclick="togglePause()">PAUSA</button>
-        <button id="modeBtn" class="btn" onclick="toggleGameMode()">MODO: ARCADE</button>
-        <button class="btn" onclick="resetGame()">REINICIAR</button>
-        <button class="btn" onclick="toggleModal('settingsModal')">AJUSTES</button>
-        <button class="btn" onclick="openAchievements()">LOGROS</button>
-        <button id="musicBtn" class="btn active" onclick="toggleMusic()">MÚSICA: SECUENCIAL</button>
-        <button class="btn" onclick="nextSongAndForm()">NEXT 🎵</button>
-        <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
-        <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: RANDOM</button>
-        <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
-        <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
+        <div class="button-row">
+            <button id="pauseBtn" class="btn" onclick="togglePause()">PAUSA</button>
+            <button id="modeBtn" class="btn" onclick="toggleGameMode()">MODO</button>
+            <button class="btn" onclick="resetGame()">REINICIAR</button>
+        </div>
+        <div class="button-row">
+            <button class="btn" onclick="toggleModal('settingsModal')">AJUSTES</button>
+            <button class="btn" onclick="openAchievements()">LOGROS</button>
+            <button id="musicBtn" class="btn active" onclick="toggleMusic()">MÚSICA</button>
+        </div>
+        <div class="button-row">
+            <button class="btn" onclick="nextSongAndForm()">NEXT 🎵</button>
+            <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
+            <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA</button>
+        </div>
+        <div class="button-row">
+            <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
+            <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
+        </div>
     </div>
-    <script>
+   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const statsRow = document.getElementById('statsRow');
@@ -302,11 +319,11 @@
             mp3Player.pause();
         } else if (musicMode === 1) {
             musicBtn.classList.add('active');
-            musicBtn.innerText = "MÚSICA: SECUENCIAL";
+            musicBtn.innerText = "MÚSICA: SEC";
             playNextTrack();
         } else {
             musicBtn.classList.add('active');
-            musicBtn.innerText = "MÚSICA: ALEATORIO";
+            musicBtn.innerText = "MÚSICA: ALE";
             playNextTrack();
         }
     }
@@ -315,7 +332,7 @@
         if (musicMode === 0) {
             musicMode = 1;
             musicBtn.classList.add('active');
-            musicBtn.innerText = "MÚSICA: SECUENCIAL";
+            musicBtn.innerText = "MÚSICA: SEC";
         }
         
         if (musicMode === 1) {
@@ -347,12 +364,11 @@
     let gameSpeed = 1.0;
     let angle = 0;
     
-    // Soporte para hasta 4 curvas con radios y matices independientes
     let activeCurves = [
-        { type: 'rhodonea', p1: 5, p2: 6, p3: 2, scale: 195 }, // Capa 1: Muy grande (Exterior)
-        { type: 'lemniscate', p1: 4, p2: 3, p3: 1, scale: 145 }, // Capa 2: Mediana
-        { type: 'star', p1: 3, p2: 2, p3: 1, scale: 100 },      // Capa 3: Menor
-        { type: 'trifolio', p1: 2, p2: 1, p3: 1, scale: 65 }     // Capa 4: Pequeña central (pocos pétalos)
+        { type: 'rhodonea', p1: 5, p2: 6, p3: 2, scale: 195 },
+        { type: 'lemniscate', p1: 4, p2: 3, p3: 1, scale: 145 },
+        { type: 'star', p1: 3, p2: 2, p3: 1, scale: 100 },
+        { type: 'trifolio', p1: 2, p2: 1, p3: 1, scale: 65 }
     ];
 
     let relaxTimer = 0;
@@ -377,7 +393,6 @@
         { id: 'survivor', name: 'Resiliencia', desc: 'Sobrevive a una penalización', unlocked: false }
     ];
 
-    // Paletas temáticas con colores coordinados para las funciones y modo aleatorio libre
     const themes = [
         { name: 'Cyber Neon', bg: '#050a14', strokes: ['#00ffff', '#00ccff', '#0099ff', '#0055ff'], target: '#ff00ea', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(0, 255, 255, 0.35)' },
         { name: 'Matrix Cyber', bg: '#020f04', strokes: ['#00ff55', '#adff2f', '#7fff00', '#32cd32'], target: '#ffffff', wave: 'rgba(0, 255, 85, 0.85)', glow: 'rgba(0, 255, 85, 0.35)' },
@@ -474,27 +489,26 @@
         const pool = (curveVarietyMode === 'pretty') ? prettyCurves : allCurves;
 
         activeCurves = [];
-        // Radios graduados para 4 capas: Exterior grande (195) hasta interior pequeño (60)
-        let baseScales = [195, 150, 105, 60]; 
+        let baseScales = [195, 150, 105, 65]; 
 
         for (let i = 0; i < 4; i++) {
             let valid = false;
             let attempts = 0;
             let curveObj = {};
 
-            while (!valid && attempts < 30) {
+            while (!valid && attempts < 40) {
                 attempts++;
                 let cType = pool[Math.floor(Math.random() * pool.length)];
                 if (i > 0 && activeCurves.some(c => c.type === cType)) continue;
 
-                // REQUISITO: Capas más pequeñas (índices altos, ej. capa 3 y 4) obligadas a pocos pétalos/nodos para no saturar el centro
                 let maxParam = (i >= 2) ? 3 : 6;
                 let minParam = (i >= 2) ? 1 : 2;
                 let tp1 = Math.floor(Math.random() * (maxParam - minParam + 1)) + minParam;
                 let tp2 = Math.floor(Math.random() * 4) + 1;
                 let tp3 = Math.floor(Math.random() * 2) + 1;
 
-                if (testCurveSize(cType, tp1, tp2)) {
+                // VALIDACIÓN ESTRICTA ANTIPEGOTES: Comprobamos que la figura tenga variedad (radio max vs min) para que no sea un círculo sólido
+                if (testCurveQuality(cType, tp1, tp2)) {
                     curveObj = { type: cType, p1: tp1, p2: tp2, p3: tp3, scale: baseScales[i] };
                     valid = true;
                 }
@@ -506,15 +520,22 @@
         }
     }
 
-    function testCurveSize(cType, tp1, tp2) {
+    function testCurveQuality(cType, tp1, tp2) {
         let maxVal = 0;
-        let testSteps = 60;
+        let minVal = 9999;
+        let testSteps = 70;
         for (let i = 0; i < testSteps; i++) {
             let th = (i / testSteps) * Math.PI * 16;
             let rawR = Math.abs(getRawPolarRadiusForTest(cType, tp1, tp2, th, 0));
-            if (!isNaN(rawR) && rawR > maxVal && rawR < 1000) maxVal = rawR;
+            if (!isNaN(rawR) && rawR < 1000) {
+                if (rawR > maxVal) maxVal = rawR;
+                if (rawR < minVal) minVal = rawR;
+            }
         }
-        return (maxVal >= 25);
+        // Excluir si es muy pequeño o si el radio mínimo es casi igual al máximo (lo que formaría un círculo sólido tipo pegote)
+        if (maxVal < 30) return false;
+        if ((maxVal - minVal) < (maxVal * 0.15)) return false; 
+        return true;
     }
 
     function getRawPolarRadiusForTest(cType, tp1, tp2, th, currentAngle) {
@@ -579,8 +600,8 @@
             default: raw = Math.sin(tp1 * t) * 100; break;
         }
         return curve.scale * (raw / 100);
-    }
-        function createExplosionParticles(x, y) {
+                }
+           function createExplosionParticles(x, y) {
         for (let i = 0; i < 15; i++) {
             let pAngle = Math.random() * Math.PI * 2;
             let pSpeed = Math.random() * 3 + 1;
@@ -616,18 +637,18 @@
     function toggleGameMode() {
         if (gameMode === 'arcade') {
             gameMode = 'infinite';
-            modeBtn.innerText = "MODO: INFINITO";
+            modeLabel.innerText = "Infinito";
         } else if (gameMode === 'infinite') {
             gameMode = 'timeAttack';
-            modeBtn.innerText = "MODO: CONTRARELOJ";
+            modeLabel.innerText = "Contrarreloj";
             startTimeAttack();
         } else if (gameMode === 'timeAttack') {
             gameMode = 'ghost';
-            modeBtn.innerText = "MODO: FANTASMA";
+            modeLabel.innerText = "Fantasma";
             if (timeAttackTimer) clearInterval(timeAttackTimer);
         } else {
             gameMode = 'arcade';
-            modeBtn.innerText = "MODO: ARCADE";
+            modeLabel.innerText = "Arcade";
         }
         modeBtn.classList.add('active');
         consecutiveFails = 0;
@@ -654,16 +675,12 @@
 
     function updateDOMStats() {
         if (gameMode === 'infinite') {
-            modeLabel.innerText = "Infinito";
             statsRow.innerHTML = `Nivel: <span id="level">${level}</span> | Racha: ${perfectStreak}`;
         } else if (gameMode === 'timeAttack') {
-            modeLabel.innerText = "Contrarreloj";
             statsRow.innerHTML = `T: ${timeAttackSeconds}s | Ptos: ${score} | Lvl: <span id="level">${level}</span>`;
         } else if (gameMode === 'ghost') {
-            modeLabel.innerText = "Fantasma";
             statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Lvl: <span id="level">${level}</span>`;
         } else {
-            modeLabel.innerText = "Arcade";
             statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Lvl: <span id="level">${level}</span>`;
         }
     }
@@ -826,7 +843,8 @@
                 if (gameMode !== 'infinite') score = Math.max(0, score - 15);
                 feedbackText = "¡FALLO!";
             }
-            feedbackColor = "#ff00ea";
+            // Color amarillo/naranja brillante altamente legible para fallos y penalizaciones
+            feedbackColor = "#ffaa00";
         }
         
         updateDOMStats();
@@ -926,7 +944,6 @@
             ctx.stroke();
         }
 
-        // Renderizado de hasta 4 capas superpuestas con colores temáticos coordinados o aleatorios
         let opacities = [1.0, 0.75, 0.55, 0.35];
         let rotations = [angle, -angle * 1.2, angle * 0.7 + Math.PI / 4, -angle * 0.4];
 
