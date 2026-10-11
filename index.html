@@ -164,7 +164,6 @@
         }
         #achievementToast.show { top: 15px; }
 
-        /* ¡Cartel de pista gigante y muy legible! */
         #trackToast {
             position: absolute;
             top: 70px;
@@ -289,7 +288,7 @@
     </div>
 
     <div id="achievementsModal" class="modal">
-        <h2>LOGROS (15)</h2>
+        <h2>LOGROS Y DESBLOQUEOS</h2>
         <div id="achievementsList" style="max-height: 240px; overflow-y: auto; margin-bottom: 12px; padding-right: 5px;"></div>
         <button class="btn active" style="max-width: 100%;" onclick="toggleModal('achievementsModal')">CERRAR</button>
     </div>
@@ -307,7 +306,7 @@
     <div id="controls-bar">
         <div class="button-row">
             <button id="pauseBtn" class="btn" onclick="togglePause()">PAUSA</button>
-            <button id="modeBtn" class="btn" onclick="toggleGameMode()">MODO</button>
+            <button id="modeBtn" class="btn" onclick="toggleGameMode()">MODO: ARCADE</button>
             <button class="btn" onclick="resetGame()">REINICIAR</button>
         </div>
         <div class="button-row">
@@ -366,7 +365,7 @@
 
     let musicMode = 1; // 1: SECUENCIAL, 2: ALEATORIO, 0: OFF
     let currentTrackIndex = 1;
-    const totalTracks = 137; // Actualizado a 137 canciones
+    const totalTracks = 137;
     let mp3Player = new Audio();
     mp3Player.volume = musicVolume;
 
@@ -413,7 +412,6 @@
                 currentTrackIndex++;
                 if (currentTrackIndex > totalTracks) currentTrackIndex = 1;
             } else if (musicMode === 2) {
-                // Aleatoriedad real sin bucles repetitivos entre 1 y 137
                 let newIndex;
                 do {
                     newIndex = Math.floor(Math.random() * totalTracks) + 1;
@@ -457,7 +455,6 @@
         if (isRandomThemeMode) applyRandomTheme();
         resetTarget();
     }
-
         let autoMode = false;
     let isPaused = false;
     let relaxMode = false;
@@ -478,14 +475,15 @@
     let screenShake = 0;
     let floatingTexts = [];
 
+    // Logros y Desbloqueos actualizados con las nuevas paletas monocromáticas celestes, ámbar, rosa y cian
     let achievements = [
         { id: 'first_perfect', name: 'Primer Impacto', desc: 'Consigue tu primer acierto', unlocked: false },
         { id: 'streak_3', name: 'Racha de Bronce', desc: 'Consigue 3 aciertos seguidos', unlocked: false },
         { id: 'streak_7', name: 'Racha de Plata', desc: 'Consigue 7 aciertos seguidos', unlocked: false },
         { id: 'streak_15', name: 'Racha de Oro', desc: 'Consigue 15 aciertos seguidos', unlocked: false },
         { id: 'level_10', name: 'Explorador Polar', desc: 'Alcanza el nivel 10', unlocked: false },
-        { id: 'level_25', name: 'Maestro Polar', desc: 'Alcanza el nivel 25 (Desbloquea Espejo)', unlocked: false, reward: 'mirror' },
-        { id: 'level_50', name: 'Leyenda Viva', desc: 'Alcanza el nivel 50 (Desbloquea Pulso Dual)', unlocked: false, reward: 'doublePulse' },
+        { id: 'level_25', name: 'Maestro Polar', desc: 'Alcanza el nivel 25 (Mod: Espejo)', unlocked: false, reward: 'mirror' },
+        { id: 'level_50', name: 'Leyenda Viva', desc: 'Alcanza el nivel 50 (Mod: Pulso Dual)', unlocked: false, reward: 'doublePulse' },
         { id: 'score_1000', name: 'Fiebre Neón', desc: 'Supera los 1.000 puntos', unlocked: false },
         { id: 'score_5000', name: 'Dios del Neón', desc: 'Supera los 5.000 puntos', unlocked: false },
         { id: 'score_10000', name: 'Infinito', desc: 'Supera los 10.000 puntos', unlocked: false },
@@ -493,20 +491,46 @@
         { id: 'zen_mode', name: 'Modo Zen', desc: 'Activa el modo Relax', unlocked: false },
         { id: 'auto_pilot', name: 'Piloto', desc: 'Activa el modo Auto', unlocked: false },
         { id: 'palette_master', name: 'Coleccionista', desc: 'Explora 10 paletas distintas', unlocked: false },
-        { id: 'survivor', name: 'Resiliencia', desc: 'Sobrevive a una penalización', unlocked: false }
+        { id: 'survivor', name: 'Resiliencia', desc: 'Sobrevive a una penalización', unlocked: false },
+        
+        // Paletas Monocromáticas y Combinadas Desbloqueables
+        { id: 'theme_celeste', name: 'Celeste Ártico (Mono)', desc: 'Supera 4.000 puntos (Interfaz 100% Celeste)', unlocked: false, reward: 'palette' },
+        { id: 'theme_ambar', name: 'Ámbar Retro (Mono)', desc: 'Alcanza el nivel 18 (Interfaz 100% Ámbar)', unlocked: false, reward: 'palette' },
+        { id: 'theme_rosa', name: 'Rosa Neón (Mono)', desc: 'Consigue racha de 12 (Interfaz 100% Rosa)', unlocked: false, reward: 'palette' },
+        { id: 'theme_cian', name: 'Cian Eléctrico (Mono)', desc: 'Supera el nivel 22 (Interfaz 100% Cian)', unlocked: false, reward: 'palette' },
+        { id: 'theme_spectrum', name: 'Spectrum Blanco', desc: 'Alcanza 1.500 puntos (Paleta Spectrum)', unlocked: false, reward: 'palette' },
+        { id: 'theme_cpc', name: 'Amstrad CPC', desc: 'Alcanza 3.000 puntos (Paleta CPC Verde)', unlocked: false, reward: 'palette' },
+        { id: 'theme_dual_retro', name: 'Dúo Neón Vivo', desc: 'Consigue racha de 10 (Paleta de 2 Colores)', unlocked: false, reward: 'palette' },
+        { id: 'theme_tri_retro', name: 'Trinidad Neón', desc: 'Llega al nivel 15 (Paleta de 3 Colores)', unlocked: false, reward: 'palette' },
+        
+        // Modos de Juego Nuevos
+        { id: 'mode_blind', name: 'Modo Pulso Ciego', desc: 'Supera nivel 8 (Desbloquea Modo Ciego)', unlocked: false, reward: 'mode' },
+        { id: 'mode_extreme', name: 'Modo Espejo Extremo', desc: 'Supera nivel 12 (Espejo Variable)', unlocked: false, reward: 'mode' },
+        { id: 'mode_survive', name: 'Supervivencia Absoluta', desc: 'Supera 2.500 puntos (Modo Estricto)', unlocked: false, reward: 'mode' },
+        { id: 'mode_dualorb', name: 'Modo Doble Órbita', desc: 'Supera nivel 20 (Doble Objetivo)', unlocked: false, reward: 'mode' }
     ];
 
     const themes = [
-        { name: 'Cyber Neon', bg: '#050a14', strokes: ['#00ffff', '#00ccff', '#0099ff', '#0055ff'], target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(0, 255, 204, 0.35)' },
-        { name: 'Matrix Cyber', bg: '#020f04', strokes: ['#00ff55', '#adff2f', '#7fff00', '#32cd32'], target: '#ffffff', wave: 'rgba(0, 255, 85, 0.85)', glow: 'rgba(0, 255, 85, 0.35)' },
-        { name: 'Laser Purple', bg: '#0e0214', strokes: ['#bf00ff', '#da70d6', '#ba55d3', '#dda0dd'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(191, 0, 255, 0.35)' },
-        { name: 'Retro Amstrad', bg: '#021008', strokes: ['#33ff33', '#66ff66', '#99ff99', '#ccffcc'], target: '#ffff33', wave: 'rgba(255, 255, 51, 0.85)', glow: 'rgba(51, 255, 51, 0.35)' },
-        { name: 'Sunset Vibe', bg: '#14050a', strokes: ['#ff3366', '#ff6699', '#ff99cc', '#ffcc00'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(255, 51, 102, 0.35)' },
-        { name: 'Acid Lime', bg: '#0f1402', strokes: ['#ccff00', '#adff2f', '#ffff00', '#7fff00'], target: '#ff00ff', wave: 'rgba(255, 0, 255, 0.85)', glow: 'rgba(204, 255, 0, 0.35)' },
-        { name: 'Gold Imperial', bg: '#120c02', strokes: ['#ffaa00', '#ffcc00', '#ffea75', '#ffffff'], target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(255, 170, 0, 0.35)' },
-        { name: 'Deep Frost', bg: '#020a14', strokes: ['#00ccff', '#3399ff', '#66ccff', '#ffffff'], target: '#ffffff', wave: 'rgba(0, 204, 255, 0.85)', glow: 'rgba(0, 204, 255, 0.35)' },
-        { name: 'Crimson Blood', bg: '#140202', strokes: ['#ff3333', '#ff6666', '#ff9999', '#ffffff'], target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(255, 51, 51, 0.35)' },
-        { name: 'Neon Vio', bg: '#0a0212', strokes: ['#00ffaa', '#00e699', '#00cc88', '#00ffcc'], target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(0, 255, 170, 0.35)' }
+        { name: 'Cyber Neon', bg: '#050a14', strokes: ['#00ffff', '#00ccff', '#0099ff', '#0055ff'], target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(0, 255, 204, 0.35)', uiColor: '#00ffff' },
+        { name: 'Matrix Cyber', bg: '#020f04', strokes: ['#00ff55', '#adff2f', '#7fff00', '#32cd32'], target: '#ffffff', wave: 'rgba(0, 255, 85, 0.85)', glow: 'rgba(0, 255, 85, 0.35)', uiColor: '#00ff55' },
+        { name: 'Laser Purple', bg: '#0e0214', strokes: ['#bf00ff', '#da70d6', '#ba55d3', '#dda0dd'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(191, 0, 255, 0.35)', uiColor: '#da70d6' },
+        { name: 'Retro Amstrad', bg: '#021008', strokes: ['#33ff33', '#66ff66', '#99ff99', '#ccffcc'], target: '#ffff33', wave: 'rgba(255, 255, 51, 0.85)', glow: 'rgba(51, 255, 51, 0.35)', uiColor: '#33ff33' },
+        { name: 'Sunset Vibe', bg: '#14050a', strokes: ['#ff3366', '#ff6699', '#ff99cc', '#ffcc00'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(255, 51, 102, 0.35)', uiColor: '#ff3366' },
+        { name: 'Acid Lime', bg: '#0f1402', strokes: ['#ccff00', '#adff2f', '#ffff00', '#7fff00'], target: '#ff00ff', wave: 'rgba(255, 0, 255, 0.85)', glow: 'rgba(204, 255, 0, 0.35)', uiColor: '#ccff00' },
+        { name: 'Gold Imperial', bg: '#120c02', strokes: ['#ffaa00', '#ffcc00', '#ffea75', '#ffffff'], target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(255, 170, 0, 0.35)', uiColor: '#ffcc00' },
+        { name: 'Deep Frost', bg: '#020a14', strokes: ['#00ccff', '#3399ff', '#66ccff', '#ffffff'], target: '#ffffff', wave: 'rgba(0, 204, 255, 0.85)', glow: 'rgba(0, 204, 255, 0.35)', uiColor: '#66ccff' },
+        { name: 'Crimson Blood', bg: '#140202', strokes: ['#ff3333', '#ff6666', '#ff9999', '#ffffff'], target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(255, 51, 51, 0.35)', uiColor: '#ff3333' },
+        { name: 'Neon Vio', bg: '#0a0212', strokes: ['#00ffaa', '#00e699', '#00cc88', '#00ffcc'], target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(0, 255, 170, 0.35)', uiColor: '#00ffcc' },
+        
+        // Nuevas Paletas Monocromáticas y Temáticas de un Solo Color
+        { name: 'Celeste Ártico (Mono)', bg: '#020b14', strokes: ['#00d4ff', '#33e0ff', '#00bfff', '#80eeff'], target: '#00d4ff', wave: 'rgba(0, 212, 255, 0.9)', glow: 'rgba(0, 212, 255, 0.4)', uiColor: '#00d4ff', locked: true, reqId: 'theme_celeste' },
+        { name: 'Ámbar Retro (Mono)', bg: '#140a00', strokes: ['#ffb000', '#ffc733', '#ff9900', '#ffd666'], target: '#ffb000', wave: 'rgba(255, 176, 0, 0.9)', glow: 'rgba(255, 176, 0, 0.4)', uiColor: '#ffb000', locked: true, reqId: 'theme_ambar' },
+        { name: 'Rosa Neón (Mono)', bg: '#14000a', strokes: ['#ff007f', '#ff3399', '#ff0066', '#ff66b2'], target: '#ff007f', wave: 'rgba(255, 0, 127, 0.9)', glow: 'rgba(255, 0, 127, 0.4)', uiColor: '#ff007f', locked: true, reqId: 'theme_rosa' },
+        { name: 'Cian Eléctrico (Mono)', bg: '#001414', strokes: ['#00ffff', '#33ffff', '#00e6e6', '#80ffff'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.9)', glow: 'rgba(0, 255, 255, 0.4)', uiColor: '#00ffff', locked: true, reqId: 'theme_cian' },
+        { name: 'Spectrum Blanco', bg: '#000000', strokes: ['#ffffff', '#cccccc', '#ffffff', '#aaaaaa'], target: '#ffffff', wave: 'rgba(255, 255, 255, 0.9)', glow: 'rgba(255, 255, 255, 0.4)', uiColor: '#ffffff', locked: true, reqId: 'theme_spectrum' },
+        { name: 'CPC Verde Puro', bg: '#001100', strokes: ['#00ff00', '#00dd00', '#00ff00', '#22ff22'], target: '#00ff00', wave: 'rgba(0, 255, 0, 0.9)', glow: 'rgba(0, 255, 0, 0.4)', uiColor: '#00ff00', locked: true, reqId: 'theme_cpc' },
+        { name: 'Dúo Neón Vivo', bg: '#05020a', strokes: ['#ff007f', '#00ffff', '#ff007f', '#00ffff'], target: '#ffff00', wave: 'rgba(255, 0, 127, 0.85)', glow: 'rgba(0, 255, 255, 0.4)', uiColor: '#ff007f', locked: true, reqId: 'theme_dual_retro' },
+        { name: 'Trinidad Brillante', bg: '#02050e', strokes: ['#ff3300', '#33ff00', '#0033ff', '#ffff00'], target: '#ffffff', wave: 'rgba(255, 255, 0, 0.85)', glow: 'rgba(51, 255, 0, 0.4)', uiColor: '#33ff00', locked: true, reqId: 'theme_tri_retro' }
     ];
     let currentThemeIndex = 0;
     let theme = themes[0];
@@ -526,17 +550,19 @@
         radius: 175,
         speed: 0.005
     };
+    
+    let target2 = {
+        angle: Math.random() * Math.PI * 2,
+        radius: 120,
+        speed: -0.006
+    };
 
     function resetAchievements() {
         achievements.forEach(a => a.unlocked = false);
         let mBox = document.getElementById('modMirror');
         let dBox = document.getElementById('modDoublePulse');
-        mBox.disabled = true;
-        mBox.checked = false;
-        mBox.parentElement.innerHTML = '<input type="checkbox" id="modMirror" onchange="updateSettings()" disabled style="width:18px; height:18px;"> Espejo Inverso (🔒)';
-        dBox.disabled = true;
-        dBox.checked = false;
-        dBox.parentElement.innerHTML = '<input type="checkbox" id="modDoublePulse" onchange="updateSettings()" disabled style="width:18px; height:18px;"> Pulso Dual (🔒)';
+        if(mBox) { mBox.disabled = true; mBox.checked = false; }
+        if(dBox) { dBox.disabled = true; dBox.checked = false; }
         
         achievementToast.innerText = "¡Logros Reseteados!";
         achievementToast.classList.add('show');
@@ -550,7 +576,7 @@
         let ach = achievements.find(a => a.id === id);
         if (ach && !ach.unlocked) {
             ach.unlocked = true;
-            achievementToast.innerText = `🏆 ¡Logro: ${ach.name}!`;
+            achievementToast.innerText = `🏆 ¡Desbloqueado: ${ach.name}!`;
             achievementToast.classList.add('show');
             setTimeout(() => achievementToast.classList.remove('show'), 3500);
 
@@ -597,6 +623,11 @@
         target.angle = Math.random() * Math.PI * 2;
         target.radius = 65 + Math.random() * 100;
         target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.003 + (level * 0.0007));
+        
+        target2.angle = Math.random() * Math.PI * 2;
+        target2.radius = 50 + Math.random() * 110;
+        target2.speed = (Math.random() > 0.5 ? 1 : -1) * (0.004 + (level * 0.0006));
+
         pulseRadius = 0;
         pulseRadius2 = -60;
     }
@@ -736,7 +767,7 @@
             default: raw = Math.sin(tp1 * t) * 100; break;
         }
         return curve.scale * (raw / 100);
-    }
+            }
 
             function createExplosionParticles(x, y) {
         let count = perfectStreak >= 3 ? 25 : 15;
@@ -792,11 +823,44 @@
             gameMode = 'ghost';
             modeLabel.innerText = "Fantasma";
             if (timeAttackTimer) clearInterval(timeAttackTimer);
+        } else if (gameMode === 'ghost') {
+            if (achievements.find(a => a.id === 'mode_blind').unlocked) {
+                gameMode = 'blind';
+                modeLabel.innerText = "Pulso Ciego";
+            } else {
+                gameMode = 'arcade';
+                modeLabel.innerText = "Arcade";
+            }
+        } else if (gameMode === 'blind') {
+            if (achievements.find(a => a.id === 'mode_extreme').unlocked) {
+                gameMode = 'extreme';
+                modeLabel.innerText = "Espejo Extremo";
+            } else {
+                gameMode = 'arcade';
+                modeLabel.innerText = "Arcade";
+            }
+        } else if (gameMode === 'extreme') {
+            if (achievements.find(a => a.id === 'mode_survive').unlocked) {
+                gameMode = 'survival';
+                modeLabel.innerText = "Supervivencia";
+            } else {
+                gameMode = 'arcade';
+                modeLabel.innerText = "Arcade";
+            }
+        } else if (gameMode === 'survival') {
+            if (achievements.find(a => a.id === 'mode_dualorb').unlocked) {
+                gameMode = 'dualorb';
+                modeLabel.innerText = "Doble Órbita";
+            } else {
+                gameMode = 'arcade';
+                modeLabel.innerText = "Arcade";
+            }
         } else {
             gameMode = 'arcade';
             modeLabel.innerText = "Arcade";
         }
         modeBtn.classList.add('active');
+        modeBtn.innerText = `MODO: ${modeLabel.innerText.toUpperCase()}`;
         consecutiveFails = 0;
         successfulHits = 0;
         perfectStreak = 0;
@@ -824,8 +888,6 @@
             statsRow.innerHTML = `Nivel: <span id="level">${level}</span> | Racha: ${perfectStreak}`;
         } else if (gameMode === 'timeAttack') {
             statsRow.innerHTML = `T: ${timeAttackSeconds}s | Ptos: ${score} | Lvl: <span id="level">${level}</span>`;
-        } else if (gameMode === 'ghost') {
-            statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Lvl: <span id="level">${level}</span>`;
         } else {
             statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Lvl: <span id="level">${level}</span>`;
         }
@@ -840,20 +902,45 @@
             strokes: [randomHex(), randomHex(), randomHex(), randomHex()],
             target: randomHex(),
             wave: waveColorHex,
-            glow: waveColorHex + '55'
+            glow: waveColorHex + '55',
+            uiColor: '#00ffff'
         };
-        mainTitle.style.color = theme.strokes[0];
+        applyUIThemeColors();
+    }
+
+    function applyUIThemeColors() {
+        mainTitle.style.color = theme.uiColor || theme.strokes[0];
         canvas.style.boxShadow = `0 0 40px ${theme.glow}`;
+        document.querySelectorAll('.btn').forEach(b => {
+            b.style.borderColor = theme.uiColor || '#00b4d8';
+            b.style.color = theme.uiColor || '#e0fbfc';
+        });
     }
 
     function changeTheme() {
         isRandomThemeMode = false;
-        currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-        theme = themes[currentThemeIndex];
-        themeLabel.innerText = theme.name;
-        themeBtn.innerText = `PALETA: ${currentThemeIndex + 1}/10`;
-        mainTitle.style.color = theme.strokes[0];
-        canvas.style.boxShadow = `0 0 40px ${theme.glow}`;
+        currentThemeIndex++;
+        
+        while(currentThemeIndex < themes.length && themes[currentThemeIndex].locked) {
+            let ach = achievements.find(a => a.id === themes[currentThemeIndex].reqId);
+            if(ach && ach.unlocked) {
+                break;
+            }
+            currentThemeIndex++;
+        }
+
+        if (currentThemeIndex >= themes.length) {
+            isRandomThemeMode = true;
+            currentThemeIndex = -1;
+            applyRandomTheme();
+            themeLabel.innerText = "Aleatorio";
+            themeBtn.innerText = "PALETA: ALEATORIO";
+        } else {
+            theme = themes[currentThemeIndex];
+            themeLabel.innerText = theme.name;
+            themeBtn.innerText = `PALETA: ${theme.name}`;
+            applyUIThemeColors();
+        }
         
         themesExplored++;
         if (themesExplored >= 10) unlockAchievement('palette_master');
@@ -914,30 +1001,21 @@
         if (isPaused || relaxMode) return;
         initAudioContext();
         
-        if(audioCtx && audioCtx.state === 'running') {
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
-        }
-
         let cx = canvas.width / 2;
         let cy = canvas.height / 2;
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
+        
+        let tx2 = cx + target2.radius * Math.cos(target2.angle);
+        let ty2 = cy + target2.radius * Math.sin(target2.angle);
 
         let diff = Math.abs(pulseRadius - target.radius);
+        let diffTarget2 = (gameMode === 'dualorb') ? Math.abs(pulseRadius - target2.radius) : 999;
         let doublePulseEl = document.getElementById('modDoublePulse');
         let diff2 = (doublePulseEl && doublePulseEl.checked) ? Math.abs(pulseRadius2 - target.radius) : 999;
         let tolerance = 25;
 
-        if (diff < tolerance || diff2 < tolerance) {
+        if (diff < tolerance || diffTarget2 < tolerance || diff2 < tolerance) {
             consecutiveFails = 0;
             successfulHits++;
             perfectStreak++;
@@ -945,14 +1023,23 @@
             unlockAchievement('first_perfect');
             if (perfectStreak >= 3) unlockAchievement('streak_3');
             if (perfectStreak >= 7) unlockAchievement('streak_7');
+            if (perfectStreak >= 10) unlockAchievement('theme_dual_retro');
+            if (perfectStreak >= 12) unlockAchievement('theme_rosa');
             if (perfectStreak >= 15) unlockAchievement('streak_15');
+
+            if (score >= 1500) unlockAchievement('theme_spectrum');
+            if (score >= 2500) {
+                unlockAchievement('mode_survive');
+                unlockAchievement('theme_cpc');
+            }
+            if (score >= 4000) unlockAchievement('theme_celeste');
 
             if (perfectStreak > 1) {
                 floatingTexts.push({ x: cx, y: cy - 30, text: `COMBO x${perfectStreak}!`, life: 1.0, color: theme.strokes[0] });
             }
 
             if (gameMode !== 'infinite') {
-                let ghostBonus = (gameMode === 'ghost') ? 50 : 0;
+                let ghostBonus = (gameMode === 'ghost' || gameMode === 'extreme') ? 50 : 0;
                 score += 100 + ghostBonus + (level * (gameMode === 'timeAttack' ? 25 : 10)) + (perfectStreak * 10);
                 if (gameMode === 'timeAttack') timeAttackSeconds += 3;
                 if (score > highScore) {
@@ -973,7 +1060,13 @@
                 level++;
                 successfulHits = 0;
                 if (isRandomThemeMode) applyRandomTheme();
+                if (level >= 8) unlockAchievement('mode_blind');
                 if (level >= 10) unlockAchievement('level_10');
+                if (level >= 12) unlockAchievement('mode_extreme');
+                if (level >= 15) unlockAchievement('theme_tri_retro');
+                if (level >= 18) unlockAchievement('theme_ambar');
+                if (level >= 20) unlockAchievement('mode_dualorb');
+                if (level >= 22) unlockAchievement('theme_cian');
                 if (level >= 25) unlockAchievement('level_25');
                 if (level >= 50) unlockAchievement('level_50');
             }
@@ -985,10 +1078,14 @@
             perfectStreak = 0;
             screenShake = 6;
 
-            if (consecutiveFails >= maxFailsForPenalty) {
+            if (gameMode === 'survival') {
+                score = 0;
+                level = 1;
+                feedbackText = "¡SUPERVIVENCIA ROTA!";
+            } else if (consecutiveFails >= maxFailsForPenalty) {
                 consecutiveFails = 0;
                 successfulHits = 0;
-                if (gameMode === 'infinite' || gameMode === 'arcade' || gameMode === 'ghost') {
+                if (gameMode === 'infinite' || gameMode === 'arcade' || gameMode === 'ghost' || gameMode === 'blind') {
                     if (level > 1) unlockAchievement('survivor');
                     level = Math.max(1, level - 1);
                     feedbackText = "¡BAJAS NIVEL!";
@@ -1005,7 +1102,7 @@
         
         updateDOMStats();
         feedbackTimer = 35;
-                }
+        }
             function update() {
         if (isPaused) return;
         if (screenShake > 0) screenShake *= 0.85;
@@ -1021,14 +1118,17 @@
 
         let mirrorEl = document.getElementById('modMirror');
         let mirrorMod = (mirrorEl && mirrorEl.checked) ? -1 : 1;
+        if (gameMode === 'extreme') mirrorMod *= (Math.sin(angle * 5) > 0 ? 1.5 : -1.5);
+
         target.angle += target.speed * gameSpeed * mirrorMod;
+        target2.angle += target2.speed * gameSpeed * mirrorMod;
 
         let cx = canvas.width / 2;
         let cy = canvas.height / 2;
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
         
-        let isGhostInvisible = (gameMode === 'ghost' && pulseRadius > 80);
+        let isGhostInvisible = ((gameMode === 'ghost' || gameMode === 'extreme') && pulseRadius > 80) || (gameMode === 'blind');
         
         if (!isGhostInvisible) {
             targetParticles.push({ x: tx, y: ty, life: 1.0 });
@@ -1162,7 +1262,7 @@
             ctx.globalAlpha = 1.0;
         }
 
-        let isGhostInvisible = (gameMode === 'ghost' && pulseRadius > 80);
+        let isGhostInvisible = ((gameMode === 'ghost' || gameMode === 'extreme') && pulseRadius > 80) || (gameMode === 'blind');
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
         
@@ -1174,6 +1274,15 @@
             ctx.shadowBlur = 12;
             ctx.fill();
             ctx.shadowBlur = 0;
+        }
+
+        if (gameMode === 'dualorb' && !relaxMode) {
+            let tx2 = cx + target2.radius * Math.cos(target2.angle);
+            let ty2 = cy + target2.radius * Math.sin(target2.angle);
+            ctx.beginPath();
+            ctx.arc(tx2, ty2, 8, 0, Math.PI * 2);
+            ctx.fillStyle = theme.strokes[1] || '#ffffff';
+            ctx.fill();
         }
 
         for (let p of particles) {
@@ -1233,8 +1342,6 @@
         draw();
         requestAnimationFrame(loop);
         }
-
-
             applyRandomTheme();
     generateNewForm();
     resetTarget();
@@ -1251,7 +1358,3 @@
 </script>
 </body>
 </html>
-
-
-
-    
