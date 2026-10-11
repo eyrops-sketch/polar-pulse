@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Final Masterpiece</title>
+    <title>Polar Infinity - Massive Variety</title>
     <style>
         * {
             box-sizing: border-box;
@@ -27,7 +27,7 @@
             padding: 5px;
         }
         #ui {
-            margin-top: 2px;
+            margin-top: 4px;
             text-align: center;
             text-shadow: 0 0 10px rgba(0, 255, 204, 0.6);
             z-index: 10;
@@ -35,8 +35,8 @@
             width: 100%;
         }
         h1 { margin: 0; font-size: 1.1rem; letter-spacing: 2px; color: #ff007f; transition: color 0.5s ease; }
-        .stats-row { margin: 2px 0; font-size: 0.85rem; color: #ffffff; font-weight: bold; }
-        .info-row { margin: 1px 0; font-size: 0.75rem; color: #ff00aa; }
+        .stats-row { margin: 3px 0; font-size: 0.9rem; color: #ffffff; font-weight: bold; }
+        .info-row { margin: 2px 0; font-size: 0.75rem; color: #ff00aa; }
         
         .canvas-container {
             flex-grow: 1;
@@ -110,10 +110,6 @@
             display: none;
         }
 
-        #instructions {
-            display: none;
-        }
-
         @media (orientation: landscape) {
             body {
                 flex-direction: row;
@@ -170,7 +166,7 @@
         <button id="pauseBtn" class="btn" onclick="togglePause()">PAUSA</button>
         <button id="modeBtn" class="btn" onclick="toggleGameMode()">MODO: ARCADE</button>
         <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
-        <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: 1/10</button>
+        <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: 1/15</button>
         <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
         <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
     </div>
@@ -207,12 +203,13 @@
     let gameSpeed = 1.0;
     let angle = 0;
     
-    let num = 4;
-    let den = 5;
-    let curveType = 'fraction';
+    // Motor de funciones polares avanzadas
+    let curveType = 'rose';
+    let p1 = 4, p2 = 5, p3 = 1;
     let currentScale = 90;
     let relaxTimer = 0;
 
+    // 15 Paletas de colores neón únicas
     const themes = [
         { name: 'Cyber', bg: '#080c16', stroke: '#ff007f', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.7)', glow: 'rgba(255, 0, 127, 0.3)' },
         { name: 'Matrix', bg: '#020f04', stroke: '#00ff55', target: '#adff2f', wave: 'rgba(173, 255, 47, 0.7)', glow: 'rgba(0, 255, 85, 0.3)' },
@@ -223,7 +220,12 @@
         { name: 'Gold', bg: '#120c02', stroke: '#ffaa00', target: '#ffffff', wave: 'rgba(255, 255, 255, 0.7)', glow: 'rgba(255, 170, 0, 0.3)' },
         { name: 'Frost', bg: '#020a14', stroke: '#00ccff', target: '#ffffff', wave: 'rgba(0, 204, 255, 0.7)', glow: 'rgba(0, 204, 255, 0.3)' },
         { name: 'Blood', bg: '#140202', stroke: '#ff0000', target: '#ff9999', wave: 'rgba(255, 153, 153, 0.7)', glow: 'rgba(255, 0, 0, 0.3)' },
-        { name: 'Neon Vio', bg: '#0a0214', stroke: '#9900ff', target: '#00ffaa', wave: 'rgba(0, 255, 170, 0.7)', glow: 'rgba(153, 0, 255, 0.3)' }
+        { name: 'Neon Vio', bg: '#0a0214', stroke: '#9900ff', target: '#00ffaa', wave: 'rgba(0, 255, 170, 0.7)', glow: 'rgba(153, 0, 255, 0.3)' },
+        { name: 'Solar', bg: '#140a02', stroke: '#ff6600', target: '#ffff00', wave: 'rgba(255, 255, 0, 0.7)', glow: 'rgba(255, 102, 0, 0.3)' },
+        { name: 'Emerald', bg: '#02140d', stroke: '#00ffaa', target: '#00ffff', wave: 'rgba(0, 255, 170, 0.7)', glow: 'rgba(0, 255, 170, 0.3)' },
+        { name: 'Orchid', bg: '#120214', stroke: '#ff00cc', target: '#cc99ff', wave: 'rgba(204, 153, 255, 0.7)', glow: 'rgba(255, 0, 204, 0.3)' },
+        { name: 'Plasma', bg: '#0f0214', stroke: '#ff0066', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.7)', glow: 'rgba(255, 0, 102, 0.3)' },
+        { name: 'Deep Space', bg: '#010208', stroke: '#3388ff', target: '#ff33bb', wave: 'rgba(255, 51, 187, 0.7)', glow: 'rgba(51, 136, 255, 0.3)' }
     ];
     let currentThemeIndex = 0;
     let theme = themes[0];
@@ -245,7 +247,7 @@
     function resetTarget() {
         target.angle = Math.random() * Math.PI * 2;
         target.radius = 45 + Math.random() * (currentScale - 20);
-        target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.003 + level * 0.0008);
+        target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.003 + level * 0.0006);
         pulseRadius = 0;
     }
 
@@ -300,24 +302,39 @@
         return baseNotes[index % baseNotes.length];
     }
 
+    // --- GENERADOR DE VARIEDAD MASIVA DE FUNCIONES POLARES ---
     function generateNewForm() {
-        const types = ['fraction', 'pi', 'multi', 'rose'];
+        const types = ['roseFrac', 'piWave', 'harmonic', 'cardioidLim', 'lemniscate', 'spiralHarmonic', 'epicycloid'];
         curveType = types[Math.floor(Math.random() * types.length)];
 
-        if (curveType === 'fraction') {
-            num = Math.floor(Math.random() * 6) + 1;
-            den = Math.floor(Math.random() * 5) + 2;
-        } else if (curveType === 'pi') {
-            num = (Math.random() * 2 + 0.8).toFixed(1);
-        } else if (curveType === 'multi') {
-            num = Math.floor(Math.random() * 5) + 2;
-            den = Math.floor(Math.random() * 3) + 1;
-        } else {
-            num = Math.floor(Math.random() * 7) + 2;
-        }
-
+        p1 = Math.floor(Math.random() * 7) + 1;
+        p2 = Math.floor(Math.random() * 5) + 2;
+        p3 = Math.floor(Math.random() * 3) + 1;
         currentScale = Math.floor(Math.random() * 110) + 50;
     }
+
+    function calculatePolarRadius(th, currentAngle) {
+        let t = th + currentAngle;
+        switch(curveType) {
+            case 'roseFrac':
+                return currentScale * Math.sin((p1 * t) / p2);
+            case 'piWave':
+                return currentScale * Math.sin(p1 * Math.PI * t / p2);
+            case 'harmonic':
+                return currentScale * (Math.sin(p1 * t) + Math.cos(p2 * th) / p3);
+            case 'cardioidLim':
+                return currentScale * (1 + (p1 / p2) * Math.cos(p1 * t));
+            case 'lemniscate':
+                return currentScale * Math.sqrt(Math.abs(Math.cos(p1 * t)));
+            case 'spiralHarmonic':
+                return currentScale * (0.3 + 0.1 * t) * Math.sin(p1 * t);
+            case 'epicycloid':
+                return currentScale * (Math.sin(p1 * t) * Math.cos(p2 * th));
+            default:
+                return currentScale * Math.sin(p1 * t);
+        }
+    }
+    // ---------------------------------------------------------
 
     function createExplosionParticles(x, y) {
         for (let i = 0; i < 16; i++) {
@@ -350,6 +367,10 @@
     function toggleGameMode() {
         infiniteMode = !infiniteMode;
         modeBtn.classList.toggle('active', infiniteMode);
+        updateDOMStats();
+    }
+
+    function updateDOMStats() {
         if (infiniteMode) {
             modeLabel.innerText = "Infinito";
             statsRow.innerHTML = `Nivel: <span id="level">${level}</span>`;
@@ -387,7 +408,7 @@
         currentThemeIndex = (currentThemeIndex + 1) % themes.length;
         theme = themes[currentThemeIndex];
         themeLabel.innerText = theme.name;
-        themeBtn.innerText = `PALETA: ${currentThemeIndex + 1}/10`;
+        themeBtn.innerText = `PALETA: ${currentThemeIndex + 1}/15`;
         mainTitle.style.color = theme.stroke;
         canvas.style.boxShadow = `0 0 30px ${theme.glow}`;
     }
@@ -416,7 +437,7 @@
 
         if (diff < tolerance) {
             if (!infiniteMode) {
-                score += Math.round(100 * level * gameSpeed);
+                score += 100 + (level * 10);
                 if (score > highScore) {
                     highScore = score;
                     localStorage.setItem('polarHighScore', highScore);
@@ -431,15 +452,6 @@
             playSynthTone(783.99, 'sine', 0.4); 
 
             level++;
-            
-            if (infiniteMode) {
-                const lvlSpan = document.getElementById('level');
-                if (lvlSpan) lvlSpan.innerText = level;
-            } else {
-                if(scoreEl) scoreEl.innerText = score;
-                if(highScoreEl) highScoreEl.innerText = highScore;
-                if(levelEl) levelEl.innerText = level;
-            }
 
             generateNewForm();
             resetTarget();
@@ -450,14 +462,14 @@
                     level--;
                     fails = 0;
                 }
-                score = Math.max(0, score - 20);
-                if(scoreEl) scoreEl.innerText = score;
-                if(levelEl) levelEl.innerText = level;
+                score = Math.max(0, score - 15);
             }
             feedbackText = "¡FALLO!";
             feedbackColor = "#ff0055";
             playSynthTone(130.81, 'sawtooth', 0.2);
         }
+        
+        updateDOMStats();
         feedbackTimer = 25;
     }
 
@@ -473,7 +485,7 @@
 
         if (relaxMode) {
             relaxTimer++;
-            if (relaxTimer > 280) {
+            if (relaxTimer > 250) {
                 relaxTimer = 0;
                 generateNewForm();
                 changeTheme();
@@ -483,7 +495,7 @@
         target.angle += target.speed * gameSpeed;
 
         let pulseSpeedMultiplier = (autoMode || relaxMode) ? 0.7 : gameSpeed;
-        let pulseSpeed = (1.2 + (level - 1) * 0.15) * pulseSpeedMultiplier;
+        let pulseSpeed = (1.2 + (level - 1) * 0.12) * pulseSpeedMultiplier;
         pulseRadius += pulseSpeed;
 
         if (pulseRadius > 230) {
@@ -493,6 +505,7 @@
                     level--;
                     fails = 0;
                 }
+                updateDOMStats();
             }
             if (relaxMode) {
                 generateNewForm();
@@ -544,17 +557,7 @@
         let maxTheta = Math.PI * 20; 
         
         for (let th = 0; th < maxTheta; th += 0.005) {
-            let r = 0;
-            if (curveType === 'fraction') {
-                r = currentScale * Math.sin((num * (th + angle)) / den);
-            } else if (curveType === 'pi') {
-                r = currentScale * Math.sin(num * (th + angle));
-            } else if (curveType === 'multi') {
-                r = currentScale * (Math.sin(num * (th + angle)) + Math.cos(den * th));
-            } else {
-                r = currentScale * Math.cos(num * (th + angle));
-            }
-
+            let r = calculatePolarRadius(th, angle);
             let x = cx + r * Math.cos(th);
             let y = cy + r * Math.sin(th);
             if (th === 0) ctx.moveTo(x, y);
