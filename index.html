@@ -255,16 +255,16 @@
         <div class="button-row">
             <button class="btn" onclick="nextSongAndForm()">NEXT 🎵</button>
             <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
-            <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA</button>
+            <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: ALEATORIO</button>
         </div>
         <div class="button-row">
             <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
             <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
-            <button class="btn" style="background: rgba(0,255,170,0.25); border-color: #00ffaa; color: #ffffff;" onclick="document.getElementById('localMusicInput').click()">LOCAL 📂</button>
-            <input type="file" id="localMusicInput" accept="audio/*" multiple style="display: none;" onchange="loadLocalMusic(event)">
+            <button class="btn" style="background: rgba(0,255,170,0.25); border-color: #00ffaa; color: #ffffff;" onclick="document.getElementById('localMusicInput').click()">CARPETA 📂</button>
+            <input type="file" id="localMusicInput" webkitdirectory directory multiple accept="audio/*" style="display: none;" onchange="loadLocalMusic(event)">
         </div>
     </div>
-    <script>
+   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const statsRow = document.getElementById('statsRow');
@@ -300,7 +300,7 @@
     let curveVarietyMode = 'pretty'; 
     let layerCount = 1; 
 
-    let musicMode = 1; 
+    let musicMode = 1; // 1: SECUENCIAL, 2: ALEATORIO, 0: OFF
     let currentTrackIndex = 1;
     const totalTracks = 53;
     let mp3Player = new Audio();
@@ -314,82 +314,78 @@
         if (files.length > 0) {
             localPlaylist = [];
             for (let i = 0; i < files.length; i++) {
-                localPlaylist.push(URL.createObjectURL(files[i]));
+                if (files[i].type.startsWith('audio/') || files[i].name.match(/\.(mp3|wav|ogg|m4a|flac)$/i)) {
+                    localPlaylist.push(URL.createObjectURL(files[i]));
+                }
             }
-            isUsingLocalMusic = true;
-            currentTrackIndex = 0;
-            musicBtn.classList.add('active');
-            musicBtn.innerText = `LOC(${localPlaylist.length})`;
-            playLocalTrack();
+            if (localPlaylist.length > 0) {
+                isUsingLocalMusic = true;
+                currentTrackIndex = 0;
+                musicBtn.classList.add('active');
+                musicBtn.innerText = musicMode === 1 ? `CARP: SEC` : `CARP: ALE`;
+                playTrack();
+            } else {
+                alert("No se encontraron archivos de audio válidos en la carpeta seleccionada.");
+            }
         }
     }
 
-    function playLocalTrack() {
-        if (localPlaylist.length === 0) return;
-        mp3Player.src = localPlaylist[currentTrackIndex];
-        mp3Player.play().catch(e => console.log("Reproducción local pendiente", e));
-        currentTrackIndex = (currentTrackIndex + 1) % localPlaylist.length;
+    function playTrack() {
+        if (isUsingLocalMusic) {
+            if (localPlaylist.length === 0) return;
+            if (musicMode === 2) {
+                currentTrackIndex = Math.floor(Math.random() * localPlaylist.length);
+            }
+            mp3Player.src = localPlaylist[currentTrackIndex];
+            mp3Player.play().catch(e => console.log("Reproducción automática pendiente de interacción del navegador", e));
+            if (musicMode === 1) {
+                currentTrackIndex = (currentTrackIndex + 1) % localPlaylist.length;
+            }
+        } else {
+            if (musicMode === 0) return;
+            if (musicMode === 1) {
+                currentTrackIndex++;
+                if (currentTrackIndex > totalTracks) currentTrackIndex = 1;
+            } else if (musicMode === 2) {
+                currentTrackIndex = Math.floor(Math.random() * totalTracks) + 1;
+            }
+            let trackStr = String(currentTrackIndex).padStart(3, '0');
+            mp3Player.src = `multimedia/${trackStr}.mp3`;
+            mp3Player.play().catch(e => console.log("Reproducción automática pendiente de interacción del navegador", e));
+        }
     }
 
     mp3Player.addEventListener('ended', () => {
-        if (musicMode > 0) {
-            if (isUsingLocalMusic) playLocalTrack();
-            else playNextTrack();
-        }
+        if (musicMode > 0) playTrack();
     });
 
     function toggleMusic() {
         initAudioContext();
         musicMode = (musicMode + 1) % 3;
+        let prefix = isUsingLocalMusic ? "CARP" : "MÚSICA";
         if (musicMode === 0) {
             musicBtn.classList.remove('active');
-            musicBtn.innerText = "MÚSICA: OFF";
+            musicBtn.innerText = `${prefix}: OFF`;
             mp3Player.pause();
         } else if (musicMode === 1) {
             musicBtn.classList.add('active');
-            musicBtn.innerText = isUsingLocalMusic ? `LOC` : "MÚSICA: SEC";
-            if (!isUsingLocalMusic) playNextTrack();
+            musicBtn.innerText = `${prefix}: SEC`;
+            playTrack();
         } else {
             musicBtn.classList.add('active');
-            musicBtn.innerText = isUsingLocalMusic ? `LOC` : "MÚSICA: ALE";
-            if (!isUsingLocalMusic) playNextTrack();
+            musicBtn.innerText = `${prefix}: ALE`;
+            playTrack();
         }
-    }
-
-    function playNextTrack() {
-        if (isUsingLocalMusic && localPlaylist.length > 0) {
-            playLocalTrack();
-            return;
-        }
-
-        if (musicMode === 0) {
-            musicMode = 1;
-            musicBtn.classList.add('active');
-            musicBtn.innerText = "MÚSICA: SEC";
-        }
-        
-        if (musicMode === 1) {
-            currentTrackIndex++;
-            if (currentTrackIndex > totalTracks) currentTrackIndex = 1;
-        } else if (musicMode === 2) {
-            currentTrackIndex = Math.floor(Math.random() * totalTracks) + 1;
-        }
-
-        let trackStr = String(currentTrackIndex).padStart(3, '0');
-        mp3Player.src = `multimedia/${trackStr}.mp3`;
-        mp3Player.play().catch(e => console.log("Reproducción pendiente", e));
     }
 
     function nextSongAndForm() {
         initAudioContext();
-        if (isUsingLocalMusic) playLocalTrack();
-        else playNextTrack();
+        playTrack();
         generateNewForm();
         if (isRandomThemeMode) applyRandomTheme();
         resetTarget();
     }
-
-    let autoMode = false;
+        let autoMode = false;
     let isPaused = false;
     let relaxMode = false;
     let gameMode = 'arcade';
@@ -442,7 +438,8 @@
     let currentThemeIndex = 0;
     let theme = themes[0];
     let isRandomThemeMode = true;
-        let pulseRadius = 0;
+
+    let pulseRadius = 0;
     let feedbackTimer = 0;
     let feedbackText = '';
     let feedbackColor = '#00ffff';
@@ -530,15 +527,15 @@
             let attempts = 0;
             let curveObj = {};
 
-            while (!valid && attempts < 40) {
+            while (!valid && attempts < 50) {
                 attempts++;
                 let cType = pool[Math.floor(Math.random() * pool.length)];
                 if (i > 0 && activeCurves.some(c => c.type === cType)) continue;
 
-                let maxParam = (i >= 2) ? 3 : 6;
-                let minParam = (i >= 2) ? 1 : 2;
+                let maxParam = (i >= 2) ? 2 : 5;
+                let minParam = 1;
                 let tp1 = Math.floor(Math.random() * (maxParam - minParam + 1)) + minParam;
-                let tp2 = Math.floor(Math.random() * 4) + 1;
+                let tp2 = Math.floor(Math.random() * 3) + 1;
                 let tp3 = Math.floor(Math.random() * 2) + 1;
 
                 if (testCurveQuality(cType, tp1, tp2)) {
@@ -547,7 +544,7 @@
                 }
             }
             if (!valid) {
-                curveObj = { type: 'trifolio', p1: 2 + (i % 2), p2: 1, p3: 1, scale: baseScales[i] };
+                curveObj = { type: 'trifolio', p1: 1, p2: 1, p3: 1, scale: baseScales[i] };
             }
             activeCurves.push(curveObj);
         }
@@ -556,7 +553,7 @@
     function testCurveQuality(cType, tp1, tp2) {
         let maxVal = 0;
         let minVal = 9999;
-        let testSteps = 70;
+        let testSteps = 80;
         for (let i = 0; i < testSteps; i++) {
             let th = (i / testSteps) * Math.PI * 16;
             let rawR = Math.abs(getRawPolarRadiusForTest(cType, tp1, tp2, th, 0));
@@ -565,8 +562,8 @@
                 if (rawR < minVal) minVal = rawR;
             }
         }
-        if (maxVal < 30) return false;
-        if ((maxVal - minVal) < (maxVal * 0.15)) return false; 
+        if (maxVal < 25) return false;
+        if ((maxVal - minVal) < (maxVal * 0.25)) return false; 
         return true;
     }
 
@@ -632,8 +629,8 @@
             default: raw = Math.sin(tp1 * t) * 100; break;
         }
         return curve.scale * (raw / 100);
-        }
-            function createExplosionParticles(x, y) {
+         }
+           function createExplosionParticles(x, y) {
         for (let i = 0; i < 15; i++) {
             let pAngle = Math.random() * Math.PI * 2;
             let pSpeed = Math.random() * 3 + 1;
@@ -718,8 +715,15 @@
     }
 
     function applyRandomTheme() {
-        let rnd = Math.floor(Math.random() * themes.length);
-        theme = themes[rnd];
+        let randomHex = () => '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+        theme = {
+            name: 'Aleatorio',
+            bg: '#03060d',
+            strokes: [randomHex(), randomHex(), randomHex(), randomHex()],
+            target: randomHex(),
+            wave: 'rgba(0, 255, 255, 0.85)',
+            glow: 'rgba(0, 255, 255, 0.35)'
+        };
         mainTitle.style.color = theme.strokes[0];
         canvas.style.boxShadow = `0 0 35px ${theme.glow}`;
     }
@@ -875,13 +879,13 @@
                 if (gameMode !== 'infinite') score = Math.max(0, score - 15);
                 feedbackText = "¡FALLO!";
             }
-            feedbackColor = "#ffaa00"; // Amarillo/naranja brillante altamente legible
+            feedbackColor = "#ffaa00";
         }
         
         updateDOMStats();
         feedbackTimer = 35;
-                }
-            function update() {
+    }
+           function update() {
         if (isPaused) return;
         if (screenShake > 0) screenShake *= 0.85;
 
@@ -978,7 +982,7 @@
         let rotations = [angle, -angle * 1.2, angle * 0.7 + Math.PI / 4, -angle * 0.4];
 
         for (let l = 0; l < Math.min(layerCount, activeCurves.length); l++) {
-            let curve = activeCurves[l];
+            let curve = activeCurves.get ? activeCurves[l] : activeCurves[l];
             ctx.beginPath();
             ctx.strokeStyle = theme.strokes[l % theme.strokes.length];
             ctx.lineWidth = (l === 0) ? 2.5 : 1.8;
@@ -1068,17 +1072,22 @@
     function loop() {
         update();
         draw();
-        requestAnimationFrame(loop);
+    requestAnimationFrame(loop);
     }
 
     applyRandomTheme();
     generateNewForm();
     resetTarget();
     loop();
+
+    // Intento de reproducción automática inicial al cargar la página
+    playTrack();
     
+    // Gestor universal: si el navegador bloquea el audio al cargar, suena al primer toque en cualquier parte de la pantalla
     window.addEventListener('pointerdown', () => {
+        initAudioContext();
         if (musicMode > 0 && mp3Player.paused) {
-            playNextTrack();
+            playTrack();
         }
     }, { once: true });
 </script>
