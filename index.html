@@ -1,1 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Polar Pulse - Mobile</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation; /* Evita zooms por doble toque */
+        }
+        body {
+            margin: 0;
+            background-color: #070913;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh; /* Altura dinámica real en móviles */
+            overflow: hidden;
+            color: #00ffcc;
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #ui {
+            margin-top: 20px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            z-index: 10;
+        }
+        h1 { margin: 0; font-size: 1.4rem; letter-spacing: 2px; color: #ff007f; }
+        p { margin: 5px 0 0 0; font-size: 0.95rem; color: #8ab4f8; }
+        
+        .canvas-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        
+        canvas {
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.25);
+            background: #0b0f19;
+            border-radius: 50%;
+            width: 85vw;
+            height: 85vw;
+            max-width: 400px;
+            max-height: 400px;
+        }
+        #instructions {
+            margin-bottom: 20px;
+            font-size: 0.75rem;
+            color: #5f6368;
+            text-align: center;
+            padding: 0 20px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <h1>POLAR PULSE</h1>
+        <p>Puntos: <span id="score">0</span> | Nivel k: <span id="levelK">3</span></p>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="gameCanvas" width="500" height="500"></canvas>
+    </div>
+    
+    <div id="instructions">Toca la pantalla cuando el anillo exterior coincida con el nodo brillante</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const levelKEl = document.getElementById('levelK');
+
+    let score = 0;
+    let k = 3; // Parámetro de la rosa polar
+    let angle = 0;
+    
+    let pulseRadius = 0;
+    let targetRadius = 120;
+    let feedbackTimer = 0;
+    let feedbackText = '';
+    let feedbackColor = '#00ffcc';
+
+    let targetAngle = Math.random() * Math.PI * 2;
+
+    function resetTarget() {
+        targetAngle = Math.random() * Math.PI * 2;
+        targetRadius = 70 + Math.random() * 90;
+        pulseRadius = 0;
+    }
+
+    function triggerAction(e) {
+        if (e) e.preventDefault(); // Previene comportamientos táctiles raros
+        
+        let diff = Math.abs(pulseRadius - targetRadius);
+        
+        if (diff < 22) {
+            score += 100;
+            feedbackText = "¡PERFECTO!";
+            feedbackColor = "#00ffcc";
+            k = (k % 6) + 2; // Cambia la forma geométrica al acertar
+            levelKEl.innerText = k;
+            resetTarget();
+        } else {
+            score = Math.max(0, score - 25);
+            feedbackText = "¡FALLO!";
+            feedbackColor = "#ff007f";
+        }
+        feedbackTimer = 25;
+        scoreEl.innerText = score;
+    }
+
+    // Soporte tanto para toque en móvil como clic de ratón
+    window.addEventListener('touchstart', triggerAction, { passive: false });
+    window.addEventListener('click', (e) => {
+        // Evita doble disparo si el navegador emula click tras touchstart
+        if (e.pointerType === 'mouse' || !window.matchMedia('(pointer: coarse)').matches) {
+            triggerAction(e);
+        }
+    });
+
+    function update() {
+        pulseRadius += 1.8; // Velocidad de expansión adaptada a móvil
+        if (pulseRadius > 200) {
+            pulseRadius = 0; 
+        }
+        angle += 0.012; // Rotación suave de la gráfica
+    }
+
+    function draw() {
+        ctx.fillStyle = 'rgba(11, 15, 25, 0.35)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        // 1. Rejilla polar de fondo
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.lineWidth = 1;
+        for (let r = 50; r <= 180; r += 50) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // 2. Gráfica Rosa Polar (r = a * cos(k * theta))
+        ctx.beginPath();
+        ctx.strokeStyle = '#ff007f';
+        ctx.lineWidth = 3;
+        
+        let scale = 100;
+        for (let th = 0; th < Math.PI * 2; th += 0.01) {
+            let r = scale * Math.cos(k * (th + angle));
+            let x = cx + r * Math.cos(th);
+            let y = cy + r * Math.sin(th);
+            if (th === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // 3. Nodo objetivo
+        let tx = cx + targetRadius * Math.cos(targetAngle);
+        let ty = cy + targetRadius * Math.sin(targetAngle);
+        
+        ctx.beginPath();
+        ctx.arc(tx, ty, 9, 0, Math.PI * 2);
+        ctx.fillStyle = '#00ffcc';
+        ctx.shadowColor = '#00ffcc';
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // 4. Onda expansiva táctil
+        ctx.beginPath();
+        ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 255, 204, 0.65)';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // 5. Mensaje flotante de feedback
+        if (feedbackTimer > 0) {
+            ctx.font = 'bold 22px monospace';
+            ctx.fillStyle = feedbackColor;
+            ctx.textAlign = 'center';
+            ctx.fillText(feedbackText, cx, cy - 45);
+            feedbackTimer--;
+        }
+    }
+
+    function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    loop();
+</script>
+
+</body>
+</html>
 
