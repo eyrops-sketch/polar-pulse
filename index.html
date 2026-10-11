@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Ultimate Masterpiece</title>
+    <title>Polar Infinity - Final Fix</title>
     <style>
         * {
             box-sizing: border-box;
@@ -193,7 +193,8 @@
         <div id="achievementsList" style="font-size: 0.7rem; text-align: left; max-height: 180px; overflow-y: auto; margin-bottom: 10px;"></div>
         <button class="btn active" onclick="toggleModal('achievementsModal')">CERRAR</button>
     </div>
-        <div id="ui">
+
+    <div id="ui">
         <h1 id="mainTitle">POLAR INFINITY</h1>
         <div class="stats-row" id="statsRow">Ptos: <span id="score">0</span> | Récord: <span id="highScore">0</span> | Nivel: <span id="level">1</span></div>
         <div class="info-row">Modo: <span id="modeLabel">Arcade</span> | Paleta: <span id="themeLabel">Cyber</span></div>
@@ -300,13 +301,12 @@
     let screenFlash = 0;
     let particles = [];
     let targetParticles = [];
-
-    let target = {
+        let target = {
         angle: Math.random() * Math.PI * 2,
         radius: 110,
         speed: 0.005
     };
-    <script>
+
     function unlockAchievement(id) {
         let ach = achievements.find(a => a.id === id);
         if (ach && !ach.unlocked) {
@@ -611,7 +611,6 @@
 
     function update() {
         if (isPaused) return;
-
         if (screenShake > 0) screenShake *= 0.85;
 
         if (relaxMode) {
@@ -769,6 +768,5 @@
     resetTarget();
     loop();
 </script>
-
 </body>
 </html>
