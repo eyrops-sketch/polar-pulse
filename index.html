@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Synthwave Edition</title>
+    <title>Polar Infinity - Final Cut</title>
     <style>
         * {
             box-sizing: border-box;
@@ -213,6 +213,7 @@
         <button class="btn" onclick="resetGame()">REINICIAR</button>
         <button class="btn" onclick="toggleModal('settingsModal')">AJUSTES</button>
         <button class="btn" onclick="openAchievements()">LOGROS</button>
+        <button id="musicBtn" class="btn active" onclick="toggleMusic()">MÚSICA: ON</button>
         <button id="relaxBtn" class="btn" onclick="toggleRelaxMode()">RELAX</button>
         <button id="themeBtn" class="btn" onclick="changeTheme()">PALETA: 1/40</button>
         <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
@@ -232,6 +233,7 @@
     const relaxBtn = document.getElementById('relaxBtn');
     const themeBtn = document.getElementById('themeBtn');
     const modeBtn = document.getElementById('modeBtn');
+    const musicBtn = document.getElementById('musicBtn');
     const uiContainer = document.getElementById('ui');
     const controlsBar = document.getElementById('controls-bar');
     const floatingExitBtn = document.getElementById('floatingExitBtn');
@@ -251,6 +253,7 @@
     let maxFailsForPenalty = 3;
     let fxVolume = 0.3;
     let musicVolume = 0.1;
+    let musicEnabled = true;
 
     let autoMode = false;
     let isPaused = false;
@@ -331,8 +334,8 @@
     ];
     let currentThemeIndex = 0;
     let theme = themes[0];
-
-    let pulseRadius = 0;
+    let isRandomThemeMode = false;
+        let pulseRadius = 0;
     let feedbackTimer = 0;
     let feedbackText = '';
     let feedbackColor = '#00ffcc';
@@ -345,7 +348,8 @@
         radius: 110,
         speed: 0.005
     };
-       function resetAchievements() {
+
+    function resetAchievements() {
         achievements.forEach(a => a.unlocked = false);
         achievementToast.innerText = "¡Logros Reseteados!";
         achievementToast.classList.add('show');
@@ -391,12 +395,29 @@
     let musicInterval = null;
     let seqStep = 0;
 
+    // Diferentes escalas musicales para variar entre partidas
+    const musicScales = [
+        [65.41, 73.42, 77.78, 87.31], // Menor (Original)
+        [65.41, 73.42, 82.41, 98.00], // Pentatónica
+        [65.41, 69.30, 77.78, 82.41], // Frigia (Oscura)
+        [65.41, 77.78, 98.00, 103.83], // Tensión Synth
+        [73.42, 82.41, 87.31, 98.00]  // Mayor relativa
+    ];
+    let currentScaleIndex = 0;
+    let currentBase = 0;
+
     function initAudio() {
         if (!audioCtx) {
             audioCtx = new AudioContext();
             startProceduralMusic();
         }
         if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function toggleMusic() {
+        musicEnabled = !musicEnabled;
+        musicBtn.classList.toggle('active', musicEnabled);
+        musicBtn.innerText = musicEnabled ? "MÚSICA: ON" : "MÚSICA: OFF";
     }
 
     function playSynthTone(freq, type = 'sine', duration = 0.3, vol = fxVolume) {
@@ -415,16 +436,14 @@
         } catch (e) {}
     }
 
-    const baseFreqs = [65.41, 73.42, 77.78, 87.31];
-    let currentBase = 0;
-
     function startProceduralMusic() {
         if (musicInterval) clearInterval(musicInterval);
         musicInterval = setInterval(() => {
-            if (!audioCtx || audioCtx.state !== 'running' || isPaused || relaxMode) return;
+            if (!audioCtx || audioCtx.state !== 'running' || isPaused || relaxMode || !musicEnabled) return;
 
-            if (seqStep % 32 === 0) currentBase = (currentBase + 1) % baseFreqs.length;
-            let baseFreq = baseFreqs[currentBase] * (1 + (level % 3) * 0.25);
+            let activeScale = musicScales[currentScaleIndex];
+            if (seqStep % 32 === 0) currentBase = (currentBase + 1) % activeScale.length;
+            let baseFreq = activeScale[currentBase] * (1 + (level % 3) * 0.25);
 
             playSynthTone(baseFreq, 'sawtooth', 0.15, musicVolume * 0.9);
             if (seqStep % 2 !== 0) playSynthTone(baseFreq * 2, 'sawtooth', 0.1, musicVolume * 0.6);
@@ -554,6 +573,44 @@
         }
     }
 
+    function applyRandomTheme() {
+        let rnd = Math.floor(Math.random() * themes.length);
+        theme = themes[rnd];
+        mainTitle.style.color = theme.stroke;
+        canvas.style.boxShadow = `0 0 30px ${theme.glow}`;
+    }
+
+    function changeTheme() {
+        currentThemeIndex++;
+        
+        if (currentThemeIndex === themes.length) {
+            isRandomThemeMode = true;
+            themeLabel.innerText = "Aleatorio";
+            themeBtn.innerText = "PALETA: RANDOM";
+            applyRandomTheme();
+        } else {
+            if (currentThemeIndex > themes.length) currentThemeIndex = 0;
+            
+            isRandomThemeMode = false;
+            theme = themes[currentThemeIndex];
+            themeLabel.innerText = theme.name;
+            themeBtn.innerText = `PALETA: ${currentThemeIndex + 1}/40`;
+            mainTitle.style.color = theme.stroke;
+            canvas.style.boxShadow = `0 0 30px ${theme.glow}`;
+        }
+        themesExplored++;
+        if (themesExplored >= 10) unlockAchievement('palette_master');
+    }
+        function changeSpeed() {
+        if (gameSpeed === 1.0) gameSpeed = 1.5;
+        else if (gameSpeed === 1.5) gameSpeed = 2.0;
+        else if (gameSpeed === 2.0) { gameSpeed = 3.0; unlockAchievement('speed_demon'); }
+        else if (gameSpeed === 3.0) gameSpeed = 0.25;
+        else if (gameSpeed === 0.25) gameSpeed = 0.5;
+        else gameSpeed = 1.0;
+        speedBtn.innerText = 'VEL: ' + gameSpeed.toFixed(2).replace(/\.?0+$/, '') + 'x';
+    }
+
     function resetGame() {
         score = 0;
         level = 1;
@@ -562,6 +619,10 @@
         perfectStreak = 0;
         pulseRadius = 0;
         floatingTexts = [];
+        
+        // Cambia la escala musical aleatoriamente cada vez que se reinicia la partida
+        currentScaleIndex = Math.floor(Math.random() * musicScales.length);
+
         if (gameMode === 'timeAttack') startTimeAttack();
         generateNewForm();
         resetTarget();
@@ -593,30 +654,23 @@
         if (!autoMode && !isPaused && !relaxMode) checkAction();
     }, false);
 
-    function changeTheme() {
-        currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-        theme = themes[currentThemeIndex];
-        themeLabel.innerText = theme.name;
-        themeBtn.innerText = `PALETA: ${currentThemeIndex + 1}/40`;
-        mainTitle.style.color = theme.stroke;
-        canvas.style.boxShadow = `0 0 30px ${theme.glow}`;
-        themesExplored++;
-        if (themesExplored >= 10) unlockAchievement('palette_master');
-    }
-
-    function changeSpeed() {
-        if (gameSpeed === 1.0) gameSpeed = 1.5;
-        else if (gameSpeed === 1.5) gameSpeed = 2.0;
-        else if (gameSpeed === 2.0) { gameSpeed = 3.0; unlockAchievement('speed_demon'); }
-        else if (gameSpeed === 3.0) gameSpeed = 0.25;
-        else if (gameSpeed === 0.25) gameSpeed = 0.5;
-        else gameSpeed = 1.0;
-        speedBtn.innerText = 'VEL: ' + gameSpeed.toFixed(2).replace(/\.?0+$/, '') + 'x';
-                }
-                function checkAction() {
+    function checkAction() {
         if (isPaused || relaxMode) return;
         initAudio();
-        playSynthTone(440, 'triangle', 0.2);
+        
+        // El tono de acierto sí suena siempre como feedback para el jugador
+        if(audioCtx && audioCtx.state === 'running') {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
 
         let cx = canvas.width / 2;
         let cy = canvas.height / 2;
@@ -661,6 +715,7 @@
             if (successfulHits >= requiredHitsForLevel) {
                 level++;
                 successfulHits = 0;
+                if (isRandomThemeMode) applyRandomTheme(); // Cambio automático al subir nivel
                 if (level >= 10) unlockAchievement('level_10');
                 if (level >= 25) unlockAchievement('level_25');
                 if (level >= 50) unlockAchievement('level_50');
@@ -704,7 +759,7 @@
             if (relaxTimer > 250) {
                 relaxTimer = 0;
                 generateNewForm();
-                changeTheme();
+                if(isRandomThemeMode) applyRandomTheme();
             }
         }
 
