@@ -56,7 +56,6 @@
             max-height: 320px;
         }
 
-        /* Controles distribuidos en filas amplias para mayor tamaño y legibilidad */
         #controls-bar {
             margin-bottom: 8px;
             display: flex;
@@ -242,7 +241,6 @@
         <canvas id="gameCanvas" width="500" height="500"></canvas>
     </div>
 
-    <!-- Controles distribuidos en 4 filas organizadas con botones grandes -->
     <div id="controls-bar">
         <div class="button-row">
             <button id="pauseBtn" class="btn" onclick="togglePause()">PAUSA</button>
@@ -262,9 +260,11 @@
         <div class="button-row">
             <button id="speedBtn" class="btn" onclick="changeSpeed()">VEL: 1.0x</button>
             <button id="autoBtn" class="btn" onclick="toggleAutoMode()">AUTO: OFF</button>
+            <button class="btn" style="background: rgba(0,255,170,0.25); border-color: #00ffaa; color: #ffffff;" onclick="document.getElementById('localMusicInput').click()">LOCAL 📂</button>
+            <input type="file" id="localMusicInput" accept="audio/*" multiple style="display: none;" onchange="loadLocalMusic(event)">
         </div>
     </div>
-   <script>
+    <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const statsRow = document.getElementById('statsRow');
@@ -306,8 +306,36 @@
     let mp3Player = new Audio();
     mp3Player.volume = musicVolume;
 
+    let localPlaylist = [];
+    let isUsingLocalMusic = false;
+
+    function loadLocalMusic(event) {
+        const files = event.target.files;
+        if (files.length > 0) {
+            localPlaylist = [];
+            for (let i = 0; i < files.length; i++) {
+                localPlaylist.push(URL.createObjectURL(files[i]));
+            }
+            isUsingLocalMusic = true;
+            currentTrackIndex = 0;
+            musicBtn.classList.add('active');
+            musicBtn.innerText = `LOC(${localPlaylist.length})`;
+            playLocalTrack();
+        }
+    }
+
+    function playLocalTrack() {
+        if (localPlaylist.length === 0) return;
+        mp3Player.src = localPlaylist[currentTrackIndex];
+        mp3Player.play().catch(e => console.log("Reproducción local pendiente", e));
+        currentTrackIndex = (currentTrackIndex + 1) % localPlaylist.length;
+    }
+
     mp3Player.addEventListener('ended', () => {
-        if (musicMode > 0) playNextTrack();
+        if (musicMode > 0) {
+            if (isUsingLocalMusic) playLocalTrack();
+            else playNextTrack();
+        }
     });
 
     function toggleMusic() {
@@ -319,16 +347,21 @@
             mp3Player.pause();
         } else if (musicMode === 1) {
             musicBtn.classList.add('active');
-            musicBtn.innerText = "MÚSICA: SEC";
-            playNextTrack();
+            musicBtn.innerText = isUsingLocalMusic ? `LOC` : "MÚSICA: SEC";
+            if (!isUsingLocalMusic) playNextTrack();
         } else {
             musicBtn.classList.add('active');
-            musicBtn.innerText = "MÚSICA: ALE";
-            playNextTrack();
+            musicBtn.innerText = isUsingLocalMusic ? `LOC` : "MÚSICA: ALE";
+            if (!isUsingLocalMusic) playNextTrack();
         }
     }
 
     function playNextTrack() {
+        if (isUsingLocalMusic && localPlaylist.length > 0) {
+            playLocalTrack();
+            return;
+        }
+
         if (musicMode === 0) {
             musicMode = 1;
             musicBtn.classList.add('active');
@@ -344,12 +377,13 @@
 
         let trackStr = String(currentTrackIndex).padStart(3, '0');
         mp3Player.src = `multimedia/${trackStr}.mp3`;
-        mp3Player.play().catch(e => console.log("Reproducción pendiente de interacción", e));
+        mp3Player.play().catch(e => console.log("Reproducción pendiente", e));
     }
 
     function nextSongAndForm() {
         initAudioContext();
-        playNextTrack();
+        if (isUsingLocalMusic) playLocalTrack();
+        else playNextTrack();
         generateNewForm();
         if (isRandomThemeMode) applyRandomTheme();
         resetTarget();
@@ -507,7 +541,6 @@
                 let tp2 = Math.floor(Math.random() * 4) + 1;
                 let tp3 = Math.floor(Math.random() * 2) + 1;
 
-                // VALIDACIÓN ESTRICTA ANTIPEGOTES: Comprobamos que la figura tenga variedad (radio max vs min) para que no sea un círculo sólido
                 if (testCurveQuality(cType, tp1, tp2)) {
                     curveObj = { type: cType, p1: tp1, p2: tp2, p3: tp3, scale: baseScales[i] };
                     valid = true;
@@ -532,7 +565,6 @@
                 if (rawR < minVal) minVal = rawR;
             }
         }
-        // Excluir si es muy pequeño o si el radio mínimo es casi igual al máximo (lo que formaría un círculo sólido tipo pegote)
         if (maxVal < 30) return false;
         if ((maxVal - minVal) < (maxVal * 0.15)) return false; 
         return true;
@@ -600,8 +632,8 @@
             default: raw = Math.sin(tp1 * t) * 100; break;
         }
         return curve.scale * (raw / 100);
-                }
-           function createExplosionParticles(x, y) {
+        }
+            function createExplosionParticles(x, y) {
         for (let i = 0; i < 15; i++) {
             let pAngle = Math.random() * Math.PI * 2;
             let pSpeed = Math.random() * 3 + 1;
@@ -843,15 +875,13 @@
                 if (gameMode !== 'infinite') score = Math.max(0, score - 15);
                 feedbackText = "¡FALLO!";
             }
-            // Color amarillo/naranja brillante altamente legible para fallos y penalizaciones
-            feedbackColor = "#ffaa00";
+            feedbackColor = "#ffaa00"; // Amarillo/naranja brillante altamente legible
         }
         
         updateDOMStats();
         feedbackTimer = 35;
-    }
-
-    function update() {
+                }
+            function update() {
         if (isPaused) return;
         if (screenShake > 0) screenShake *= 0.85;
 
