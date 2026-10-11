@@ -326,6 +326,7 @@
             <input type="file" id="localMusicInput" multiple accept="audio/*" style="display: none;" onchange="loadLocalMusic(event)">
         </div>
     </div>
+
     <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -345,6 +346,84 @@
     const floatingControls = document.getElementById('floatingControls');
     const achievementToast = document.getElementById('achievementToast');
     const trackToast = document.getElementById('trackToast');
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudioContext() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    // Sonidos Sintetizados No Intrusivos (Beep, Acierto, Fallo, Cambio de Pista)
+    function playBeepSound() {
+        if (!audioCtx) return;
+        try {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            gain.gain.setValueAtTime(fxVolume * 0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
+        } catch(e) {}
+    }
+
+    function playSuccessSound() {
+        if (!audioCtx) return;
+        try {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(fxVolume * 0.25, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.18);
+        } catch(e) {}
+    }
+
+    function playFailSound() {
+        if (!audioCtx) return;
+        try {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(fxVolume * 0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        } catch(e) {}
+    }
+
+    function playTrackChangeSound() {
+        if (!audioCtx) return;
+        try {
+            let now = audioCtx.currentTime;
+            [523.25, 659.25, 783.99].forEach((freq, i) => {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + (i * 0.06));
+                gain.gain.setValueAtTime(fxVolume * 0.12, now + (i * 0.06));
+                gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.06) + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now + (i * 0.06));
+                osc.stop(now + (i * 0.06) + 0.15);
+            });
+        } catch(e) {}
+    }
 
     let score = 0;
     let highScore = localStorage.getItem('polarHighScorePro') || 0;
@@ -394,6 +473,7 @@
     }
 
     function playTrack() {
+        playTrackChangeSound();
         if (isUsingLocalMusic) {
             if (localPlaylist.length === 0) return;
             if (musicMode === 2) {
@@ -455,6 +535,7 @@
         if (isRandomThemeMode) applyRandomTheme();
         resetTarget();
     }
+
         let autoMode = false;
     let isPaused = false;
     let relaxMode = false;
@@ -475,7 +556,7 @@
     let screenShake = 0;
     let floatingTexts = [];
 
-    // Logros y Desbloqueos actualizados con las nuevas paletas monocromáticas celestes, ámbar, rosa y cian
+    // Sistema de Logros y 18 Paletas Desbloqueables
     let achievements = [
         { id: 'first_perfect', name: 'Primer Impacto', desc: 'Consigue tu primer acierto', unlocked: false },
         { id: 'streak_3', name: 'Racha de Bronce', desc: 'Consigue 3 aciertos seguidos', unlocked: false },
@@ -493,21 +574,32 @@
         { id: 'palette_master', name: 'Coleccionista', desc: 'Explora 10 paletas distintas', unlocked: false },
         { id: 'survivor', name: 'Resiliencia', desc: 'Sobrevive a una penalización', unlocked: false },
         
-        // Paletas Monocromáticas y Combinadas Desbloqueables
-        { id: 'theme_celeste', name: 'Celeste Ártico (Mono)', desc: 'Supera 4.000 puntos (Interfaz 100% Celeste)', unlocked: false, reward: 'palette' },
-        { id: 'theme_ambar', name: 'Ámbar Retro (Mono)', desc: 'Alcanza el nivel 18 (Interfaz 100% Ámbar)', unlocked: false, reward: 'palette' },
-        { id: 'theme_rosa', name: 'Rosa Neón (Mono)', desc: 'Consigue racha de 12 (Interfaz 100% Rosa)', unlocked: false, reward: 'palette' },
-        { id: 'theme_cian', name: 'Cian Eléctrico (Mono)', desc: 'Supera el nivel 22 (Interfaz 100% Cian)', unlocked: false, reward: 'palette' },
-        { id: 'theme_spectrum', name: 'Spectrum Blanco', desc: 'Alcanza 1.500 puntos (Paleta Spectrum)', unlocked: false, reward: 'palette' },
-        { id: 'theme_cpc', name: 'Amstrad CPC', desc: 'Alcanza 3.000 puntos (Paleta CPC Verde)', unlocked: false, reward: 'palette' },
-        { id: 'theme_dual_retro', name: 'Dúo Neón Vivo', desc: 'Consigue racha de 10 (Paleta de 2 Colores)', unlocked: false, reward: 'palette' },
-        { id: 'theme_tri_retro', name: 'Trinidad Neón', desc: 'Llega al nivel 15 (Paleta de 3 Colores)', unlocked: false, reward: 'palette' },
+        // 10 Nuevas Paletas Monocromáticas Absolutas Desbloqueables
+        { id: 'mono_emerald', name: 'Esmeralda Matriz', desc: 'Supera 500 puntos (Mono Verde)', unlocked: false, reward: 'palette' },
+        { id: 'mono_violet', name: 'Violeta Profundo', desc: 'Supera 800 puntos (Mono Morado)', unlocked: false, reward: 'palette' },
+        { id: 'mono_blood', name: 'Rojo Sangre Pura', desc: 'Alcanza el nivel 5 (Mono Carmesí)', unlocked: false, reward: 'palette' },
+        { id: 'mono_amber', name: 'Naranja Fósforo', desc: 'Alcanza el nivel 7 (Mono Ámbar)', unlocked: false, reward: 'palette' },
+        { id: 'mono_pink', name: 'Rosa Pastel', desc: 'Consigue racha de 5 (Mono Magenta)', unlocked: false, reward: 'palette' },
+        { id: 'mono_night', name: 'Azul Noche', desc: 'Supera 1.200 puntos (Mono Azul Oscuro)', unlocked: false, reward: 'palette' },
+        { id: 'mono_lime', name: 'Lima Ácida', desc: 'Alcanza el nivel 14 (Mono Limón)', unlocked: false, reward: 'palette' },
+        { id: 'mono_gold', name: 'Dorado Imperial', desc: 'Supera 3.500 puntos (Mono Oro)', unlocked: false, reward: 'palette' },
+        { id: 'mono_tech', name: 'Ceniza Tecnológica', desc: 'Alcanza el nivel 16 (Mono Gris Metálico)', unlocked: false, reward: 'palette' },
+        { id: 'mono_turq', name: 'Turquesa Profundo', desc: 'Supera 4.500 puntos (Mono Aguamarina)', unlocked: false, reward: 'palette' },
         
-        // Modos de Juego Nuevos
-        { id: 'mode_blind', name: 'Modo Pulso Ciego', desc: 'Supera nivel 8 (Desbloquea Modo Ciego)', unlocked: false, reward: 'mode' },
-        { id: 'mode_extreme', name: 'Modo Espejo Extremo', desc: 'Supera nivel 12 (Espejo Variable)', unlocked: false, reward: 'mode' },
-        { id: 'mode_survive', name: 'Supervivencia Absoluta', desc: 'Supera 2.500 puntos (Modo Estricto)', unlocked: false, reward: 'mode' },
-        { id: 'mode_dualorb', name: 'Modo Doble Órbita', desc: 'Supera nivel 20 (Doble Objetivo)', unlocked: false, reward: 'mode' }
+        // Paletas Clásicas y Modos
+        { id: 'theme_celeste', name: 'Celeste Ártico (Mono)', desc: 'Supera 4.000 puntos', unlocked: false, reward: 'palette' },
+        { id: 'theme_ambar', name: 'Ámbar Retro (Mono)', desc: 'Alcanza el nivel 18', unlocked: false, reward: 'palette' },
+        { id: 'theme_rosa', name: 'Rosa Neón (Mono)', desc: 'Consigue racha de 12', unlocked: false, reward: 'palette' },
+        { id: 'theme_cian', name: 'Cian Eléctrico (Mono)', desc: 'Supera el nivel 22', unlocked: false, reward: 'palette' },
+        { id: 'theme_spectrum', name: 'Spectrum Blanco', desc: 'Alcanza 1.500 puntos', unlocked: false, reward: 'palette' },
+        { id: 'theme_cpc', name: 'Amstrad CPC', desc: 'Alcanza 3.000 puntos', unlocked: false, reward: 'palette' },
+        { id: 'theme_dual_retro', name: 'Dúo Neón Vivo', desc: 'Consigue racha de 10', unlocked: false, reward: 'palette' },
+        { id: 'theme_tri_retro', name: 'Trinidad Neón', desc: 'Llega al nivel 15', unlocked: false, reward: 'palette' },
+        
+        { id: 'mode_blind', name: 'Modo Pulso Ciego', desc: 'Supera nivel 8', unlocked: false, reward: 'mode' },
+        { id: 'mode_extreme', name: 'Modo Espejo Extremo', desc: 'Supera nivel 12', unlocked: false, reward: 'mode' },
+        { id: 'mode_survive', name: 'Supervivencia Absoluta', desc: 'Supera 2.500 puntos', unlocked: false, reward: 'mode' },
+        { id: 'mode_dualorb', name: 'Modo Doble Órbita', desc: 'Supera nivel 20', unlocked: false, reward: 'mode' }
     ];
 
     const themes = [
@@ -516,13 +608,20 @@
         { name: 'Laser Purple', bg: '#0e0214', strokes: ['#bf00ff', '#da70d6', '#ba55d3', '#dda0dd'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(191, 0, 255, 0.35)', uiColor: '#da70d6' },
         { name: 'Retro Amstrad', bg: '#021008', strokes: ['#33ff33', '#66ff66', '#99ff99', '#ccffcc'], target: '#ffff33', wave: 'rgba(255, 255, 51, 0.85)', glow: 'rgba(51, 255, 51, 0.35)', uiColor: '#33ff33' },
         { name: 'Sunset Vibe', bg: '#14050a', strokes: ['#ff3366', '#ff6699', '#ff99cc', '#ffcc00'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(255, 51, 102, 0.35)', uiColor: '#ff3366' },
-        { name: 'Acid Lime', bg: '#0f1402', strokes: ['#ccff00', '#adff2f', '#ffff00', '#7fff00'], target: '#ff00ff', wave: 'rgba(255, 0, 255, 0.85)', glow: 'rgba(204, 255, 0, 0.35)', uiColor: '#ccff00' },
-        { name: 'Gold Imperial', bg: '#120c02', strokes: ['#ffaa00', '#ffcc00', '#ffea75', '#ffffff'], target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(255, 170, 0, 0.35)', uiColor: '#ffcc00' },
-        { name: 'Deep Frost', bg: '#020a14', strokes: ['#00ccff', '#3399ff', '#66ccff', '#ffffff'], target: '#ffffff', wave: 'rgba(0, 204, 255, 0.85)', glow: 'rgba(0, 204, 255, 0.35)', uiColor: '#66ccff' },
-        { name: 'Crimson Blood', bg: '#140202', strokes: ['#ff3333', '#ff6666', '#ff9999', '#ffffff'], target: '#ffffff', wave: 'rgba(255, 255, 255, 0.85)', glow: 'rgba(255, 51, 51, 0.35)', uiColor: '#ff3333' },
-        { name: 'Neon Vio', bg: '#0a0212', strokes: ['#00ffaa', '#00e699', '#00cc88', '#00ffcc'], target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(0, 255, 170, 0.35)', uiColor: '#00ffcc' },
         
-        // Nuevas Paletas Monocromáticas y Temáticas de un Solo Color
+        // 10 Nuevas Paletas Monocromáticas Absolutas
+        { name: 'Esmeralda Matriz', bg: '#011206', strokes: ['#00ff88', '#00cc66', '#00ff88', '#22ff99'], target: '#00ff88', wave: 'rgba(0, 255, 136, 0.9)', glow: 'rgba(0, 255, 136, 0.4)', uiColor: '#00ff88', locked: true, reqId: 'mono_emerald' },
+        { name: 'Violeta Profundo', bg: '#100214', strokes: ['#b000ff', '#9900ee', '#c533ff', '#b000ff'], target: '#c533ff', wave: 'rgba(176, 0, 255, 0.9)', glow: 'rgba(176, 0, 255, 0.4)', uiColor: '#b000ff', locked: true, reqId: 'mono_violet' },
+        { name: 'Rojo Sangre Pura', bg: '#140202', strokes: ['#ff0033', '#cc0029', '#ff335c', '#ff0033'], target: '#ff335c', wave: 'rgba(255, 0, 51, 0.9)', glow: 'rgba(255, 0, 51, 0.4)', uiColor: '#ff0033', locked: true, reqId: 'mono_blood' },
+        { name: 'Naranja Fósforo', bg: '#140800', strokes: ['#ff6600', '#e65c00', '#ff8533', '#ff6600'], target: '#ff8533', wave: 'rgba(255, 102, 0, 0.9)', glow: 'rgba(255, 102, 0, 0.4)', uiColor: '#ff6600', locked: true, reqId: 'mono_amber' },
+        { name: 'Rosa Pastel', bg: '#14020a', strokes: ['#ff66b2', '#ff3399', '#ff80bf', '#ff66b2'], target: '#ff80bf', wave: 'rgba(255, 102, 178, 0.9)', glow: 'rgba(255, 102, 178, 0.4)', uiColor: '#ff66b2', locked: true, reqId: 'mono_pink' },
+        { name: 'Azul Noche', bg: '#02050f', strokes: ['#3366ff', '#0044cc', '#5c85ff', '#3366ff'], target: '#5c85ff', wave: 'rgba(51, 102, 255, 0.9)', glow: 'rgba(51, 102, 255, 0.4)', uiColor: '#3366ff', locked: true, reqId: 'mono_night' },
+        { name: 'Lima Ácida', bg: '#0d1400', strokes: ['#b3ff00', '#99e600', '#c6ff1a', '#b3ff00'], target: '#c6ff1a', wave: 'rgba(179, 255, 0, 0.9)', glow: 'rgba(179, 255, 0, 0.4)', uiColor: '#b3ff00', locked: true, reqId: 'mono_lime' },
+        { name: 'Dorado Imperial', bg: '#141200', strokes: ['#ffcc00', '#e6b800', '#ffd633', '#ffcc00'], target: '#ffd633', wave: 'rgba(255, 204, 0, 0.9)', glow: 'rgba(255, 204, 0, 0.4)', uiColor: '#ffcc00', locked: true, reqId: 'mono_gold' },
+        { name: 'Ceniza Tecnológica', bg: '#0d0d0d', strokes: ['#cccccc', '#aaaaaa', '#e0e0e0', '#cccccc'], target: '#ffffff', wave: 'rgba(204, 204, 204, 0.9)', glow: 'rgba(204, 204, 204, 0.4)', uiColor: '#cccccc', locked: true, reqId: 'mono_tech' },
+        { name: 'Turquesa Profundo', bg: '#001412', strokes: ['#00ffd9', '#00cca8', '#33ffe2', '#00ffd9'], target: '#33ffe2', wave: 'rgba(0, 255, 217, 0.9)', glow: 'rgba(0, 255, 217, 0.4)', uiColor: '#00ffd9', locked: true, reqId: 'mono_turq' },
+
+        // Paletas Clásicas Previas
         { name: 'Celeste Ártico (Mono)', bg: '#020b14', strokes: ['#00d4ff', '#33e0ff', '#00bfff', '#80eeff'], target: '#00d4ff', wave: 'rgba(0, 212, 255, 0.9)', glow: 'rgba(0, 212, 255, 0.4)', uiColor: '#00d4ff', locked: true, reqId: 'theme_celeste' },
         { name: 'Ámbar Retro (Mono)', bg: '#140a00', strokes: ['#ffb000', '#ffc733', '#ff9900', '#ffd666'], target: '#ffb000', wave: 'rgba(255, 176, 0, 0.9)', glow: 'rgba(255, 176, 0, 0.4)', uiColor: '#ffb000', locked: true, reqId: 'theme_ambar' },
         { name: 'Rosa Neón (Mono)', bg: '#14000a', strokes: ['#ff007f', '#ff3399', '#ff0066', '#ff66b2'], target: '#ff007f', wave: 'rgba(255, 0, 127, 0.9)', glow: 'rgba(255, 0, 127, 0.4)', uiColor: '#ff007f', locked: true, reqId: 'theme_rosa' },
@@ -630,17 +729,9 @@
 
         pulseRadius = 0;
         pulseRadius2 = -60;
-    }
+         }
 
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    let audioCtx = null;
-
-    function initAudioContext() {
-        if (!audioCtx) audioCtx = new AudioContext();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-    }
-
-    function generateNewForm() {
+        function generateNewForm() {
         const prettyCurves = [
             'rhodonea', 'roseFrac', 'piWave', 'grandisRose', 'trifolio', 'cuatrifolio',
             'cardioidLim', 'lemniscate', 'epicycloid', 'star', 'flower', 'octagram', 'decagram'
@@ -767,7 +858,7 @@
             default: raw = Math.sin(tp1 * t) * 100; break;
         }
         return curve.scale * (raw / 100);
-            }
+        }
 
             function createExplosionParticles(x, y) {
         let count = perfectStreak >= 3 ? 25 : 15;
@@ -788,6 +879,7 @@
 
     function toggleAutoMode() {
         initAudioContext();
+        playBeepSound();
         autoMode = !autoMode;
         autoBtn.classList.toggle('active', autoMode);
         autoBtn.innerText = autoMode ? "AUTO: ON" : "AUTO: OFF";
@@ -796,12 +888,14 @@
 
     function togglePause() {
         initAudioContext();
+        playBeepSound();
         isPaused = !isPaused;
         pauseBtn.classList.toggle('active', isPaused);
         pauseBtn.innerText = isPaused ? "REANUDAR" : "PAUSA";
     }
 
     function updateSettings() {
+        playBeepSound();
         curveVarietyMode = document.getElementById('curveVarietySelect').value;
         layerCount = parseInt(document.getElementById('layerCountSelect').value) || 1;
         requiredHitsForLevel = parseInt(document.getElementById('hitsPerLevelInput').value) || 1;
@@ -812,6 +906,8 @@
     }
 
     function toggleGameMode() {
+        initAudioContext();
+        playBeepSound();
         if (gameMode === 'arcade') {
             gameMode = 'infinite';
             modeLabel.innerText = "Infinito";
@@ -908,24 +1004,38 @@
         applyUIThemeColors();
     }
 
+    // Monocromatismo Total en absolutamente TODOS los elementos de la interfaz
     function applyUIThemeColors() {
-        mainTitle.style.color = theme.uiColor || theme.strokes[0];
+        let c = theme.uiColor || theme.strokes[0];
+        mainTitle.style.color = c;
+        mainTitle.style.textShadow = `0 0 14px ${c}`;
         canvas.style.boxShadow = `0 0 40px ${theme.glow}`;
+        canvas.style.backgroundColor = theme.bg;
+        
         document.querySelectorAll('.btn').forEach(b => {
-            b.style.borderColor = theme.uiColor || '#00b4d8';
-            b.style.color = theme.uiColor || '#e0fbfc';
+            b.style.borderColor = c;
+            b.style.color = c;
+            b.style.boxShadow = `0 0 10px ${theme.glow}`;
+        });
+        document.querySelectorAll('.modal').forEach(m => {
+            m.style.borderColor = c;
+            m.style.boxShadow = `0 0 35px ${theme.glow}`;
+        });
+        document.querySelectorAll('.modal h2').forEach(h => {
+            h.style.color = c;
+            h.style.textShadow = `0 0 12px ${c}`;
         });
     }
 
     function changeTheme() {
+        initAudioContext();
+        playBeepSound();
         isRandomThemeMode = false;
         currentThemeIndex++;
         
         while(currentThemeIndex < themes.length && themes[currentThemeIndex].locked) {
             let ach = achievements.find(a => a.id === themes[currentThemeIndex].reqId);
-            if(ach && ach.unlocked) {
-                break;
-            }
+            if(ach && ach.unlocked) break;
             currentThemeIndex++;
         }
 
@@ -947,6 +1057,8 @@
     }
 
     function changeSpeed() {
+        initAudioContext();
+        playBeepSound();
         if (gameSpeed === 1.0) gameSpeed = 1.5;
         else if (gameSpeed === 1.5) gameSpeed = 2.0;
         else if (gameSpeed === 2.0) { gameSpeed = 3.0; unlockAchievement('speed_demon'); }
@@ -957,6 +1069,8 @@
     }
 
     function resetGame() {
+        initAudioContext();
+        playBeepSound();
         score = 0;
         level = 1;
         consecutiveFails = 0;
@@ -974,6 +1088,7 @@
 
     function toggleRelaxMode() {
         initAudioContext();
+        playBeepSound();
         relaxMode = !relaxMode;
         relaxBtn.classList.toggle('active', relaxMode);
         if (relaxMode) {
@@ -1000,6 +1115,7 @@
     function checkAction() {
         if (isPaused || relaxMode) return;
         initAudioContext();
+        playBeepSound();
         
         let cx = canvas.width / 2;
         let cy = canvas.height / 2;
@@ -1016,23 +1132,30 @@
         let tolerance = 25;
 
         if (diff < tolerance || diffTarget2 < tolerance || diff2 < tolerance) {
+            playSuccessSound();
             consecutiveFails = 0;
             successfulHits++;
             perfectStreak++;
             
             unlockAchievement('first_perfect');
             if (perfectStreak >= 3) unlockAchievement('streak_3');
+            if (perfectStreak >= 5) unlockAchievement('mono_pink');
             if (perfectStreak >= 7) unlockAchievement('streak_7');
             if (perfectStreak >= 10) unlockAchievement('theme_dual_retro');
             if (perfectStreak >= 12) unlockAchievement('theme_rosa');
             if (perfectStreak >= 15) unlockAchievement('streak_15');
 
+            if (score >= 500) unlockAchievement('mono_emerald');
+            if (score >= 800) unlockAchievement('mono_violet');
+            if (score >= 1200) unlockAchievement('mono_night');
             if (score >= 1500) unlockAchievement('theme_spectrum');
             if (score >= 2500) {
                 unlockAchievement('mode_survive');
                 unlockAchievement('theme_cpc');
             }
+            if (score >= 3500) unlockAchievement('mono_gold');
             if (score >= 4000) unlockAchievement('theme_celeste');
+            if (score >= 4500) unlockAchievement('mono_turq');
 
             if (perfectStreak > 1) {
                 floatingTexts.push({ x: cx, y: cy - 30, text: `COMBO x${perfectStreak}!`, life: 1.0, color: theme.strokes[0] });
@@ -1060,10 +1183,14 @@
                 level++;
                 successfulHits = 0;
                 if (isRandomThemeMode) applyRandomTheme();
+                if (level >= 5) unlockAchievement('mono_blood');
+                if (level >= 7) unlockAchievement('mono_amber');
                 if (level >= 8) unlockAchievement('mode_blind');
                 if (level >= 10) unlockAchievement('level_10');
                 if (level >= 12) unlockAchievement('mode_extreme');
+                if (level >= 14) unlockAchievement('mono_lime');
                 if (level >= 15) unlockAchievement('theme_tri_retro');
+                if (level >= 16) unlockAchievement('mono_tech');
                 if (level >= 18) unlockAchievement('theme_ambar');
                 if (level >= 20) unlockAchievement('mode_dualorb');
                 if (level >= 22) unlockAchievement('theme_cian');
@@ -1074,6 +1201,7 @@
             generateNewForm();
             resetTarget();
         } else {
+            playFailSound();
             consecutiveFails++;
             perfectStreak = 0;
             screenShake = 6;
@@ -1103,7 +1231,9 @@
         updateDOMStats();
         feedbackTimer = 35;
         }
-            function update() {
+
+
+        function update() {
         if (isPaused) return;
         if (screenShake > 0) screenShake *= 0.85;
 
@@ -1341,8 +1471,9 @@
         update();
         draw();
         requestAnimationFrame(loop);
-        }
-            applyRandomTheme();
+    }
+
+    applyRandomTheme();
     generateNewForm();
     resetTarget();
     loop();
@@ -1358,3 +1489,8 @@
 </script>
 </body>
 </html>
+
+
+
+
+    
