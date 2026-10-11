@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Polar Infinity - Synth & Sound</title>
+    <title>Polar Infinity - Neon Palettes</title>
     <style>
         * {
             box-sizing: border-box;
@@ -23,6 +23,7 @@
             font-family: 'Courier New', Courier, monospace;
             user-select: none;
             -webkit-user-select: none;
+            transition: background-color 0.5s ease;
         }
         #ui {
             margin-top: 15px;
@@ -30,7 +31,7 @@
             text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
             z-index: 10;
         }
-        h1 { margin: 0; font-size: 1.3rem; letter-spacing: 2px; color: #ff007f; }
+        h1 { margin: 0; font-size: 1.3rem; letter-spacing: 2px; color: #ff007f; transition: color 0.5s ease; }
         p { margin: 4px 0 0 0; font-size: 0.85rem; color: #8ab4f8; }
         
         .canvas-container {
@@ -42,13 +43,14 @@
         }
         
         canvas {
-            box-shadow: 0 0 30px rgba(0, 255, 204, 0.15);
+            box-shadow: 0 0 35px rgba(0, 255, 204, 0.2);
             background: #080c16;
             border-radius: 50%;
             width: 86vw;
             height: 86vw;
             max-width: 410px;
             max-height: 410px;
+            transition: box-shadow 0.5s ease;
         }
         #instructions {
             margin-bottom: 20px;
@@ -63,7 +65,7 @@
 <body>
 
     <div id="ui">
-        <h1>POLAR INFINITY</h1>
+        <h1 id="mainTitle">POLAR INFINITY</h1>
         <p>Puntos: <span id="score">0</span> | Forma: <span id="formName">Armónica</span></p>
     </div>
 
@@ -78,22 +80,26 @@
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
     const formNameEl = document.getElementById('formName');
+    const mainTitle = document.getElementById('mainTitle');
 
     let score = 0;
     let angle = 0;
     
-    // Parámetros matemáticos avanzados
-    let num = 5;
-    let den = 4;
+    let num = 4;
+    let den = 5;
     let curveType = 'fraction';
 
-    // Paleta de colores de neón dinámicos
-    const neonColors = [
-        '#ff007f', '#00ffcc', '#7f00ff', '#ff5500', 
-        '#00ff66', '#ffff00', '#00ccff', '#ff00aa', '#adff2f'
+    // Paleta variada de colores de neón vivos
+    const neonPalettes = [
+        { stroke: '#ff007f', target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.7)', title: '#ff007f', glow: 'rgba(255, 0, 127, 0.3)' },
+        { stroke: '#00ffcc', target: '#ff00aa', wave: 'rgba(255, 0, 170, 0.7)', title: '#00ffcc', glow: 'rgba(0, 255, 204, 0.3)' },
+        { stroke: '#adff2f', target: '#00ccff', wave: 'rgba(0, 204, 255, 0.7)', title: '#adff2f', glow: 'rgba(173, 255, 47, 0.3)' },
+        { stroke: '#ff5500', target: '#7f00ff', wave: 'rgba(127, 0, 255, 0.7)', title: '#ff5500', glow: 'rgba(255, 85, 0, 0.3)' },
+        { stroke: '#ffff00', target: '#ff0055', wave: 'rgba(255, 0, 85, 0.7)', title: '#ffff00', glow: 'rgba(255, 255, 0, 0.3)' },
+        { stroke: '#00ffff', target: '#ff3300', wave: 'rgba(255, 51, 0, 0.7)', title: '#00ffff', glow: 'rgba(0, 255, 255, 0.3)' }
     ];
-    let currentColor = '#ff007f';
-    let targetColor = '#00ffcc';
+
+    let currentPalette = neonPalettes[0];
 
     let pulseRadius = 0;
     let targetRadius = 120;
@@ -102,27 +108,23 @@
     let feedbackColor = '#00ffcc';
     let targetAngle = Math.random() * Math.PI * 2;
 
-    // --- SISTEMA DE AUDIO PROCEDURAL (Web Audio API) ---
+    // Web Audio API
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
-    function initAudio() {
-        if (!audioCtx) audioCtx = new AudioContext();
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-    }
-
-    function playSynthTone(freq, type = 'sine', duration = 0.4) {
+    function playSynthTone(freq, type = 'sine', duration = 0.3) {
         try {
-            initAudio();
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
 
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
 
             osc.connect(gain);
@@ -130,21 +132,12 @@
 
             osc.start();
             osc.stop(audioCtx.currentTime + duration);
-        } catch (e) {
-            // Previene errores de políticas de autoplay en algunos navegadores móviles
-        }
+        } catch (e) {}
     }
 
-    // Escala pentatónica espacial en Hz para notas procedurales
-    const synthNotes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
-
+    const synthNotes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 659.25];
     function getRandomNote() {
         return synthNotes[Math.floor(Math.random() * synthNotes.length)];
-    }
-    // ---------------------------------------------------
-
-    function getRandomColor() {
-        return neonColors[Math.floor(Math.random() * neonColors.length)];
     }
 
     function generateNewForm() {
@@ -152,23 +145,30 @@
         curveType = types[Math.floor(Math.random() * types.length)];
 
         if (curveType === 'fraction') {
-            num = Math.floor(Math.random() * 7) + 1;
+            num = Math.floor(Math.random() * 6) + 1;
             den = Math.floor(Math.random() * 5) + 2;
             formNameEl.innerText = `${num}θ / ${den}`;
         } else if (curveType === 'pi') {
-            num = (Math.random() * 3 + 0.5).toFixed(2);
+            num = (Math.random() * 2 + 0.5).toFixed(1);
             formNameEl.innerText = `${num}πθ`;
         } else if (curveType === 'multi') {
-            num = Math.floor(Math.random() * 6) + 2;
-            den = Math.floor(Math.random() * 4) + 1;
+            num = Math.floor(Math.random() * 5) + 2;
+            den = Math.floor(Math.random() * 3) + 1;
             formNameEl.innerText = `Armónica ${num}:${den}`;
         } else {
-            num = Math.floor(Math.random() * 8) + 2;
+            num = Math.floor(Math.random() * 7) + 2;
             formNameEl.innerText = `Rosa (${num} pétalos)`;
         }
 
-        currentColor = targetColor;
-        targetColor = getRandomColor();
+        // Cambiar a una paleta de colores completamente nueva al azar
+        let randomPaletteIndex;
+        do {
+            randomPaletteIndex = Math.floor(Math.random() * neonPalettes.length);
+        } while (neonPalettes[randomPaletteIndex] === currentPalette);
+
+        currentPalette = neonPalettes[randomPaletteIndex];
+        mainTitle.style.color = currentPalette.title;
+        canvas.style.boxShadow = `0 0 35px ${currentPalette.glow}`;
     }
 
     function resetTarget() {
@@ -178,59 +178,47 @@
     }
 
     function triggerAction(e) {
-        if (e) e.preventDefault();
-        initAudio(); // Asegura el desbloqueo de audio al tocar
+        if (e) e.stopPropagation();
         
-        // Sonido al pulsar la pantalla
-        playSynthNote(getRandomNote(), 'triangle', 0.25);
+        playSynthTone(getRandomNote(), 'triangle', 0.2);
 
         let diff = Math.abs(pulseRadius - targetRadius);
         
-        if (diff < 22) {
+        if (diff < 35) {
             score += 100;
             feedbackText = "¡PERFECTO!";
-            feedbackColor = "#00ffcc";
-            
-            // Sonido agudo extra al acertar
-            playSynthNote(783.99, 'sine', 0.5); 
-
+            feedbackColor = currentPalette.stroke;
+            playSynthTone(783.99, 'sine', 0.4); 
             generateNewForm();
             resetTarget();
         } else {
-            score = Math.max(0, score - 25);
+            score = Math.max(0, score - 15);
             feedbackText = "¡FALLO!";
-            feedbackColor = "#ff007f";
-            
-            // Sonido grave de fallo
-            playSynthNote(130.81, 'sawtooth', 0.3);
+            feedbackColor = "#ff0055";
+            playSynthTone(130.81, 'sawtooth', 0.2);
         }
         feedbackTimer = 25;
         scoreEl.innerText = score;
     }
 
-    window.addEventListener('touchstart', triggerAction, { passive: false });
-    window.addEventListener('click', (e) => {
-        if (e.pointerType === 'mouse' || !window.matchMedia('(pointer: coarse)').matches) {
-            triggerAction(e);
-        }
-    });
+    window.addEventListener('pointerdown', triggerAction, false);
 
     function update() {
-        pulseRadius += 1.8;
+        pulseRadius += 1.6;
         if (pulseRadius > 200) {
             pulseRadius = 0; 
         }
-        angle += 0.008;
+        angle += 0.005;
     }
 
     function draw() {
-        ctx.fillStyle = 'rgba(5, 7, 13, 0.4)';
+        // Fondo dinámico profundo con un sutil reflejo de la paleta actual
+        ctx.fillStyle = 'rgba(5, 7, 13, 0.35)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        // 1. Rejilla polar de fondo
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.lineWidth = 1;
         for (let r = 50; r <= 180; r += 50) {
@@ -239,15 +227,15 @@
             ctx.stroke();
         }
 
-        // 2. Gráfica Polar Compleja
+        // Trazado de la figura geométrica polar con el color de la paleta actual
         ctx.beginPath();
-        ctx.strokeStyle = currentColor;
-        ctx.lineWidth = 2.5;
-        ctx.shadowColor = currentColor;
-        ctx.shadowBlur = 10;
+        ctx.strokeStyle = currentPalette.stroke;
+        ctx.lineWidth = 2.4;
+        ctx.shadowColor = currentPalette.stroke;
+        ctx.shadowBlur = 12;
         
         let scale = 90;
-        let maxTheta = (curveType === 'fraction' || curveType === 'multi') ? Math.PI * 8 : Math.PI * 2;
+        let maxTheta = Math.PI * 20; 
         
         for (let th = 0; th < maxTheta; th += 0.005) {
             let r = 0;
@@ -267,28 +255,27 @@
             else ctx.lineTo(x, y);
         }
         ctx.stroke();
-        ctx.shadowBlur = 0;
+        ctx.shadowBlur = 0; // Reset sombra
 
-        // 3. Nodo objetivo
+        // Nodo objetivo con su color correspondiente
         let tx = cx + targetRadius * Math.cos(targetAngle);
         let ty = cy + targetRadius * Math.sin(targetAngle);
         
         ctx.beginPath();
-        ctx.arc(tx, ty, 8, 0, Math.PI * 2);
-        ctx.fillStyle = targetColor;
-        ctx.shadowColor = targetColor;
+        ctx.arc(tx, ty, 9, 0, Math.PI * 2);
+        ctx.fillStyle = currentPalette.target;
+        ctx.shadowColor = currentPalette.target;
         ctx.shadowBlur = 15;
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // 4. Onda expansiva
+        // Onda expansiva con tinte variable de la paleta
         ctx.beginPath();
         ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = currentPalette.wave;
+        ctx.lineWidth = 2.2;
         ctx.stroke();
 
-        // 5. Feedback visual
         if (feedbackTimer > 0) {
             ctx.font = 'bold 22px monospace';
             ctx.fillStyle = feedbackColor;
