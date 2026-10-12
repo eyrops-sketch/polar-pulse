@@ -342,8 +342,7 @@
             <input type="file" id="localMusicInput" multiple accept="audio/*" style="display: none;" onchange="loadLocalMusic(event)">
         </div>
     </div>
-    
-    <script>
+        <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const statsRow = document.getElementById('statsRow');
@@ -562,12 +561,10 @@
     let isPaused = false;
     let relaxMode = false;
     let gameMode = 'arcade';
-    let timeAttackSeconds = 60;
-    let timeAttackTimer = null;
     let gameSpeed = 1.0;
     let angle = 0;
     
-    // Variables para el Modo Electrón
+    // Variables Modo Electrón
     let electronAngle = 0;
     let electronCurve = { type: 'spiral', p1: 2, p2: 1, scale: 150 };
     let electronTrail = [];
@@ -591,85 +588,25 @@
         { id: 'streak_7', name: 'Racha de Plata', desc: 'Consigue 7 aciertos seguidos', unlocked: false },
         { id: 'streak_15', name: 'Racha de Oro', desc: 'Consigue 15 aciertos seguidos', unlocked: false },
         { id: 'level_10', name: 'Explorador Polar', desc: 'Alcanza el nivel 10', unlocked: false },
-        { id: 'level_25', name: 'Maestro Polar', desc: 'Alcanza el nivel 25 (Mod: Espejo)', unlocked: false, reward: 'mirror' },
-        { id: 'level_50', name: 'Leyenda Viva', desc: 'Alcanza el nivel 50 (Mod: Pulso Dual)', unlocked: false, reward: 'doublePulse' },
         { id: 'score_1000', name: 'Fiebre Neón', desc: 'Supera los 1.000 puntos', unlocked: false },
-        { id: 'score_5000', name: 'Dios del Neón', desc: 'Supera los 5.000 puntos', unlocked: false },
-        { id: 'score_10000', name: 'Infinito', desc: 'Supera los 10.000 puntos', unlocked: false },
         { id: 'speed_demon', name: 'Velocidad Luz', desc: 'Juega a velocidad 3.0x', unlocked: false },
         { id: 'zen_mode', name: 'Modo Zen', desc: 'Activa el modo Relax', unlocked: false },
         { id: 'auto_pilot', name: 'Piloto', desc: 'Activa el modo Auto', unlocked: false },
-        { id: 'palette_master', name: 'Coleccionista', desc: 'Explora 10 paletas distintas', unlocked: false },
-        { id: 'survivor', name: 'Resiliencia', desc: 'Sobrevive a una penalización', unlocked: false },
-        
-        { id: 'mono_emerald', name: 'Esmeralda Matriz', desc: 'Supera 500 puntos (Mono Verde)', unlocked: false, reward: 'palette' },
-        { id: 'mono_violet', name: 'Violeta Profundo', desc: 'Supera 800 puntos (Mono Morado)', unlocked: false, reward: 'palette' },
-        { id: 'mono_blood', name: 'Rojo Sangre Pura', desc: 'Alcanza el nivel 5 (Mono Carmesí)', unlocked: false, reward: 'palette' },
-        { id: 'mono_amber', name: 'Naranja Fósforo', desc: 'Alcanza el nivel 7 (Mono Ámbar)', unlocked: false, reward: 'palette' },
-        { id: 'mono_pink', name: 'Rosa Pastel', desc: 'Consigue racha de 5 (Mono Magenta)', unlocked: false, reward: 'palette' },
-        { id: 'mono_night', name: 'Azul Noche', desc: 'Supera 1.200 puntos (Mono Azul Oscuro)', unlocked: false, reward: 'palette' },
-        { id: 'mono_lime', name: 'Lima Ácida', desc: 'Alcanza el nivel 14 (Mono Limón)', unlocked: false, reward: 'palette' },
-        { id: 'mono_gold', name: 'Dorado Imperial', desc: 'Supera 3.500 puntos (Mono Oro)', unlocked: false, reward: 'palette' },
-        { id: 'mono_tech', name: 'Ceniza Tecnológica', desc: 'Alcanza el nivel 16 (Mono Gris Metálico)', unlocked: false, reward: 'palette' },
-        { id: 'mono_turq', name: 'Turquesa Profundo', desc: 'Supera 4.500 puntos (Mono Aguamarina)', unlocked: false, reward: 'palette' },
-        
-        { id: 'theme_celeste', name: 'Celeste Ártico (Mono)', desc: 'Supera 4.000 puntos', unlocked: false, reward: 'palette' },
-        { id: 'theme_ambar', name: 'Ámbar Retro (Mono)', desc: 'Alcanza el nivel 18', unlocked: false, reward: 'palette' },
-        { id: 'theme_rosa', name: 'Rosa Neón (Mono)', desc: 'Consigue racha de 12', unlocked: false, reward: 'palette' },
-        { id: 'theme_cian', name: 'Cian Eléctrico (Mono)', desc: 'Supera el nivel 22', unlocked: false, reward: 'palette' },
-        { id: 'theme_spectrum', name: 'Spectrum Blanco', desc: 'Alcanza 1.500 puntos', unlocked: false, reward: 'palette' },
-        { id: 'theme_cpc', name: 'Amstrad CPC', desc: 'Alcanza 3.000 puntos', unlocked: false, reward: 'palette' },
-        { id: 'theme_dual_retro', name: 'Dúo Neón Vivo', desc: 'Consigue racha de 10', unlocked: false, reward: 'palette' },
-        { id: 'theme_tri_retro', name: 'Trinidad Neón', desc: 'Llega al nivel 15', unlocked: false, reward: 'palette' },
-        
-        { id: 'mode_blind', name: 'Modo Pulso Ciego', desc: 'Supera nivel 8', unlocked: false, reward: 'mode' },
-        { id: 'mode_extreme', name: 'Modo Espejo Extremo', desc: 'Supera nivel 12', unlocked: false, reward: 'mode' },
-        { id: 'mode_survive', name: 'Supervivencia Absoluta', desc: 'Supera 2.500 puntos', unlocked: false, reward: 'mode' },
-        { id: 'mode_dualorb', name: 'Modo Doble Órbita', desc: 'Supera nivel 20', unlocked: false, reward: 'mode' }
+        { id: 'palette_master', name: 'Coleccionista', desc: 'Explora 10 paletas distintas', unlocked: false }
     ];
 
-    // Paletas unificadas con gamas monocromas y de combinación 100% únicas e independientes
     const themes = [
         { name: 'Cyber Neon', bg: '#050a14', strokes: ['#00ffff', '#00ccff', '#0099ff', '#0055ff', '#33ddff', '#00ffaa'], target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(0, 255, 204, 0.35)', uiColor: '#00ffff', locked: false },
         { name: 'Azul Neón Eléctrico', bg: '#020614', strokes: ['#0088ff', '#3366ff', '#00aaff', '#80ffee', '#0044ff', '#1a8cff'], target: '#00ffff', wave: 'rgba(0, 220, 255, 0.85)', glow: 'rgba(0, 136, 255, 0.35)', uiColor: '#00aaff', locked: false },
         { name: 'Laser Purple', bg: '#0e0214', strokes: ['#bf00ff', '#da70d6', '#ba55d3', '#dda0dd', '#ff66ff', '#9900cc'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(191, 0, 255, 0.35)', uiColor: '#da70d6', locked: false },
         { name: 'Retro Amstrad', bg: '#021008', strokes: ['#33ff33', '#66ff66', '#99ff99', '#ccffcc', '#00ff88', '#22bb44'], target: '#ffff33', wave: 'rgba(255, 255, 51, 0.85)', glow: 'rgba(51, 255, 51, 0.35)', uiColor: '#33ff33', locked: false },
-        { name: 'Sunset Vibe', bg: '#14050a', strokes: ['#ff3366', '#ff6699', '#ff99cc', '#ffcc00', '#ff44aa', '#ff8800'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(255, 51, 102, 0.35)', uiColor: '#ff3366', locked: false },
-        
-        // 5 Paletas Directas Adicionales
-        { name: 'Aurora Boreal', bg: '#02120e', strokes: ['#00ffcc', '#00ff66', '#33ccff', '#00e699', '#66ffcc', '#119988'], target: '#ffffff', wave: 'rgba(0, 255, 204, 0.9)', glow: 'rgba(0, 255, 102, 0.4)', uiColor: '#00ffcc', locked: false },
-        { name: 'Supernova Cobre', bg: '#140802', strokes: ['#ff9933', '#ff5500', '#ffcc00', '#cc4400', '#ffaa44', '#ff3300'], target: '#ffff00', wave: 'rgba(255, 153, 51, 0.9)', glow: 'rgba(255, 85, 0, 0.4)', uiColor: '#ff9933', locked: false },
-        { name: 'Neón Galáctico', bg: '#070214', strokes: ['#9933ff', '#ff33cc', '#33ccff', '#cc33ff', '#6666ff', '#ff3366'], target: '#00ffff', wave: 'rgba(153, 51, 255, 0.9)', glow: 'rgba(255, 51, 204, 0.4)', uiColor: '#cc33ff', locked: false },
-        { name: 'Carmesí Cibernético', bg: '#140206', strokes: ['#ff1a40', '#ff4d79', '#ff80bf', '#cc0033', '#ff6688', '#990022'], target: '#ffffff', wave: 'rgba(255, 26, 64, 0.9)', glow: 'rgba(255, 77, 121, 0.4)', uiColor: '#ff1a40', locked: false },
-        { name: 'Océano Abisal', bg: '#000c14', strokes: ['#00bfff', '#0080ff', '#00ffff', '#0044ff', '#3399ff', '#00e6ff'], target: '#00ffcc', wave: 'rgba(0, 191, 255, 0.9)', glow: 'rgba(0, 128, 255, 0.4)', uiColor: '#00bfff', locked: false },
-
-        // Paletas Desbloqueables Monocromas y de Gama Pura
-        { name: 'Esmeralda Matriz', bg: '#011206', strokes: ['#00ff88', '#00cc66', '#22ff99', '#00aa55', '#44ffaa', '#11bb77'], target: '#00ff88', wave: 'rgba(0, 255, 136, 0.9)', glow: 'rgba(0, 255, 136, 0.4)', uiColor: '#00ff88', locked: true, reqId: 'mono_emerald' },
-        { name: 'Violeta Profundo', bg: '#100214', strokes: ['#b000ff', '#9900ee', '#c533ff', '#aa22ff', '#8800cc', '#d166ff'], target: '#c533ff', wave: 'rgba(176, 0, 255, 0.9)', glow: 'rgba(176, 0, 255, 0.4)', uiColor: '#b000ff', locked: true, reqId: 'mono_violet' },
-        { name: 'Rojo Sangre Pura', bg: '#140202', strokes: ['#ff0033', '#cc0029', '#ff335c', '#ee1133', '#aa0022', '#ff6680'], target: '#ff335c', wave: 'rgba(255, 0, 51, 0.9)', glow: 'rgba(255, 0, 51, 0.4)', uiColor: '#ff0033', locked: true, reqId: 'mono_blood' },
-        { name: 'Naranja Fósforo', bg: '#140800', strokes: ['#ff6600', '#e65c00', '#ff8533', '#ff4400', '#cc5500', '#ffaa33'], target: '#ff8533', wave: 'rgba(255, 102, 0, 0.9)', glow: 'rgba(255, 102, 0, 0.4)', uiColor: '#ff6600', locked: true, reqId: 'mono_amber' },
-        { name: 'Rosa Pastel', bg: '#14020a', strokes: ['#ff66b2', '#ff3399', '#ff80bf', '#ff44aa', '#cc2288', '#ff99d1'], target: '#ff80bf', wave: 'rgba(255, 102, 178, 0.9)', glow: 'rgba(255, 102, 178, 0.4)', uiColor: '#ff66b2', locked: true, reqId: 'mono_pink' },
-        { name: 'Azul Noche', bg: '#02050f', strokes: ['#3366ff', '#0044cc', '#5c85ff', '#2255ee', '#0022aa', '#809fff'], target: '#5c85ff', wave: 'rgba(51, 102, 255, 0.9)', glow: 'rgba(51, 102, 255, 0.4)', uiColor: '#3366ff', locked: true, reqId: 'mono_night' },
-        { name: 'Lima Ácida', bg: '#0d1400', strokes: ['#b3ff00', '#99e600', '#c6ff1a', '#aaff00', '#77bb00', '#d2ff4d'], target: '#c6ff1a', wave: 'rgba(179, 255, 0, 0.9)', glow: 'rgba(179, 255, 0, 0.4)', uiColor: '#b3ff00', locked: true, reqId: 'mono_lime' },
-        { name: 'Dorado Imperial', bg: '#141200', strokes: ['#ffcc00', '#e6b800', '#ffd633', '#ffaa00', '#cc9900', '#ffe066'], target: '#ffd633', wave: 'rgba(255, 204, 0, 0.9)', glow: 'rgba(255, 204, 0, 0.4)', uiColor: '#ffcc00', locked: true, reqId: 'mono_gold' },
-        { name: 'Ceniza Tecnológica', bg: '#0d0d0d', strokes: ['#cccccc', '#aaaaaa', '#e0e0e0', '#999999', '#888888', '#ffffff'], target: '#ffffff', wave: 'rgba(204, 204, 204, 0.9)', glow: 'rgba(204, 204, 204, 0.4)', uiColor: '#cccccc', locked: true, reqId: 'mono_tech' },
-        { name: 'Turquesa Profundo', bg: '#001412', strokes: ['#00ffd9', '#00cca8', '#33ffe2', '#00ccbb', '#009988', '#80ffec'], target: '#33ffe2', wave: 'rgba(0, 255, 217, 0.9)', glow: 'rgba(0, 255, 217, 0.4)', uiColor: '#00ffd9', locked: true, reqId: 'mono_turq' },
-        { name: 'Celeste Ártico (Mono)', bg: '#020b14', strokes: ['#00d4ff', '#33e0ff', '#00bfff', '#80eeff', '#11aacc', '#0088aa'], target: '#00d4ff', wave: 'rgba(0, 212, 255, 0.9)', glow: 'rgba(0, 212, 255, 0.4)', uiColor: '#00d4ff', locked: true, reqId: 'theme_celeste' },
-        { name: 'Ámbar Retro (Mono)', bg: '#140a00', strokes: ['#ffb000', '#ffc733', '#ff9900', '#ffd666', '#ee9900', '#aa6600'], target: '#ffb000', wave: 'rgba(255, 176, 0, 0.9)', glow: 'rgba(255, 176, 0, 0.4)', uiColor: '#ffb000', locked: true, reqId: 'theme_ambar' },
-        { name: 'Rosa Neón (Mono)', bg: '#14000a', strokes: ['#ff007f', '#ff3399', '#ff0066', '#ff66b2', '#ee0066', '#aa0044'], target: '#ff007f', wave: 'rgba(255, 0, 127, 0.9)', glow: 'rgba(255, 0, 127, 0.4)', uiColor: '#ff007f', locked: true, reqId: 'theme_rosa' },
-        { name: 'Cian Eléctrico (Mono)', bg: '#001414', strokes: ['#00ffff', '#33ffff', '#00e6e6', '#80ffff', '#00cccc', '#009999'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.9)', glow: 'rgba(0, 255, 255, 0.4)', uiColor: '#00ffff', locked: true, reqId: 'theme_cian' },
-        { name: 'Spectrum
-
-        { name: 'CPC Verde Puro', bg: '#001100', strokes: ['#00ff00', '#00dd00', '#22ff22', '#00aa00', '#118811', '#55ff55'], target: '#00ff00', wave: 'rgba(0, 255, 0, 0.9)', glow: 'rgba(0, 255, 0, 0.4)', uiColor: '#00ff00', locked: true, reqId: 'theme_cpc' },
-        { name: 'Dúo Neón Vivo', bg: '#05020a', strokes: ['#ff007f', '#00ffff', '#ff33aa', '#33ffff', '#ff66cc', '#80ffff'], target: '#ffff00', wave: 'rgba(255, 0, 127, 0.85)', glow: 'rgba(0, 255, 255, 0.4)', uiColor: '#ff007f', locked: true, reqId: 'theme_dual_retro' },
-        { name: 'Trinidad Brillante', bg: '#02050e', strokes: ['#ff3300', '#33ff00', '#0033ff', '#ff6600', '#00ffcc', '#ffff00'], target: '#ffffff', wave: 'rgba(255, 255, 0, 0.85)', glow: 'rgba(51, 255, 0, 0.4)', uiColor: '#33ff00', locked: true, reqId: 'theme_tri_retro' }
+        { name: 'Sunset Vibe', bg: '#14050a', strokes: ['#ff3366', '#ff6699', '#ff99cc', '#ffcc00', '#ff44aa', '#ff8800'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(255, 51, 102, 0.35)', uiColor: '#ff3366', locked: false }
     ];
     let currentThemeIndex = 0;
     let theme = themes[0];
     let isRandomThemeMode = true;
 
     let pulseRadius = 0;
-    let pulseRadius2 = 0;
     let feedbackTimer = 0;
     let feedbackText = '';
     let feedbackColor = '#00ffff';
@@ -682,30 +619,12 @@
         radius: 175,
         speed: 0.005
     };
-    
-    let target2 = {
-        angle: Math.random() * Math.PI * 2,
-        radius: 120,
-        speed: -0.006
-    };
 
-    
-
-
-
-          function resetAchievements() {
+        function resetAchievements() {
         achievements.forEach(a => a.unlocked = false);
-        let mBox = document.getElementById('modMirror');
-        let dBox = document.getElementById('modDoublePulse');
-        if(mBox) { mBox.disabled = true; mBox.checked = false; }
-        if(dBox) { dBox.disabled = true; dBox.checked = false; }
-        
         achievementToast.innerText = "¡Logros Reseteados!";
         achievementToast.classList.add('show');
         setTimeout(() => achievementToast.classList.remove('show'), 3000);
-        if(document.getElementById('achievementsModal').style.display === 'block') {
-            openAchievements();
-        }
     }
 
     function unlockAchievement(id) {
@@ -715,21 +634,6 @@
             achievementToast.innerText = `🏆 ¡Desbloqueado: ${ach.name}!`;
             achievementToast.classList.add('show');
             setTimeout(() => achievementToast.classList.remove('show'), 3500);
-
-            if (ach.reward === 'mirror') {
-                let box = document.getElementById('modMirror');
-                if (box) {
-                    box.disabled = false;
-                    box.parentElement.innerHTML = '<input type="checkbox" id="modMirror" onchange="updateSettings()" style="width:18px; height:18px;"> Espejo Inverso (✔ Desbloqueado)';
-                }
-            }
-            if (ach.reward === 'doublePulse') {
-                let box = document.getElementById('modDoublePulse');
-                if (box) {
-                    box.disabled = false;
-                    box.parentElement.innerHTML = '<input type="checkbox" id="modDoublePulse" onchange="updateSettings()" style="width:18px; height:18px;"> Pulso Dual (✔ Desbloqueado)';
-                }
-            }
         }
     }
 
@@ -755,7 +659,6 @@
         m.style.display = (m.style.display === 'block') ? 'none' : 'block';
     }
 
-    // Inicializa o cambia la función del Modo Electrón al invocarlo de nuevo
     function initElectronMode() {
         const electronTypes = ['spiral', 'lemniscate', 'cardioid', 'rhodonea', 'lissajous', 'roseFrac'];
         let chosen = electronTypes[Math.floor(Math.random() * electronTypes.length)];
@@ -769,8 +672,7 @@
         electronTrail = [];
     }
 
-    function getElectronPos(cx, cy) {
-        let t = electronAngle;
+    function getElectronPos(cx, cy, t) {
         let tp1 = electronCurve.p1, tp2 = electronCurve.p2;
         let r = 100;
         switch(electronCurve.type) {
@@ -800,8 +702,7 @@
         let th = t * 0.4;
         return {
             x: cx + r * Math.cos(th),
-            y: cy + r * Math.sin(th),
-            radius: Math.abs(r)
+            y: cy + r * Math.sin(th)
         };
     }
 
@@ -809,13 +710,7 @@
         target.angle = Math.random() * Math.PI * 2;
         target.radius = 65 + Math.random() * 100;
         target.speed = (Math.random() > 0.5 ? 1 : -1) * (0.003 + (level * 0.0007));
-        
-        target2.angle = Math.random() * Math.PI * 2;
-        target2.radius = 50 + Math.random() * 110;
-        target2.speed = (Math.random() > 0.5 ? 1 : -1) * (0.004 + (level * 0.0006));
-
         pulseRadius = 0;
-        pulseRadius2 = -60;
     }
 
     function generateNewForm() {
@@ -947,7 +842,6 @@
         return curve.scale * (raw / 100);
     }
 
-
         function createExplosionParticles(x, y) {
         let count = perfectStreak >= 3 ? 25 : 15;
         for (let i = 0; i < count; i++) {
@@ -993,87 +887,15 @@
         mp3Player.volume = musicVolume;
     }
 
+    // Alterna directamente entre Arcade y Electrón para que sea accesible al instante
     function toggleGameMode() {
         initAudioContext();
         playBeepSound();
 
-        let isUnlocked = (reqId) => {
-            let ach = achievements.find(a => a.id === reqId);
-            return ach && ach.unlocked;
-        };
-
         if (gameMode === 'arcade') {
-            gameMode = 'infinite';
-            modeLabel.innerText = "Infinito";
-        } else if (gameMode === 'infinite') {
-            gameMode = 'timeAttack';
-            modeLabel.innerText = "Contrarreloj";
-            startTimeAttack();
-        } else if (gameMode === 'timeAttack') {
-            gameMode = 'ghost';
-            modeLabel.innerText = "Fantasma";
-            if (timeAttackTimer) clearInterval(timeAttackTimer);
-        } else if (gameMode === 'ghost') {
-            if (isUnlocked('mode_blind')) {
-                gameMode = 'blind';
-                modeLabel.innerText = "Pulso Ciego";
-            } else if (isUnlocked('mode_extreme')) {
-                gameMode = 'extreme';
-                modeLabel.innerText = "Espejo Extremo";
-            } else if (isUnlocked('mode_survive')) {
-                gameMode = 'survival';
-                modeLabel.innerText = "Supervivencia";
-            } else if (isUnlocked('mode_dualorb')) {
-                gameMode = 'dualorb';
-                modeLabel.innerText = "Doble Órbita";
-            } else {
-                gameMode = 'electron';
-                modeLabel.innerText = "Electrón";
-                initElectronModelHandler();
-            }
-        } else if (gameMode === 'blind') {
-            if (isUnlocked('mode_extreme')) {
-                gameMode = 'extreme';
-                modeLabel.innerText = "Espejo Extremo";
-            } else if (isUnlocked('mode_survive')) {
-                gameMode = 'survival';
-                modeLabel.innerText = "Supervivencia";
-            } else if (isUnlocked('mode_dualorb')) {
-                gameMode = 'dualorb';
-                modeLabel.innerText = "Doble Órbita";
-            } else {
-                gameMode = 'electron';
-                modeLabel.innerText = "Electrón";
-                initElectronModelHandler();
-            }
-        } else if (gameMode === 'extreme') {
-            if (isUnlocked('mode_survive')) {
-                gameMode = 'survival';
-                modeLabel.innerText = "Supervivencia";
-            } else if (isUnlocked('mode_dualorb')) {
-                gameMode = 'dualorb';
-                modeLabel.innerText = "Doble Órbita";
-            } else {
-                gameMode = 'electron';
-                modeLabel.innerText = "Electrón";
-                initElectronModelHandler();
-            }
-        } else if (gameMode === 'survival') {
-            if (isUnlocked('mode_dualorb')) {
-                gameMode = 'dualorb';
-                modeLabel.innerText = "Doble Órbita";
-            } else {
-                gameMode = 'electron';
-                modeLabel.innerText = "Electrón";
-                initElectronModelHandler();
-            }
-        } else if (gameMode === 'dualorb') {
             gameMode = 'electron';
             modeLabel.innerText = "Electrón";
-            initElectronModelHandler();
-        } else if (gameMode === 'electron') {
-            gameMode = 'arcade';
-            modeLabel.innerText = "Arcade";
+            initElectronMode();
         } else {
             gameMode = 'arcade';
             modeLabel.innerText = "Arcade";
@@ -1087,34 +909,8 @@
         updateDOMStats();
     }
 
-    function initElectronModelHandler() {
-        initElectronMode(); // Cambia la función matemática de movimiento cada vez que se invoca
-    }
-
-    function startTimeAttack() {
-        timeAttackSeconds = 60;
-        if (timeAttackTimer) clearInterval(timeAttackTimer);
-        timeAttackTimer = setInterval(() => {
-            if (!isPaused && !relaxMode && gameMode === 'timeAttack') {
-                timeAttackSeconds--;
-                updateDOMStats();
-                if (timeAttackSeconds <= 0) {
-                    clearInterval(timeAttackTimer);
-                    alert("¡Tiempo agotado! Puntuación final: " + score);
-                    resetGame();
-                }
-            }
-        }, 1000);
-    }
-
     function updateDOMStats() {
-        if (gameMode === 'infinite') {
-            statsRow.innerHTML = `Nivel: <span id="level">${level}</span> | Racha: ${perfectStreak}`;
-        } else if (gameMode === 'timeAttack') {
-            statsRow.innerHTML = `T: ${timeAttackSeconds}s | Ptos: ${score} | Lvl: <span id="level">${level}</span>`;
-        } else {
-            statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Lvl: <span id="level">${level}</span>`;
-        }
+        statsRow.innerHTML = `Ptos: <span id="score">${score}</span> | Récord: <span id="highScore">${highScore}</span> | Lvl: <span id="level">${level}</span>`;
     }
 
     function applyRandomTheme() {
@@ -1160,12 +956,6 @@
         isRandomThemeMode = false;
         currentThemeIndex++;
         
-        while(currentThemeIndex < themes.length && themes[currentThemeIndex].locked) {
-            let ach = achievements.find(a => a.id === themes[currentThemeIndex].reqId);
-            if(ach && ach.unlocked) break;
-            currentThemeIndex++;
-        }
-
         if (currentThemeIndex >= themes.length) {
             isRandomThemeMode = true;
             currentThemeIndex = -1;
@@ -1189,10 +979,8 @@
         if (gameSpeed === 1.0) gameSpeed = 1.5;
         else if (gameSpeed === 1.5) gameSpeed = 2.0;
         else if (gameSpeed === 2.0) { gameSpeed = 3.0; unlockAchievement('speed_demon'); }
-        else if (gameSpeed === 3.0) gameSpeed = 0.25;
-        else if (gameSpeed === 0.25) gameSpeed = 0.5;
         else gameSpeed = 1.0;
-        speedBtn.innerText = 'VEL: ' + gameSpeed.toFixed(2).replace(/\.?0+$/, '') + 'x';
+        speedBtn.innerText = 'VEL: ' + gameSpeed.toFixed(1) + 'x';
     }
 
     function resetGame() {
@@ -1204,11 +992,9 @@
         successfulHits = 0;
         perfectStreak = 0;
         pulseRadius = 0;
-        pulseRadius2 = -60;
         floatingTexts = [];
         if (gameMode === 'electron') initElectronMode();
 
-        if (gameMode === 'timeAttack') startTimeAttack();
         generateNewForm();
         resetTarget();
         updateDOMStats();
@@ -1253,17 +1039,13 @@
         let isHit = false;
 
         if (gameMode === 'electron') {
-            let elPos = getElectronPos(cx, cy);
+            let elPos = getElectronPos(cx, cy, electronAngle);
             let distToTarget = Math.hypot(elPos.x - tx, elPos.y - ty);
             isHit = (distToTarget < 35);
         } else {
-            let tx2 = cx + target2.radius * Math.cos(target2.angle);
             let diff = Math.abs(pulseRadius - target.radius);
-            let diffTarget2 = (gameMode === 'dualorb') ? Math.abs(pulseRadius - target2.radius) : 999;
-            let doublePulseEl = document.getElementById('modDoublePulse');
-            let diff2 = (doublePulseEl && doublePulseEl.checked) ? Math.abs(pulseRadius2 - target.radius) : 999;
             let tolerance = 25;
-            isHit = (diff < tolerance || diffTarget2 < tolerance || diff2 < tolerance);
+            isHit = (diff < tolerance);
         }
 
         if (isHit) {
@@ -1274,39 +1056,18 @@
             
             unlockAchievement('first_perfect');
             if (perfectStreak >= 3) unlockAchievement('streak_3');
-            if (perfectStreak >= 5) unlockAchievement('mono_pink');
             if (perfectStreak >= 7) unlockAchievement('streak_7');
-            if (perfectStreak >= 10) unlockAchievement('theme_dual_retro');
-            if (perfectStreak >= 12) unlockAchievement('theme_rosa');
             if (perfectStreak >= 15) unlockAchievement('streak_15');
-
-            if (score >= 500) unlockAchievement('mono_emerald');
-            if (score >= 800) unlockAchievement('mono_violet');
-            if (score >= 1200) unlockAchievement('mono_night');
-            if (score >= 1500) unlockAchievement('theme_spectrum');
-            if (score >= 2500) {
-                unlockAchievement('mode_survive');
-                unlockAchievement('theme_cpc');
-            }
-            if (score >= 3500) unlockAchievement('mono_gold');
-            if (score >= 4000) unlockAchievement('theme_celeste');
-            if (score >= 4500) unlockAchievement('mono_turq');
+            if (score >= 1000) unlockAchievement('score_1000');
 
             if (perfectStreak > 1) {
                 floatingTexts.push({ x: cx, y: cy - 30, text: `COMBO x${perfectStreak}!`, life: 1.0, color: theme.strokes[0] });
             }
 
-            if (gameMode !== 'infinite') {
-                let ghostBonus = (gameMode === 'ghost' || gameMode === 'extreme') ? 50 : 0;
-                score += 100 + ghostBonus + (level * (gameMode === 'timeAttack' ? 25 : 10)) + (perfectStreak * 10);
-                if (gameMode === 'timeAttack') timeAttackSeconds += 5; // +5 segundos por acierto
-                if (score > highScore) {
-                    highScore = score;
-                    localStorage.setItem('polarHighScorePro', highScore);
-                    if (highScore >= 1000) unlockAchievement('score_1000');
-                    if (highScore >= 5000) unlockAchievement('score_5000');
-                    if (highScore >= 10000) unlockAchievement('score_10000');
-                }
+            score += 100 + (level * 10) + (perfectStreak * 10);
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('polarHighScorePro', highScore);
             }
 
             feedbackText = "¡PERFECTO!";
@@ -1318,19 +1079,7 @@
                 level++;
                 successfulHits = 0;
                 if (isRandomThemeMode) applyRandomTheme();
-                if (level >= 5) unlockAchievement('mono_blood');
-                if (level >= 7) unlockAchievement('mono_amber');
-                if (level >= 8) unlockAchievement('mode_blind');
                 if (level >= 10) unlockAchievement('level_10');
-                if (level >= 12) unlockAchievement('mode_extreme');
-                if (level >= 14) unlockAchievement('mono_lime');
-                if (level >= 15) unlockAchievement('theme_tri_retro');
-                if (level >= 16) unlockAchievement('mono_tech');
-                if (level >= 18) unlockAchievement('theme_ambar');
-                if (level >= 20) unlockAchievement('mode_dualorb');
-                if (level >= 22) unlockAchievement('theme_cian');
-                if (level >= 25) unlockAchievement('level_25');
-                if (level >= 50) unlockAchievement('level_50');
             }
 
             generateNewForm();
@@ -1341,27 +1090,12 @@
             perfectStreak = 0;
             screenShake = 6;
 
-            if (gameMode === 'timeAttack') {
-                timeAttackSeconds = Math.max(0, timeAttackSeconds - 8); // -8 segundos por fallo
-            }
-
-            if (gameMode === 'survival') {
-                score = 0;
-                level = 1;
-                feedbackText = "¡SUPERVIVENCIA ROTA!";
-            } else if (consecutiveFails >= maxFailsForPenalty) {
+            if (consecutiveFails >= maxFailsForPenalty) {
                 consecutiveFails = 0;
-                successfulHits = 0;
-                if (gameMode === 'infinite' || gameMode === 'arcade' || gameMode === 'ghost' || gameMode === 'blind' || gameMode === 'electron') {
-                    if (level > 1) unlockAchievement('survivor');
-                    level = Math.max(1, level - 1);
-                    feedbackText = "¡BAJAS NIVEL!";
-                } else {
-                    score = 0;
-                    feedbackText = "¡PUNTOS A CERO!";
-                }
+                level = Math.max(1, level - 1);
+                feedbackText = "¡BAJAS NIVEL!";
             } else {
-                if (gameMode !== 'infinite') score = Math.max(0, score - 15);
+                score = Math.max(0, score - 15);
                 feedbackText = "¡FALLO!";
             }
             feedbackColor = "#ffaa00";
@@ -1369,9 +1103,9 @@
         
         updateDOMStats();
         feedbackTimer = 35;
-        }
+    }
 
-    function update() {
+        function update() {
         if (isPaused) return;
         if (screenShake > 0) screenShake *= 0.85;
 
@@ -1384,19 +1118,14 @@
             }
         }
 
-        let mirrorEl = document.getElementById('modMirror');
-        let mirrorMod = (mirrorEl && mirrorEl.checked) ? -1 : 1;
-        if (gameMode === 'extreme') mirrorMod *= (Math.sin(angle * 5) > 0 ? 1.5 : -1.5);
-
-        target.angle += target.speed * gameSpeed * mirrorMod;
-        target2.angle += target2.speed * gameSpeed * mirrorMod;
+        target.angle += target.speed * gameSpeed;
 
         let cx = canvas.width / 2;
         let cy = canvas.height / 2;
         
         if (gameMode === 'electron') {
-            electronAngle += 0.04 * gameSpeed * mirrorMod;
-            let elPos = getElectronPos(cx, cy);
+            electronAngle += 0.04 * gameSpeed;
+            let elPos = getElectronPos(cx, cy, electronAngle);
             electronTrail.push({ x: elPos.x, y: elPos.y, life: 1.0 });
             if (electronTrail.length > 25) electronTrail.shift();
             for (let et of electronTrail) et.life -= 0.04;
@@ -1405,11 +1134,7 @@
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
         
-        let isGhostInvisible = ((gameMode === 'ghost' || gameMode === 'extreme') && pulseRadius > 80) || (gameMode === 'blind');
-        
-        if (!isGhostInvisible) {
-            targetParticles.push({ x: tx, y: ty, life: 1.0 });
-        }
+        targetParticles.push({ x: tx, y: ty, life: 1.0 });
 
         for (let i = targetParticles.length - 1; i >= 0; i--) {
             targetParticles[i].life -= 0.1;
@@ -1424,19 +1149,12 @@
 
         if (gameMode !== 'electron') {
             pulseRadius += (1.2 + (level * 0.05)) * gameSpeed;
-            let doublePulseEl = document.getElementById('modDoublePulse');
-            if (doublePulseEl && doublePulseEl.checked) {
-                pulseRadius2 += (1.2 + (level * 0.05)) * gameSpeed;
-            }
-
             if (pulseRadius > 230) {
                 consecutiveFails++;
                 perfectStreak = 0;
                 if (consecutiveFails >= maxFailsForPenalty) {
                     consecutiveFails = 0;
-                    if (level > 1) unlockAchievement('survivor');
-                    if (gameMode === 'infinite') level = Math.max(1, level - 1);
-                    else score = 0;
+                    level = Math.max(1, level - 1);
                     updateDOMStats();
                 }
                 resetTarget();
@@ -1450,14 +1168,12 @@
             if (p.life <= 0) particles.splice(i, 1);
         }
 
-        angle += 0.003 * gameSpeed * mirrorMod;
-        let doublePulseEl = document.getElementById('modDoublePulse');
-        let dPulseActive = doublePulseEl && doublePulseEl.checked;
+        angle += 0.003 * gameSpeed;
         if (autoMode) {
             if (gameMode === 'electron') {
-                let elPos = getElectronPos(cx, cy);
+                let elPos = getElectronPos(cx, cy, electronAngle);
                 if (Math.hypot(elPos.x - tx, elPos.y - ty) < 20) checkAction();
-            } else if (Math.abs(pulseRadius - target.radius) < 2 || (dPulseActive && Math.abs(pulseRadius2 - target.radius) < 2)) {
+            } else if (Math.abs(pulseRadius - target.radius) < 2) {
                 checkAction();
             }
         }
@@ -1483,7 +1199,7 @@
         ctx.globalAlpha = 1.0;
     }
 
-    function draw() {
+        function draw() {
         ctx.save();
         if (screenShake > 0) {
             ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
@@ -1577,11 +1293,10 @@
             ctx.globalAlpha = 1.0;
         }
 
-        let isGhostInvisible = ((gameMode === 'ghost' || gameMode === 'extreme') && pulseRadius > 80) || (gameMode === 'blind');
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
         
-        if (!relaxMode && !isGhostInvisible) {
+        if (!relaxMode) {
             ctx.beginPath();
             ctx.arc(tx, ty, 8, 0, Math.PI * 2);
             ctx.fillStyle = theme.target;
@@ -1589,15 +1304,6 @@
             ctx.shadowBlur = 12;
             ctx.fill();
             ctx.shadowBlur = 0;
-        }
-
-        if (gameMode === 'dualorb' && !relaxMode) {
-            let tx2 = cx + target2.radius * Math.cos(target2.angle);
-            let ty2 = cy + target2.radius * Math.sin(target2.angle);
-            ctx.beginPath();
-            ctx.arc(tx2, ty2, 8, 0, Math.PI * 2);
-            ctx.fillStyle = theme.strokes[1] || '#ffffff';
-            ctx.fill();
         }
 
         for (let p of particles) {
@@ -1609,8 +1315,20 @@
             ctx.globalAlpha = 1.0;
         }
 
-        // Renderizado especial para el Modo Electrón (Estela y Partícula Electrón)
+        // --- RENDERIZADO DEL TRAZADO Y PARTÍCULA MODO ELECTRÓN ---
         if (gameMode === 'electron' && !relaxMode) {
+            ctx.beginPath();
+            ctx.strokeStyle = theme.wave;
+            ctx.lineWidth = 1.5;
+            ctx.globalAlpha = 0.4;
+            let maxSteps = Math.PI * 16;
+            for (let tStep = 0; tStep < maxSteps; tStep += 0.05) {
+                let pCoord = getElectronPos(cx, cy, tStep);
+                if (tStep === 0) ctx.moveTo(pCoord.x, pCoord.y);
+                else ctx.lineTo(pCoord.x, pCoord.y);
+            }
+            ctx.stroke();
+
             for (let et of electronTrail) {
                 ctx.beginPath();
                 ctx.arc(et.x, et.y, 4, 0, Math.PI * 2);
@@ -1620,7 +1338,7 @@
             }
             ctx.globalAlpha = 1.0;
 
-            let elPos = getElectronPos(cx, cy);
+            let elPos = getElectronPos(cx, cy, electronAngle);
             ctx.beginPath();
             ctx.arc(elPos.x, elPos.y, 9, 0, Math.PI * 2);
             ctx.fillStyle = theme.wave;
@@ -1633,15 +1351,6 @@
             ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
             ctx.strokeStyle = theme.wave;
             ctx.lineWidth = 2.5;
-            ctx.stroke();
-        }
-
-        let doublePulseEl = document.getElementById('modDoublePulse');
-        if (doublePulseEl && doublePulseEl.checked && pulseRadius2 > 0 && !relaxMode && gameMode !== 'electron') {
-            ctx.beginPath();
-            ctx.arc(cx, cy, pulseRadius2, 0, Math.PI * 2);
-            ctx.strokeStyle = theme.target;
-            ctx.lineWidth = 2.0;
             ctx.stroke();
         }
 
@@ -1695,14 +1404,3 @@
 </script>
 </body>
 </html>
-
-        
-
-
-        
-
-
-
-        
-
-            
