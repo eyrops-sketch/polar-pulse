@@ -270,6 +270,7 @@
                 <option value="2">2 (Doble)</option>
                 <option value="3">3 (Triple)</option>
                 <option value="4">4 (Cuádruple Mandala)</option>
+                <option value="6" selected>6 (Gran Amplitud)</option>
             </select>
         </div>
         <div class="setting-group">
@@ -341,7 +342,7 @@
             <input type="file" id="localMusicInput" multiple accept="audio/*" style="display: none;" onchange="loadLocalMusic(event)">
         </div>
     </div>
-
+    
     <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -454,7 +455,7 @@
     let fxVolume = 0.3;
     let musicVolume = 0.5;
     let curveVarietyMode = 'pretty'; 
-    let layerCount = 1; 
+    let layerCount = 6; 
 
     let musicMode = 1;
     let currentTrackIndex = 1;
@@ -464,7 +465,7 @@
 
     let localPlaylist = [];
     let isUsingLocalMusic = false;
-    let relaxVariant = 'curves'; // 'curves', 'petals', 'combined'
+    let relaxVariant = 'curves';
 
     function updateRelaxVariant() {
         playBeepSound();
@@ -478,7 +479,7 @@
         setTimeout(() => trackToast.classList.remove('show'), 4500);
     }
 
-        function loadLocalMusic(event) {
+    function loadLocalMusic(event) {
         const files = event.target.files;
         if (files.length > 0) {
             localPlaylist = [];
@@ -566,11 +567,18 @@
     let gameSpeed = 1.0;
     let angle = 0;
     
+    // Variables para el Modo Electrón
+    let electronAngle = 0;
+    let electronCurve = { type: 'spiral', p1: 2, p2: 1, scale: 150 };
+    let electronTrail = [];
+
     let activeCurves = [
-        { type: 'rhodonea', p1: 5, p2: 6, p3: 2, scale: 195 },
-        { type: 'lemniscate', p1: 4, p2: 3, p3: 1, scale: 145 },
-        { type: 'star', p1: 3, p2: 2, p3: 1, scale: 100 },
-        { type: 'trifolio', p1: 2, p2: 1, p3: 1, scale: 65 }
+        { type: 'rhodonea', p1: 5, p2: 6, p3: 2, scale: 280 },
+        { type: 'lemniscate', p1: 4, p2: 3, p3: 1, scale: 240 },
+        { type: 'star', p1: 3, p2: 2, p3: 1, scale: 195 },
+        { type: 'trifolio', p1: 2, p2: 1, p3: 1, scale: 145 },
+        { type: 'epicycloid', p1: 3, p2: 2, p3: 1, scale: 100 },
+        { type: 'roseFrac', p1: 5, p2: 2, p3: 1, scale: 65 }
     ];
 
     let relaxTimer = 0;
@@ -620,32 +628,41 @@
         { id: 'mode_dualorb', name: 'Modo Doble Órbita', desc: 'Supera nivel 20', unlocked: false, reward: 'mode' }
     ];
 
+    // Paletas unificadas con gamas monocromas y de combinación 100% únicas e independientes
     const themes = [
-        { name: 'Cyber Neon', bg: '#050a14', strokes: ['#00ffff', '#00ccff', '#0099ff', '#0055ff'], target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(0, 255, 204, 0.35)', uiColor: '#00ffff', locked: false },
-        { name: 'Matrix Cyber', bg: '#020f04', strokes: ['#00ff55', '#adff2f', '#7fff00', '#32cd32'], target: '#ffffff', wave: 'rgba(0, 255, 85, 0.85)', glow: 'rgba(0, 255, 85, 0.35)', uiColor: '#00ff55', locked: false },
-        { name: 'Laser Purple', bg: '#0e0214', strokes: ['#bf00ff', '#da70d6', '#ba55d3', '#dda0dd'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(191, 0, 255, 0.35)', uiColor: '#da70d6', locked: false },
-        { name: 'Retro Amstrad', bg: '#021008', strokes: ['#33ff33', '#66ff66', '#99ff99', '#ccffcc'], target: '#ffff33', wave: 'rgba(255, 255, 51, 0.85)', glow: 'rgba(51, 255, 51, 0.35)', uiColor: '#33ff33', locked: false },
-        { name: 'Sunset Vibe', bg: '#14050a', strokes: ['#ff3366', '#ff6699', '#ff99cc', '#ffcc00'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(255, 51, 102, 0.35)', uiColor: '#ff3366', locked: false },
+        { name: 'Cyber Neon', bg: '#050a14', strokes: ['#00ffff', '#00ccff', '#0099ff', '#0055ff', '#33ddff', '#00ffaa'], target: '#00ffcc', wave: 'rgba(0, 255, 204, 0.85)', glow: 'rgba(0, 255, 204, 0.35)', uiColor: '#00ffff', locked: false },
+        { name: 'Azul Neón Eléctrico', bg: '#020614', strokes: ['#0088ff', '#3366ff', '#00aaff', '#80ffee', '#0044ff', '#1a8cff'], target: '#00ffff', wave: 'rgba(0, 220, 255, 0.85)', glow: 'rgba(0, 136, 255, 0.35)', uiColor: '#00aaff', locked: false },
+        { name: 'Laser Purple', bg: '#0e0214', strokes: ['#bf00ff', '#da70d6', '#ba55d3', '#dda0dd', '#ff66ff', '#9900cc'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(191, 0, 255, 0.35)', uiColor: '#da70d6', locked: false },
+        { name: 'Retro Amstrad', bg: '#021008', strokes: ['#33ff33', '#66ff66', '#99ff99', '#ccffcc', '#00ff88', '#22bb44'], target: '#ffff33', wave: 'rgba(255, 255, 51, 0.85)', glow: 'rgba(51, 255, 51, 0.35)', uiColor: '#33ff33', locked: false },
+        { name: 'Sunset Vibe', bg: '#14050a', strokes: ['#ff3366', '#ff6699', '#ff99cc', '#ffcc00', '#ff44aa', '#ff8800'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.85)', glow: 'rgba(255, 51, 102, 0.35)', uiColor: '#ff3366', locked: false },
         
-        { name: 'Esmeralda Matriz', bg: '#011206', strokes: ['#00ff88', '#00cc66', '#00ff88', '#22ff99'], target: '#00ff88', wave: 'rgba(0, 255, 136, 0.9)', glow: 'rgba(0, 255, 136, 0.4)', uiColor: '#00ff88', locked: true, reqId: 'mono_emerald' },
-        { name: 'Violeta Profundo', bg: '#100214', strokes: ['#b000ff', '#9900ee', '#c533ff', '#b000ff'], target: '#c533ff', wave: 'rgba(176, 0, 255, 0.9)', glow: 'rgba(176, 0, 255, 0.4)', uiColor: '#b000ff', locked: true, reqId: 'mono_violet' },
-        { name: 'Rojo Sangre Pura', bg: '#140202', strokes: ['#ff0033', '#cc0029', '#ff335c', '#ff0033'], target: '#ff335c', wave: 'rgba(255, 0, 51, 0.9)', glow: 'rgba(255, 0, 51, 0.4)', uiColor: '#ff0033', locked: true, reqId: 'mono_blood' },
-        { name: 'Naranja Fósforo', bg: '#140800', strokes: ['#ff6600', '#e65c00', '#ff8533', '#ff6600'], target: '#ff8533', wave: 'rgba(255, 102, 0, 0.9)', glow: 'rgba(255, 102, 0, 0.4)', uiColor: '#ff6600', locked: true, reqId: 'mono_amber' },
-        { name: 'Rosa Pastel', bg: '#14020a', strokes: ['#ff66b2', '#ff3399', '#ff80bf', '#ff66b2'], target: '#ff80bf', wave: 'rgba(255, 102, 178, 0.9)', glow: 'rgba(255, 102, 178, 0.4)', uiColor: '#ff66b2', locked: true, reqId: 'mono_pink' },
-        { name: 'Azul Noche', bg: '#02050f', strokes: ['#3366ff', '#0044cc', '#5c85ff', '#3366ff'], target: '#5c85ff', wave: 'rgba(51, 102, 255, 0.9)', glow: 'rgba(51, 102, 255, 0.4)', uiColor: '#3366ff', locked: true, reqId: 'mono_night' },
-        { name: 'Lima Ácida', bg: '#0d1400', strokes: ['#b3ff00', '#99e600', '#c6ff1a', '#b3ff00'], target: '#c6ff1a', wave: 'rgba(179, 255, 0, 0.9)', glow: 'rgba(179, 255, 0, 0.4)', uiColor: '#b3ff00', locked: true, reqId: 'mono_lime' },
-        { name: 'Dorado Imperial', bg: '#141200', strokes: ['#ffcc00', '#e6b800', '#ffd633', '#ffcc00'], target: '#ffd633', wave: 'rgba(255, 204, 0, 0.9)', glow: 'rgba(255, 204, 0, 0.4)', uiColor: '#ffcc00', locked: true, reqId: 'mono_gold' },
-        { name: 'Ceniza Tecnológica', bg: '#0d0d0d', strokes: ['#cccccc', '#aaaaaa', '#e0e0e0', '#cccccc'], target: '#ffffff', wave: 'rgba(204, 204, 204, 0.9)', glow: 'rgba(204, 204, 204, 0.4)', uiColor: '#cccccc', locked: true, reqId: 'mono_tech' },
-        { name: 'Turquesa Profundo', bg: '#001412', strokes: ['#00ffd9', '#00cca8', '#33ffe2', '#00ffd9'], target: '#33ffe2', wave: 'rgba(0, 255, 217, 0.9)', glow: 'rgba(0, 255, 217, 0.4)', uiColor: '#00ffd9', locked: true, reqId: 'mono_turq' },
+        // 5 Paletas Directas Adicionales
+        { name: 'Aurora Boreal', bg: '#02120e', strokes: ['#00ffcc', '#00ff66', '#33ccff', '#00e699', '#66ffcc', '#119988'], target: '#ffffff', wave: 'rgba(0, 255, 204, 0.9)', glow: 'rgba(0, 255, 102, 0.4)', uiColor: '#00ffcc', locked: false },
+        { name: 'Supernova Cobre', bg: '#140802', strokes: ['#ff9933', '#ff5500', '#ffcc00', '#cc4400', '#ffaa44', '#ff3300'], target: '#ffff00', wave: 'rgba(255, 153, 51, 0.9)', glow: 'rgba(255, 85, 0, 0.4)', uiColor: '#ff9933', locked: false },
+        { name: 'Neón Galáctico', bg: '#070214', strokes: ['#9933ff', '#ff33cc', '#33ccff', '#cc33ff', '#6666ff', '#ff3366'], target: '#00ffff', wave: 'rgba(153, 51, 255, 0.9)', glow: 'rgba(255, 51, 204, 0.4)', uiColor: '#cc33ff', locked: false },
+        { name: 'Carmesí Cibernético', bg: '#140206', strokes: ['#ff1a40', '#ff4d79', '#ff80bf', '#cc0033', '#ff6688', '#990022'], target: '#ffffff', wave: 'rgba(255, 26, 64, 0.9)', glow: 'rgba(255, 77, 121, 0.4)', uiColor: '#ff1a40', locked: false },
+        { name: 'Océano Abisal', bg: '#000c14', strokes: ['#00bfff', '#0080ff', '#00ffff', '#0044ff', '#3399ff', '#00e6ff'], target: '#00ffcc', wave: 'rgba(0, 191, 255, 0.9)', glow: 'rgba(0, 128, 255, 0.4)', uiColor: '#00bfff', locked: false },
 
-        { name: 'Celeste Ártico (Mono)', bg: '#020b14', strokes: ['#00d4ff', '#33e0ff', '#00bfff', '#80eeff'], target: '#00d4ff', wave: 'rgba(0, 212, 255, 0.9)', glow: 'rgba(0, 212, 255, 0.4)', uiColor: '#00d4ff', locked: true, reqId: 'theme_celeste' },
-        { name: 'Ámbar Retro (Mono)', bg: '#140a00', strokes: ['#ffb000', '#ffc733', '#ff9900', '#ffd666'], target: '#ffb000', wave: 'rgba(255, 176, 0, 0.9)', glow: 'rgba(255, 176, 0, 0.4)', uiColor: '#ffb000', locked: true, reqId: 'theme_ambar' },
-        { name: 'Rosa Neón (Mono)', bg: '#14000a', strokes: ['#ff007f', '#ff3399', '#ff0066', '#ff66b2'], target: '#ff007f', wave: 'rgba(255, 0, 127, 0.9)', glow: 'rgba(255, 0, 127, 0.4)', uiColor: '#ff007f', locked: true, reqId: 'theme_rosa' },
-        { name: 'Cian Eléctrico (Mono)', bg: '#001414', strokes: ['#00ffff', '#33ffff', '#00e6e6', '#80ffff'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.9)', glow: 'rgba(0, 255, 255, 0.4)', uiColor: '#00ffff', locked: true, reqId: 'theme_cian' },
-        { name: 'Spectrum Blanco', bg: '#000000', strokes: ['#ffffff', '#cccccc', '#ffffff', '#aaaaaa'], target: '#ffffff', wave: 'rgba(255, 255, 255, 0.9)', glow: 'rgba(255, 255, 255, 0.4)', uiColor: '#ffffff', locked: true, reqId: 'theme_spectrum' },
-        { name: 'CPC Verde Puro', bg: '#001100', strokes: ['#00ff00', '#00dd00', '#00ff00', '#22ff22'], target: '#00ff00', wave: 'rgba(0, 255, 0, 0.9)', glow: 'rgba(0, 255, 0, 0.4)', uiColor: '#00ff00', locked: true, reqId: 'theme_cpc' },
-        { name: 'Dúo Neón Vivo', bg: '#05020a', strokes: ['#ff007f', '#00ffff', '#ff007f', '#00ffff'], target: '#ffff00', wave: 'rgba(255, 0, 127, 0.85)', glow: 'rgba(0, 255, 255, 0.4)', uiColor: '#ff007f', locked: true, reqId: 'theme_dual_retro' },
-        { name: 'Trinidad Brillante', bg: '#02050e', strokes: ['#ff3300', '#33ff00', '#0033ff', '#ffff00'], target: '#ffffff', wave: 'rgba(255, 255, 0, 0.85)', glow: 'rgba(51, 255, 0, 0.4)', uiColor: '#33ff00', locked: true, reqId: 'theme_tri_retro' }
+        // Paletas Desbloqueables Monocromas y de Gama Pura
+        { name: 'Esmeralda Matriz', bg: '#011206', strokes: ['#00ff88', '#00cc66', '#22ff99', '#00aa55', '#44ffaa', '#11bb77'], target: '#00ff88', wave: 'rgba(0, 255, 136, 0.9)', glow: 'rgba(0, 255, 136, 0.4)', uiColor: '#00ff88', locked: true, reqId: 'mono_emerald' },
+        { name: 'Violeta Profundo', bg: '#100214', strokes: ['#b000ff', '#9900ee', '#c533ff', '#aa22ff', '#8800cc', '#d166ff'], target: '#c533ff', wave: 'rgba(176, 0, 255, 0.9)', glow: 'rgba(176, 0, 255, 0.4)', uiColor: '#b000ff', locked: true, reqId: 'mono_violet' },
+        { name: 'Rojo Sangre Pura', bg: '#140202', strokes: ['#ff0033', '#cc0029', '#ff335c', '#ee1133', '#aa0022', '#ff6680'], target: '#ff335c', wave: 'rgba(255, 0, 51, 0.9)', glow: 'rgba(255, 0, 51, 0.4)', uiColor: '#ff0033', locked: true, reqId: 'mono_blood' },
+        { name: 'Naranja Fósforo', bg: '#140800', strokes: ['#ff6600', '#e65c00', '#ff8533', '#ff4400', '#cc5500', '#ffaa33'], target: '#ff8533', wave: 'rgba(255, 102, 0, 0.9)', glow: 'rgba(255, 102, 0, 0.4)', uiColor: '#ff6600', locked: true, reqId: 'mono_amber' },
+        { name: 'Rosa Pastel', bg: '#14020a', strokes: ['#ff66b2', '#ff3399', '#ff80bf', '#ff44aa', '#cc2288', '#ff99d1'], target: '#ff80bf', wave: 'rgba(255, 102, 178, 0.9)', glow: 'rgba(255, 102, 178, 0.4)', uiColor: '#ff66b2', locked: true, reqId: 'mono_pink' },
+        { name: 'Azul Noche', bg: '#02050f', strokes: ['#3366ff', '#0044cc', '#5c85ff', '#2255ee', '#0022aa', '#809fff'], target: '#5c85ff', wave: 'rgba(51, 102, 255, 0.9)', glow: 'rgba(51, 102, 255, 0.4)', uiColor: '#3366ff', locked: true, reqId: 'mono_night' },
+        { name: 'Lima Ácida', bg: '#0d1400', strokes: ['#b3ff00', '#99e600', '#c6ff1a', '#aaff00', '#77bb00', '#d2ff4d'], target: '#c6ff1a', wave: 'rgba(179, 255, 0, 0.9)', glow: 'rgba(179, 255, 0, 0.4)', uiColor: '#b3ff00', locked: true, reqId: 'mono_lime' },
+        { name: 'Dorado Imperial', bg: '#141200', strokes: ['#ffcc00', '#e6b800', '#ffd633', '#ffaa00', '#cc9900', '#ffe066'], target: '#ffd633', wave: 'rgba(255, 204, 0, 0.9)', glow: 'rgba(255, 204, 0, 0.4)', uiColor: '#ffcc00', locked: true, reqId: 'mono_gold' },
+        { name: 'Ceniza Tecnológica', bg: '#0d0d0d', strokes: ['#cccccc', '#aaaaaa', '#e0e0e0', '#999999', '#888888', '#ffffff'], target: '#ffffff', wave: 'rgba(204, 204, 204, 0.9)', glow: 'rgba(204, 204, 204, 0.4)', uiColor: '#cccccc', locked: true, reqId: 'mono_tech' },
+        { name: 'Turquesa Profundo', bg: '#001412', strokes: ['#00ffd9', '#00cca8', '#33ffe2', '#00ccbb', '#009988', '#80ffec'], target: '#33ffe2', wave: 'rgba(0, 255, 217, 0.9)', glow: 'rgba(0, 255, 217, 0.4)', uiColor: '#00ffd9', locked: true, reqId: 'mono_turq' },
+        { name: 'Celeste Ártico (Mono)', bg: '#020b14', strokes: ['#00d4ff', '#33e0ff', '#00bfff', '#80eeff', '#11aacc', '#0088aa'], target: '#00d4ff', wave: 'rgba(0, 212, 255, 0.9)', glow: 'rgba(0, 212, 255, 0.4)', uiColor: '#00d4ff', locked: true, reqId: 'theme_celeste' },
+        { name: 'Ámbar Retro (Mono)', bg: '#140a00', strokes: ['#ffb000', '#ffc733', '#ff9900', '#ffd666', '#ee9900', '#aa6600'], target: '#ffb000', wave: 'rgba(255, 176, 0, 0.9)', glow: 'rgba(255, 176, 0, 0.4)', uiColor: '#ffb000', locked: true, reqId: 'theme_ambar' },
+        { name: 'Rosa Neón (Mono)', bg: '#14000a', strokes: ['#ff007f', '#ff3399', '#ff0066', '#ff66b2', '#ee0066', '#aa0044'], target: '#ff007f', wave: 'rgba(255, 0, 127, 0.9)', glow: 'rgba(255, 0, 127, 0.4)', uiColor: '#ff007f', locked: true, reqId: 'theme_rosa' },
+        { name: 'Cian Eléctrico (Mono)', bg: '#001414', strokes: ['#00ffff', '#33ffff', '#00e6e6', '#80ffff', '#00cccc', '#009999'], target: '#00ffff', wave: 'rgba(0, 255, 255, 0.9)', glow: 'rgba(0, 255, 255, 0.4)', uiColor: '#00ffff', locked: true, reqId: 'theme_cian' },
+        { name: 'Spectrum
+
+        { name: 'CPC Verde Puro', bg: '#001100', strokes: ['#00ff00', '#00dd00', '#22ff22', '#00aa00', '#118811', '#55ff55'], target: '#00ff00', wave: 'rgba(0, 255, 0, 0.9)', glow: 'rgba(0, 255, 0, 0.4)', uiColor: '#00ff00', locked: true, reqId: 'theme_cpc' },
+        { name: 'Dúo Neón Vivo', bg: '#05020a', strokes: ['#ff007f', '#00ffff', '#ff33aa', '#33ffff', '#ff66cc', '#80ffff'], target: '#ffff00', wave: 'rgba(255, 0, 127, 0.85)', glow: 'rgba(0, 255, 255, 0.4)', uiColor: '#ff007f', locked: true, reqId: 'theme_dual_retro' },
+        { name: 'Trinidad Brillante', bg: '#02050e', strokes: ['#ff3300', '#33ff00', '#0033ff', '#ff6600', '#00ffcc', '#ffff00'], target: '#ffffff', wave: 'rgba(255, 255, 0, 0.85)', glow: 'rgba(51, 255, 0, 0.4)', uiColor: '#33ff00', locked: true, reqId: 'theme_tri_retro' }
     ];
     let currentThemeIndex = 0;
     let theme = themes[0];
@@ -672,7 +689,11 @@
         speed: -0.006
     };
 
-        function resetAchievements() {
+    
+
+
+
+          function resetAchievements() {
         achievements.forEach(a => a.unlocked = false);
         let mBox = document.getElementById('modMirror');
         let dBox = document.getElementById('modDoublePulse');
@@ -734,6 +755,56 @@
         m.style.display = (m.style.display === 'block') ? 'none' : 'block';
     }
 
+    // Inicializa o cambia la función del Modo Electrón al invocarlo de nuevo
+    function initElectronMode() {
+        const electronTypes = ['spiral', 'lemniscate', 'cardioid', 'rhodonea', 'lissajous', 'roseFrac'];
+        let chosen = electronTypes[Math.floor(Math.random() * electronTypes.length)];
+        electronCurve = {
+            type: chosen,
+            p1: Math.floor(Math.random() * 3) + 1,
+            p2: Math.floor(Math.random() * 2) + 1,
+            scale: 130 + Math.random() * 60
+        };
+        electronAngle = 0;
+        electronTrail = [];
+    }
+
+    function getElectronPos(cx, cy) {
+        let t = electronAngle;
+        let tp1 = electronCurve.p1, tp2 = electronCurve.p2;
+        let r = 100;
+        switch(electronCurve.type) {
+            case 'spiral':
+                r = 40 + Math.abs(Math.sin(t * 0.2)) * 140;
+                break;
+            case 'lemniscate':
+                r = electronCurve.scale * Math.sqrt(Math.abs(Math.cos(tp1 * t * 0.15)));
+                break;
+            case 'cardioid':
+                r = electronCurve.scale * 0.6 * (1 + Math.cos(tp1 * t * 0.2));
+                break;
+            case 'rhodonea':
+                r = electronCurve.scale * Math.cos((tp1 * t * 0.15) / tp2);
+                break;
+            case 'lissajous':
+                r = electronCurve.scale * (0.4 + 0.6 * Math.sin(tp1 * t * 0.15) * Math.cos(tp2 * t * 0.15));
+                break;
+            case 'roseFrac':
+                r = electronCurve.scale * Math.sin((tp1 * t * 0.15) / tp2);
+                break;
+            default:
+                r = electronCurve.scale * Math.sin(tp1 * t * 0.15);
+                break;
+        }
+        if (isNaN(r)) r = 100;
+        let th = t * 0.4;
+        return {
+            x: cx + r * Math.cos(th),
+            y: cy + r * Math.sin(th),
+            radius: Math.abs(r)
+        };
+    }
+
     function resetTarget() {
         target.angle = Math.random() * Math.PI * 2;
         target.radius = 65 + Math.random() * 100;
@@ -765,9 +836,9 @@
         const pool = (curveVarietyMode === 'pretty') ? prettyCurves : allCurves;
 
         activeCurves = [];
-        let baseScales = [195, 150, 105, 65]; 
+        let baseScales = [280, 240, 195, 145, 100, 65]; 
 
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 6; i++) {
             let valid = false;
             let attempts = 0;
             let curveObj = {};
@@ -874,9 +945,10 @@
             default: raw = Math.sin(tp1 * t) * 100; break;
         }
         return curve.scale * (raw / 100);
-            }
+    }
 
-            function createExplosionParticles(x, y) {
+
+        function createExplosionParticles(x, y) {
         let count = perfectStreak >= 3 ? 25 : 15;
         for (let i = 0; i < count; i++) {
             let pAngle = Math.random() * Math.PI * 2;
@@ -913,7 +985,7 @@
     function updateSettings() {
         playBeepSound();
         curveVarietyMode = document.getElementById('curveVarietySelect').value;
-        layerCount = parseInt(document.getElementById('layerCountSelect').value) || 1;
+        layerCount = parseInt(document.getElementById('layerCountSelect').value) || 6;
         requiredHitsForLevel = parseInt(document.getElementById('hitsPerLevelInput').value) || 1;
         maxFailsForPenalty = parseInt(document.getElementById('failsPerPenaltyInput').value) || 3;
         fxVolume = parseFloat(document.getElementById('fxVolInput').value);
@@ -955,8 +1027,9 @@
                 gameMode = 'dualorb';
                 modeLabel.innerText = "Doble Órbita";
             } else {
-                gameMode = 'arcade';
-                modeLabel.innerText = "Arcade";
+                gameMode = 'electron';
+                modeLabel.innerText = "Electrón";
+                initElectronModelHandler();
             }
         } else if (gameMode === 'blind') {
             if (isUnlocked('mode_extreme')) {
@@ -969,8 +1042,9 @@
                 gameMode = 'dualorb';
                 modeLabel.innerText = "Doble Órbita";
             } else {
-                gameMode = 'arcade';
-                modeLabel.innerText = "Arcade";
+                gameMode = 'electron';
+                modeLabel.innerText = "Electrón";
+                initElectronModelHandler();
             }
         } else if (gameMode === 'extreme') {
             if (isUnlocked('mode_survive')) {
@@ -980,18 +1054,24 @@
                 gameMode = 'dualorb';
                 modeLabel.innerText = "Doble Órbita";
             } else {
-                gameMode = 'arcade';
-                modeLabel.innerText = "Arcade";
+                gameMode = 'electron';
+                modeLabel.innerText = "Electrón";
+                initElectronModelHandler();
             }
         } else if (gameMode === 'survival') {
             if (isUnlocked('mode_dualorb')) {
                 gameMode = 'dualorb';
                 modeLabel.innerText = "Doble Órbita";
             } else {
-                gameMode = 'arcade';
-                modeLabel.innerText = "Arcade";
+                gameMode = 'electron';
+                modeLabel.innerText = "Electrón";
+                initElectronModelHandler();
             }
         } else if (gameMode === 'dualorb') {
+            gameMode = 'electron';
+            modeLabel.innerText = "Electrón";
+            initElectronModelHandler();
+        } else if (gameMode === 'electron') {
             gameMode = 'arcade';
             modeLabel.innerText = "Arcade";
         } else {
@@ -1005,6 +1085,10 @@
         successfulHits = 0;
         perfectStreak = 0;
         updateDOMStats();
+    }
+
+    function initElectronModelHandler() {
+        initElectronMode(); // Cambia la función matemática de movimiento cada vez que se invoca
     }
 
     function startTimeAttack() {
@@ -1039,7 +1123,7 @@
         theme = {
             name: 'Aleatorio',
             bg: '#03060d',
-            strokes: [randomHex(), randomHex(), randomHex(), randomHex()],
+            strokes: [randomHex(), randomHex(), randomHex(), randomHex(), randomHex(), randomHex()],
             target: randomHex(),
             wave: waveColorHex,
             glow: waveColorHex + '55',
@@ -1122,6 +1206,7 @@
         pulseRadius = 0;
         pulseRadius2 = -60;
         floatingTexts = [];
+        if (gameMode === 'electron') initElectronMode();
 
         if (gameMode === 'timeAttack') startTimeAttack();
         generateNewForm();
@@ -1165,16 +1250,23 @@
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
         
-        let tx2 = cx + target2.radius * Math.cos(target2.angle);
-        let ty2 = cy + target2.radius * Math.sin(target2.angle);
+        let isHit = false;
 
-        let diff = Math.abs(pulseRadius - target.radius);
-        let diffTarget2 = (gameMode === 'dualorb') ? Math.abs(pulseRadius - target2.radius) : 999;
-        let doublePulseEl = document.getElementById('modDoublePulse');
-        let diff2 = (doublePulseEl && doublePulseEl.checked) ? Math.abs(pulseRadius2 - target.radius) : 999;
-        let tolerance = 25;
+        if (gameMode === 'electron') {
+            let elPos = getElectronPos(cx, cy);
+            let distToTarget = Math.hypot(elPos.x - tx, elPos.y - ty);
+            isHit = (distToTarget < 35);
+        } else {
+            let tx2 = cx + target2.radius * Math.cos(target2.angle);
+            let diff = Math.abs(pulseRadius - target.radius);
+            let diffTarget2 = (gameMode === 'dualorb') ? Math.abs(pulseRadius - target2.radius) : 999;
+            let doublePulseEl = document.getElementById('modDoublePulse');
+            let diff2 = (doublePulseEl && doublePulseEl.checked) ? Math.abs(pulseRadius2 - target.radius) : 999;
+            let tolerance = 25;
+            isHit = (diff < tolerance || diffTarget2 < tolerance || diff2 < tolerance);
+        }
 
-        if (diff < tolerance || diffTarget2 < tolerance || diff2 < tolerance) {
+        if (isHit) {
             playSuccessSound();
             consecutiveFails = 0;
             successfulHits++;
@@ -1207,7 +1299,7 @@
             if (gameMode !== 'infinite') {
                 let ghostBonus = (gameMode === 'ghost' || gameMode === 'extreme') ? 50 : 0;
                 score += 100 + ghostBonus + (level * (gameMode === 'timeAttack' ? 25 : 10)) + (perfectStreak * 10);
-                if (gameMode === 'timeAttack') timeAttackSeconds += 3;
+                if (gameMode === 'timeAttack') timeAttackSeconds += 5; // +5 segundos por acierto
                 if (score > highScore) {
                     highScore = score;
                     localStorage.setItem('polarHighScorePro', highScore);
@@ -1249,6 +1341,10 @@
             perfectStreak = 0;
             screenShake = 6;
 
+            if (gameMode === 'timeAttack') {
+                timeAttackSeconds = Math.max(0, timeAttackSeconds - 8); // -8 segundos por fallo
+            }
+
             if (gameMode === 'survival') {
                 score = 0;
                 level = 1;
@@ -1256,7 +1352,7 @@
             } else if (consecutiveFails >= maxFailsForPenalty) {
                 consecutiveFails = 0;
                 successfulHits = 0;
-                if (gameMode === 'infinite' || gameMode === 'arcade' || gameMode === 'ghost' || gameMode === 'blind') {
+                if (gameMode === 'infinite' || gameMode === 'arcade' || gameMode === 'ghost' || gameMode === 'blind' || gameMode === 'electron') {
                     if (level > 1) unlockAchievement('survivor');
                     level = Math.max(1, level - 1);
                     feedbackText = "¡BAJAS NIVEL!";
@@ -1273,10 +1369,9 @@
         
         updateDOMStats();
         feedbackTimer = 35;
-                }
+        }
 
-
-            function update() {
+    function update() {
         if (isPaused) return;
         if (screenShake > 0) screenShake *= 0.85;
 
@@ -1298,6 +1393,15 @@
 
         let cx = canvas.width / 2;
         let cy = canvas.height / 2;
+        
+        if (gameMode === 'electron') {
+            electronAngle += 0.04 * gameSpeed * mirrorMod;
+            let elPos = getElectronPos(cx, cy);
+            electronTrail.push({ x: elPos.x, y: elPos.y, life: 1.0 });
+            if (electronTrail.length > 25) electronTrail.shift();
+            for (let et of electronTrail) et.life -= 0.04;
+        }
+
         let tx = cx + target.radius * Math.cos(target.angle);
         let ty = cy + target.radius * Math.sin(target.angle);
         
@@ -1318,23 +1422,25 @@
             if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
         }
 
-        pulseRadius += (1.2 + (level * 0.05)) * gameSpeed;
-        let doublePulseEl = document.getElementById('modDoublePulse');
-        if (doublePulseEl && doublePulseEl.checked) {
-            pulseRadius2 += (1.2 + (level * 0.05)) * gameSpeed;
-        }
-
-        if (pulseRadius > 230) {
-            consecutiveFails++;
-            perfectStreak = 0;
-            if (consecutiveFails >= maxFailsForPenalty) {
-                consecutiveFails = 0;
-                if (level > 1) unlockAchievement('survivor');
-                if (gameMode === 'infinite') level = Math.max(1, level - 1);
-                else score = 0;
-                updateDOMStats();
+        if (gameMode !== 'electron') {
+            pulseRadius += (1.2 + (level * 0.05)) * gameSpeed;
+            let doublePulseEl = document.getElementById('modDoublePulse');
+            if (doublePulseEl && doublePulseEl.checked) {
+                pulseRadius2 += (1.2 + (level * 0.05)) * gameSpeed;
             }
-            resetTarget();
+
+            if (pulseRadius > 230) {
+                consecutiveFails++;
+                perfectStreak = 0;
+                if (consecutiveFails >= maxFailsForPenalty) {
+                    consecutiveFails = 0;
+                    if (level > 1) unlockAchievement('survivor');
+                    if (gameMode === 'infinite') level = Math.max(1, level - 1);
+                    else score = 0;
+                    updateDOMStats();
+                }
+                resetTarget();
+            }
         }
 
         for (let i = particles.length - 1; i >= 0; i--) {
@@ -1345,8 +1451,16 @@
         }
 
         angle += 0.003 * gameSpeed * mirrorMod;
+        let doublePulseEl = document.getElementById('modDoublePulse');
         let dPulseActive = doublePulseEl && doublePulseEl.checked;
-        if (autoMode && (Math.abs(pulseRadius - target.radius) < 2 || (dPulseActive && Math.abs(pulseRadius2 - target.radius) < 2))) checkAction();
+        if (autoMode) {
+            if (gameMode === 'electron') {
+                let elPos = getElectronPos(cx, cy);
+                if (Math.hypot(elPos.x - tx, elPos.y - ty) < 20) checkAction();
+            } else if (Math.abs(pulseRadius - target.radius) < 2 || (dPulseActive && Math.abs(pulseRadius2 - target.radius) < 2)) {
+                checkAction();
+            }
+        }
     }
 
     function drawRetroBackground(cx, cy) {
@@ -1401,10 +1515,9 @@
             ctx.stroke();
         }
 
-        let opacities = [1.0, 0.75, 0.55, 0.35];
-        let rotations = [angle, -angle * 1.2, angle * 0.7 + Math.PI / 4, -angle * 0.4];
+        let opacities = [1.0, 0.85, 0.7, 0.55, 0.4, 0.25];
+        let rotations = [angle, -angle * 1.2, angle * 0.7 + Math.PI / 4, -angle * 0.4, angle * 1.5, -angle * 0.9];
 
-        // Renderizado según variante de Relax elegida
         let showCurves = (relaxVariant === 'curves' || relaxVariant === 'combined' || !relaxMode);
         let showPetals = (relaxVariant === 'petals' || relaxVariant === 'combined');
 
@@ -1496,7 +1609,26 @@
             ctx.globalAlpha = 1.0;
         }
 
-        if (!relaxMode) {
+        // Renderizado especial para el Modo Electrón (Estela y Partícula Electrón)
+        if (gameMode === 'electron' && !relaxMode) {
+            for (let et of electronTrail) {
+                ctx.beginPath();
+                ctx.arc(et.x, et.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = theme.wave;
+                ctx.globalAlpha = et.life * 0.6;
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+
+            let elPos = getElectronPos(cx, cy);
+            ctx.beginPath();
+            ctx.arc(elPos.x, elPos.y, 9, 0, Math.PI * 2);
+            ctx.fillStyle = theme.wave;
+            ctx.shadowColor = theme.wave;
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        } else if (!relaxMode) {
             ctx.beginPath();
             ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
             ctx.strokeStyle = theme.wave;
@@ -1505,7 +1637,7 @@
         }
 
         let doublePulseEl = document.getElementById('modDoublePulse');
-        if (doublePulseEl && doublePulseEl.checked && pulseRadius2 > 0 && !relaxMode) {
+        if (doublePulseEl && doublePulseEl.checked && pulseRadius2 > 0 && !relaxMode && gameMode !== 'electron') {
             ctx.beginPath();
             ctx.arc(cx, cy, pulseRadius2, 0, Math.PI * 2);
             ctx.strokeStyle = theme.target;
@@ -1564,6 +1696,13 @@
 </body>
 </html>
 
+        
+
+
+        
 
 
 
+        
+
+            
