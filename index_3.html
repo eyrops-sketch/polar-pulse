@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mitos Tácticos - Edición Synthwave Elegante</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            background-color: #030008;
+            color: #00ffff;
+            font-family: 'Outfit', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+            width: 100%;
+            height: 100vh;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            background-image: linear-gradient(to bottom, #0d0221 0%, #030008 100%);
+        }
+        h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+            margin: 8px 0;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+        #game-container {
+            width: 100vw;
+            max-width: 620px;
+            margin: 0 auto;
+            border: 2px solid var(--theme-color, #00ffff);
+            background-color: rgba(10, 5, 25, 0.95);
+            padding: 14px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-radius: 12px;
+            box-shadow: 0 0 25px var(--theme-glow, rgba(0, 255, 255, 0.4)), inset 0 0 15px rgba(255, 0, 255, 0.1);
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        .flash-red { background-color: #ff0055 !important; }
+        .flash-white { background-color: #ffffff !important; }
+        .flash-green { background-color: #00ff66 !important; }
+        .flash-blue { background-color: #00d4ff !important; }
+        
+        .stats-panel {
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(255, 0, 255, 0.3);
+            padding-bottom: 8px;
+            color: #ff00ff;
+            text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
+            gap: 6px;
+        }
+        
+        .top-btn {
+            background-color: #1a0033;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 10px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+            transition: all 0.2s;
+        }
+        .top-btn:hover {
+            background-color: #00ffff;
+            color: #000;
+            box-shadow: 0 0 12px #00ffff;
+        }
+               .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(3, 0, 8, 0.92);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-sizing: border-box;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #0a0518;
+            border: 2px solid #ff00ff;
+            width: 100%;
+            max-width: 580px;
+            max-height: 92vh;
+            overflow-y: auto;
+            padding: 20px;
+            border-radius: 12px;
+            box-sizing: border-box;
+            text-align: left;
+            font-size: 11.5px;
+            line-height: 1.7;
+            color: #e0e0e0;
+            box-shadow: 0 0 35px rgba(255, 0, 255, 0.5);
+        }
+        .modal-content h2 {
+            color: #00ffff;
+            font-size: 15px;
+            font-weight: 800;
+            text-align: center;
+            margin-top: 0;
+            text-shadow: 0 0 8px #00ffff;
+            border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        .modal-content h3 {
+            color: #ff00ff;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 16px 0 6px 0;
+            border-left: 3px solid #ff00ff;
+            padding-left: 8px;
+            text-shadow: 0 0 5px rgba(255, 0, 255, 0.4);
+        }
+        .modal-btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-action-btn {
+            flex: 1;
+            background-color: #ff00ff;
+            color: #fff;
+            border: none;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 11px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 0 12px rgba(255, 0, 255, 0.6);
+            transition: all 0.2s;
+        }
+        .modal-action-btn:hover { filter: brightness(1.2); box-shadow: 0 0 20px #ff00ff; }
+        .modal-secondary-btn {
+            background-color: #1a0033;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        #entorno-banner {
+            background-color: rgba(0, 20, 40, 0.8);
+            border: 2px solid var(--theme-color, #00ffff);
+            color: var(--theme-color, #00ffff);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 9px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--theme-glow, rgba(0, 255, 255, 0.3));
+            letter-spacing: 0.5px;
+        }
+        #event-banner {
+            background-color: rgba(40, 0, 40, 0.8);
+            border: 2px dashed #ff00ff;
+            color: #ff66ff;
+            font-size: 9.5px;
+            font-weight: 600;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+        }
+        #hint-banner {
+            background-color: rgba(20, 10, 40, 0.8);
+            border: 1px dashed #ffff00;
+            color: #ffff66;
+            font-size: 9.5px;
+            padding: 7px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 8px rgba(255, 255, 0, 0.2);
+        }
+               .main-layout {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+        .left-image-side {
+            flex: 1.1;
+            display: flex;
+            flex-direction: column;
+        }
+        .right-info-side {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: space-between;
+        }
+        #window-frame {
+            width: 100%;
+            aspect-ratio: 9/16;
+            border: 2px solid var(--theme-color, #00ffff);
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 0 15px var(--theme-glow, rgba(0, 255, 255, 0.4));
+        }
+        #monster-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: contrast(140%) brightness(110%);
+            display: none;
+            border-radius: 6px;
+        }
+        
+        .bars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(10, 15, 35, 0.9);
+            border: 2px solid var(--theme-color, #00ffff);
+            padding: 9px;
+            border-radius: 8px;
+            height: 100%;
+            box-sizing: border-box;
+            justify-content: space-around;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+        .bar-title {
+            font-size: 9.5px;
+            font-weight: 800;
+            color: var(--theme-color, #00ffff);
+            text-align: center;
+            margin-bottom: 3px;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 5px var(--theme-glow, rgba(0, 255, 255, 0.5));
+        }
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .bar-label {
+            width: 36px;
+            text-align: left;
+            color: #ffff00;
+            text-shadow: 0 0 4px rgba(255, 255, 0, 0.4);
+        }
+        .bar-outer {
+            flex: 1;
+            height: 12px;
+            background: #111;
+            border: 1px solid #555;
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+        .bar-inner-hp { background-color: #ff0055; box-shadow: 0 0 8px #ff0055; height: 100%; width: 100%; transition: width 0.3s; }
+        .bar-inner-mana { background-color: #0088ff; box-shadow: 0 0 8px #0088ff; height: 100%; width: 100%; transition: width 0.3s; }
+        .bar-inner-energy { background-color: #00ff66; box-shadow: 0 0 8px #00ff66; height: 100%; width: 100%; transition: width 0.3s; }
+        .bar-inner-speed { background-color: #ffaa00; box-shadow: 0 0 8px #ffaa00; height: 100%; width: 100%; transition: width 0.3s; }
+
+        .info-card {
+            background-color: rgba(10, 0, 20, 0.9);
+            border: 2px solid #ff00ff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 8px 4px;
+            text-align: center;
+            color: #ff66ff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+
+        #timer-bar-container {
+            width: 100%;
+            background-color: #050210;
+            border: 2px solid var(--theme-color, #00ffff);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+        }
+        #timer-bar-fill {
+            background-color: var(--theme-color, #00ffff);
+            box-shadow: 0 0 10px var(--theme-color, #00ffff);
+            height: 100%;
+            width: 100%;
+            transition: width 0.1s linear;
+        }
+
+        .selector-row {
+            margin-bottom: 4px;
+            text-align: left;
+        }
+        .selector-label {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #ffff00;
+            margin-bottom: 5px;
+            display: block;
+            text-shadow: 0 0 4px rgba(255, 255, 0, 0.3);
+        }
+        .row-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+        .row-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .row-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+        .row-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+
+        .tactical-btn {
+            background-color: rgba(15, 10, 35, 0.9);
+            color: var(--theme-color, #00ffff);
+            border: 2px solid var(--theme-color, #00ffff);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 8.5px;
+            padding: 11px 2px;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 6px;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+        .tactical-btn:hover {
+            background-color: var(--theme-color, #00ffff);
+            color: #030008;
+            box-shadow: 0 0 15px var(--theme-color, #00ffff);
+        }
+        .tactical-btn.selected {
+            background-color: var(--theme-color, #00ffff);
+            color: #030008;
+            border-color: #ff00ff;
+            transform: scale(1.02);
+            box-shadow: 0 0 15px var(--theme-color, #00ffff);
+        }
+        #action-execute-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00ffff 0%, #ff00ff 100%);
+            color: #030008;
+            border: none;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 12px;
+            padding: 14px;
+            cursor: pointer;
+            margin-top: 4px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        #action-execute-btn:hover { filter: brightness(1.2); box-shadow: 0 0 30px #00ffff; }
+        
+        #message {
+            font-size: 10px;
+            font-weight: 600;
+            margin-top: 4px;
+            min-height: 55px;
+            line-height: 1.5;
+            color: #ffff66;
+            background-color: rgba(10, 5, 25, 0.9);
+            border: 2px solid var(--theme-color, #00ffff);
+            padding: 10px;
+            text-align: left;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+
+        /* Ajustes responsivos: evita recortes horizontales en móviles */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            width: 100%;
+            min-width: 0;
+            overflow-x: clip;
+        }
+
+        body {
+            width: 100%;
+            min-width: 0;
+            min-height: 100vh;
+            height: auto;
+            margin: 0;
+            padding: 8px;
+            overflow-x: clip;
+        }
+
+        h1 {
+            width: 100%;
+            max-width: 100%;
+            font-size: clamp(15px, 4.5vw, 20px);
+            letter-spacing: clamp(1px, 0.5vw, 2px);
+            overflow-wrap: anywhere;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 620px;
+            min-width: 0;
+            margin-inline: auto;
+            padding: clamp(8px, 3vw, 14px);
+        }
+
+        .stats-panel {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stats-panel > span,
+        .stats-panel > button {
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .main-layout,
+        .left-image-side,
+        .right-info-side {
+            min-width: 0;
+        }
+
+        .row-grid-5,
+        .row-grid-4,
+        .row-grid-3,
+        .row-grid-2 {
+            min-width: 0;
+        }
+
+        .tactical-btn {
+            min-width: 0;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
+
+        .modal-overlay {
+            width: 100%;
+            min-width: 0;
+            padding: 8px;
+        }
+
+        .modal-content {
+            width: 100%;
+            min-width: 0;
+            padding: clamp(12px, 4vw, 20px);
+        }
+
+        .modal-btn-row {
+            flex-wrap: wrap;
+        }
+
+        .modal-action-btn {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        @media (max-width: 360px) {
+            body {
+                padding: 5px;
+            }
+
+            .stats-panel {
+                gap: 5px;
+                font-size: 10px;
+            }
+
+            .top-btn {
+                padding: 6px 7px;
+                font-size: 9px;
+            }
+
+            .main-layout {
+                gap: 6px;
+            }
+
+            .bar-row {
+                gap: 4px;
+            }
+
+            .bar-label {
+                width: 29px;
+                flex-shrink: 0;
+            }
+
+            .bars-container {
+                padding: 6px;
+            }
+
+            .row-grid-5 {
+                gap: 3px;
+            }
+
+            .tactical-btn {
+                font-size: 8px;
+                padding: 10px 1px;
+            }
+        }
+    </style>
+</head>
+<body>
+     <!-- MODAL 1: MANUAL TÁCTICO INTEGRAL -->
+    <div id="guide-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>📖 MANUAL TÁCTICO & MECÁNICAS AVANZADAS</h2>
+            
+            <h3>1. PROGRESIÓN Y BUCLE INFINITO</h3>
+            <p>Combates dinámicos contra monstruos de la carpeta <b>multimedia/</b> (0001.jpg en adelante).<br>
+            • <b>Victoria:</b> Sube tu racha y asciende al Rival Nv. +1.<br>
+            • <b>Derrota:</b> Reinicia tu racha a 0 y baja al rival Nv. -1.</p>
+
+            <h3>2. GESTIÓN DE BARRAS Y COSTE DE FATIGA</h3>
+            <p>Tus 4 barras (HP, MAN, ENE, VEL) empiezan con valores aleatorios. Cada clic en tácticas drena tus recursos en tiempo real (HP -9, MAN -7, ENE -10, VEL -4). ¡Si tu HP llega a 0, colapsas!</p>
+
+            <h3>3. PREVALENCIAS ELEMENTALES & TIERRA VERDE</h3>
+            <p>Cadena cerrada de 1 a 1:<br>
+            🔥 <b style="color:#ff6600">FUEGO</b> vence a <span style="color:#00ff66">🌍 Tierra (Verde)</span> (+35 pts)<br>
+            🌍 <b style="color:#00ff66">TIERRA (Verde)</b> vence a <span style="color:#cc44ff">🧪 Veneno</span> (+35 pts)<br>
+            🧪 <b style="color:#cc44ff">VENENO</b> vence a <span style="color:#ffffff">⚡ Rayos</span> (+35 pts)<br>
+            ⚡ <b style="color:#ffffff">RAYOS</b> vence a <span style="color:#00ffff">❄️ Hielo</span> (+35 pts)<br>
+            ❄️ <b style="color:#00ffff">HIELO</b> vence a <span style="color:#ff6600">🔥 Fuego</span> (+35 pts)</p>
+            <p>⚠️ <b>Duelo Espejo:</b> Mismo elemento que el monstruo penaliza por fatiga (salvo con Estado Campo de Resonancia).</p>
+
+            <h3>4. LEYENDA CROMÁTICA DE CLIMAS Y SEVERIDAD</h3>
+            <p>• <b>CLIMA FUEGO (<span style="color:#ff6600">Naranja</span>) / HIELO (<span style="color:#00d4ff">Cian</span>) / ÁCIDA (<span style="color:#cc44ff">Morado</span>):</b> Sev 2.<br>
+            • <b>CLIMA TEMPLADO (<span style="color:#00ff66">Verde</span>):</b> Sev 1.<br>
+            • <b>CLIMA TORMENTOSO (<span style="color:#ffffff">Blanco</span>):</b> Sev 3.<br>
+            <i>Soluciones:</i> Usar <b>Armadura</b> (+30 pts) o coincidir tu elemento con el clima para obtener <b>Sinergia Perfecta (+35 pts)</b>.</p>
+
+            <h3>5. BONIFICACIONES TÁCTICAS & NUEVAS MECÁNICAS</h3>
+            <p>• <b>APOYOS:</b> Defensa (HP &lt; 40), Poción (HP &lt; 35), Ataque Físico (ENE rival &lt; 50), Hechizo (MAN rival &lt; 50), Armadura, Glp Ágil (VEL rival &gt; tu VEL), Drenaje (MAN rival ≥ 50). Cada acierto otorga +20 pts.<br>
+            • <b>Estados Alterados:</b> Modificadores aleatorios por ronda (Inestabilidad Arcana, Campo de Resonancia, Niebla Tópica).<br>
+            • <b>Combos Elementales:</b> Combinar elementos consecutivos compatibles (ej. Fuego + Tierra = Magma) otorga +25 pts extra.<br>
+            • <b>Eventos Críticos:</b> Crisis súbitas (Emboscadas o Mutaciones) que exigen tácticas defensivas específicas.<br>
+            • <b>Pulso Oculto (Definitiva):</b> Acumula 3 victorias en racha y pulsa el botón especial para curar +30% HP y limpiar penalizaciones.</p>
+
+            <h3>6. POSTURAS DE RIESGO</h3>
+            <p>• <b>Equilibrada:</b> Umbral base estricto.<br>
+            • <b>Temeraria:</b> Exige umbral +15 pts; duplica tus puntos (x2) si aciertas.<br>
+            • <b>Conservadora:</b> Reduce tu puntuación a la mitad (/2) de forma segura.</p>
+
+            <div class="modal-btn-row">
+                <button class="modal-action-btn" onclick="toggleGuide()">✖ CERRAR MANUAL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: RESULTADO DE RONDA -->
+    <div id="result-modal" class="modal-overlay">
+        <div class="modal-content" id="result-modal-content">
+            <h2 id="result-title">RESUMEN DE RONDA</h2>
+            <div id="result-body" style="margin: 10px 0; line-height: 1.6;"></div>
+            <div class="modal-btn-row">
+                <button class="modal-action-btn" onclick="closeResultModal()">▶ CONTINUAR</button>
+                <button class="modal-action-btn modal-secondary-btn" onclick="openGuideFromModal()">📖 MANUAL</button>
+            </div>
+        </div>
+    </div>
+
+    <h1>MITOS TÁCTICOS SYNTHWAVE</h1>
+    
+    <div id="game-container">
+        
+        <div class="stats-panel">
+            <span id="hero-lvl-txt">RACHA: 0</span>
+            <span id="enemy-lvl-display">RIVAL NV.1</span>
+            <button class="top-btn" id="music-mode-btn" onclick="toggleMusicMode()">🎵 MUS: OFF</button>
+            <button class="top-btn" id="guide-btn" onclick="toggleGuide()">📖 MANUAL</button>
+            <span id="best-streak-txt">RÉCORD: 0</span>
+        </div>
+
+        <div id="entorno-banner">CLIMA: DESPEJADO</div>
+        <div id="event-banner">⚡ EVENTO CRÍTICO ACTIVO</div>
+        <div id="hint-banner">💡 Pista: Analiza las barras del rival antes de actuar.</div>
+
+        <div class="bars-container">
+            <div class="bar-title">TU ESTADO (DINÁMICO)</div>
+            <div class="bar-row"><span class="bar-label">HP</span><div class="bar-outer"><div id="hero-hp-fill" class="bar-inner-hp"></div></div></div>
+            <div class="bar-row"><span class="bar-label">MAN</span><div class="bar-outer"><div id="hero-mana-fill" class="bar-inner-mana"></div></div></div>
+            <div class="bar-row"><span class="bar-label">ENE</span><div class="bar-outer"><div id="hero-energy-fill" class="bar-inner-energy"></div></div></div>
+            <div class="bar-row"><span class="bar-label">VEL</span><div class="bar-outer"><div id="hero-speed-fill" class="bar-inner-speed"></div></div></div>
+        </div>
+
+        <div class="main-layout">
+            <div class="left-image-side">
+                <div id="window-frame">
+                    <img id="monster-img" src="" alt="Criatura">
+                </div>
+            </div>
+
+            <div class="right-info-side">
+                <div class="bars-container">
+                    <div class="bar-title" id="enemy-title-lvl">ANÁLISIS RIVAL (NV.1)</div>
+                    <div class="bar-row"><span class="bar-label">HP</span><div class="bar-outer"><div id="enemy-hp-fill" class="bar-inner-hp"></div></div></div>
+                    <div class="bar-row"><span class="bar-label">MAN</span><div class="bar-outer"><div id="enemy-mana-fill" class="bar-inner-mana"></div></div></div>
+                    <div class="bar-row"><span class="bar-label">ENE</span><div class="bar-outer"><div id="enemy-energy-fill" class="bar-inner-energy"></div></div></div>
+                    <div class="bar-row"><span class="bar-label">VEL</span><div class="bar-outer"><div id="enemy-speed-fill" class="bar-inner-speed"></div></div></div>
+                </div>
+                <div class="info-card" id="info-element">ELEM: ?</div>
+            </div>
+        </div>
+
+        <div id="timer-bar-container"><div id="timer-bar-fill"></div></div>
+
+        <!-- 1. Elemento -->
+        <div class="selector-row">
+            <span class="selector-label">1. ELEMENTO (Elige SÓLO UNO):</span>
+            <div class="row-grid-5">
+                <button class="tactical-btn elem-btn" onclick="selectElement('Fuego', this)">FUEGO</button>
+                <button class="tactical-btn elem-btn" onclick="selectElement('Hielo', this)">HIELO</button>
+                <button class="tactical-btn elem-btn" onclick="selectElement('Tierra', this)">TIERRA</button>
+                <button class="tactical-btn elem-btn" onclick="selectElement('Rayos', this)">RAYOS</button>
+                <button class="tactical-btn elem-btn" onclick="selectElement('Veneno', this)">VENENO</button>
+            </div>
+        </div>
+
+        <!-- 2. Acciones -->
+        <div class="selector-row">
+            <span class="selector-label">2. TÁCTICAS (Múltiples combinaciones):</span>
+            <div class="row-grid-4">
+                <button class="tactical-btn action-btn" onclick="toggleAction('Fisico', this)">FÍSICO</button>
+                <button class="tactical-btn action-btn" onclick="toggleAction('Hechizo', this)">HECHIZO</button>
+                <button class="tactical-btn action-btn" onclick="toggleAction('Armadura', this)">ARMADURA</button>
+                <button class="tactical-btn action-btn" onclick="toggleAction('Defensa', this)">DEFENSA</button>
+                <button class="tactical-btn action-btn" onclick="toggleAction('Agil', this)">ÁGIL</button>
+                <button class="tactical-btn action-btn" onclick="toggleAction('Drenaje', this)">DRENAJE</button>
+                <button class="tactical-btn action-btn" onclick="toggleAction('Pocion', this)">POCIÓN</button>
+                <button class="tactical-btn action-btn" onclick="toggleAction('Concentracion', this)">CONCENTRAR</button>
+            </div>
+        </div>
+
+        <!-- 3. Riesgo y Definitiva -->
+        <div class="selector-row">
+            <span class="selector-label">3. POSTURA & PULSO OCULTO:</span>
+            <div class="row-grid-2">
+                <div class="row-grid-3">
+                    <button class="tactical-btn risk-btn" style="color:#ff5555; border-color:#ff5555;" onclick="selectRisk('Temeraria', this)">TEMERARIA</button>
+                    <button class="tactical-btn risk-btn selected" id="default-risk-btn" style="color:#ffff00; border-color:#ffff00;" onclick="selectRisk('Equilibrada', this)">EQUILIB</button>
+                    <button class="tactical-btn risk-btn" style="color:#55ff55; border-color:#55ff55;" onclick="selectRisk('Conservadora', this)">CONSERVA</button>
+                </div>
+                <button class="tactical-btn" id="ultimate-btn" style="background:#1a0033; color:#00ffff; border-color:#00ffff;" onclick="triggerUltimate()">⚡ PULSO (0/3)</button>
+            </div>
+        </div>
+
+        <button id="action-execute-btn" onclick="evaluateTactics()">⚖️ CONFIRMAR JUGADA</button>
+
+        <div id="message">🚪 ¡Combate Synthwave iniciado! Elige tus tácticas con inteligencia.</div>
+    </div>
+        <script>
+        const CONFIG_TURN_TIME_LIMIT = 30; 
+        
+        const elements = ["Fuego", "Hielo", "Tierra", "Rayos", "Veneno"];
+        const elementalWinsAgainst = {
+            "Fuego": ["Tierra"],
+            "Tierra": ["Veneno"],
+            "Veneno": ["Rayos"],
+            "Rayos": ["Hielo"],
+            "Hielo": ["Fuego"]
+        };
+
+        const entornos = [
+            { nombre: "DESPEJADO", desc: "Sin afinidad elemental.", severidad: 0, elementoBase: null, tipoClima: "hielo" },
+            { nombre: "CLIMA FUEGO", desc: "Calor abrasivo.", severidad: 2, elementoBase: "Fuego", tipoClima: "fuego" },
+            { nombre: "CLIMA HIELO", desc: "Ventisca helada.", severidad: 2, elementoBase: "Hielo", tipoClima: "hielo" },
+            { nombre: "CLIMA TEMPLADO", desc: "Ambiente templado.", severidad: 1, elementoBase: "Tierra", tipoClima: "tierra" },
+            { nombre: "CLIMA TORMENTOSO", desc: "Tormenta eléctrica.", severidad: 3, elementoBase: "Rayos", tipoClima: "rayos" },
+            { nombre: "CLIMA LLUVIA ÁCIDA", desc: "Miasma corrosivo.", severidad: 2, elementoBase: "Veneno", tipoClima: "veneno" }
+        ];
+
+        const estadosAlteradosPool = [
+            { nombre: "NEUTRAL", desc: "Sin alteraciones activas." },
+            { nombre: "INESTABILIDAD ARCANA", desc: "Tácticas consumen doble pero otorgan +10 pts extra." },
+            { nombre: "CAMPO DE RESONANCIA", desc: "Duelos espejo otorgan bonificación en vez de penalizar." },
+            { nombre: "NIEBLA TÓPICA", desc: "Umbrales de victoria aumentan en +10 pts." }
+        ];
+
+        const combosValidos = {
+            "Fuego-Tierra": "Magma Explosivo",
+            "Tierra-Fuego": "Magma Explosivo",
+            "Hielo-Rayos": "Supercongelación",
+            "Rayos-Hielo": "Supercongelación",
+            "Veneno-Fuego": "Miasma Incandescente",
+            "Fuego-Veneno": "Miasma Incandescente"
+        };
+
+        let streak = 0;
+        let bestStreak = localStorage.getItem("mitos_best_streak") || 0;
+        let enemyLevel = 1;
+        let currentEntorno = entornos[0];
+        let currentEstado = estadosAlteradosPool[0];
+        let currentEvent = null;
+        let lastElementUsed = null;
+        let ultimateCharges = 0;
+
+        let hero = { hp: 50, mana: 50, energy: 50, vel: 50 };
+        let enemy = { element: "", hp: 100, mana: 100, energy: 100, vel: 50 };
+        
+        let combatActive = false;
+        let selection = { element: null, actions: [], risk: 'Equilibrada' };
+        let timeLeft = CONFIG_TURN_TIME_LIMIT;
+        let timerInterval = null;
+        let lastEvaluationDetails = { report: "", score: 0, umbral: 0 };
+
+        const MUSIC_BASE_URL = "https://eyrops-sketch.github.io/polar-pulse/multimedia/";
+        const TOTAL_TRACKS = 146;
+        let musicMode = 'off';
+        let currentTrackIndex = 1;
+        let bgAudio = new Audio();
+        bgAudio.volume = 0.4;
+
+        bgAudio.addEventListener('ended', () => {
+            if (musicMode === 'sequential') {
+                currentTrackIndex = currentTrackIndex >= TOTAL_TRACKS ? 1 : currentTrackIndex + 1;
+                playCurrentTrack();
+            } else if (musicMode === 'random') {
+                currentTrackIndex = Math.floor(Math.random() * TOTAL_TRACKS) + 1;
+                playCurrentTrack();
+            }
+        });
+
+        function toggleMusicMode() {
+            let btn = document.getElementById("music-mode-btn");
+            if (musicMode === 'off') {
+                musicMode = 'sequential'; currentTrackIndex = Math.floor(Math.random() * TOTAL_TRACKS) + 1;
+                btn.innerText = "🎵 MUS: SEQ"; playCurrentTrack();
+            } else if (musicMode === 'sequential') {
+                musicMode = 'random'; btn.innerText = "🎵 MUS: RND"; playCurrentTrack();
+            } else {
+                musicMode = 'off'; btn.innerText = "🎵 MUS: OFF"; bgAudio.pause();
+            }
+        }
+
+        function playCurrentTrack() {
+            if (musicMode === 'off') return;
+            bgAudio.src = MUSIC_BASE_URL + String(currentTrackIndex).padStart(3, '0') + ".mp3";
+            bgAudio.play().catch(e => console.log("Audio skipped:", e));
+        }
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(freq, type, duration) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function getRandomMultimediaImage() {
+            return `multimedia/${String(Math.floor(Math.random() * 6) + 1).padStart(4, '0')}.jpg`;
+        }
+
+        function toggleGuide() {
+            playBeep(600, 'sine', 0.05);
+            let modal = document.getElementById("guide-modal");
+            if (modal.style.display === "flex") {
+                modal.style.display = "none";
+                if (combatActive && timerInterval === null) startTimer();
+            } else {
+                modal.style.display = "flex";
+                clearInterval(timerInterval); timerInterval = null;
+            }
+        }
+
+        function openGuideFromModal() {
+            document.getElementById("result-modal").style.display = "none";
+            toggleGuide();
+        }
+
+        function applyTheme(tipoClima) {
+            let colorHex = "#00ffff", glowRgba = "rgba(0, 255, 255, 0.4)";
+            if (tipoClima === "fuego") { colorHex = "#ff6600"; glowRgba = "rgba(255, 102, 0, 0.4)"; }
+            else if (tipoClima === "hielo") { colorHex = "#00d4ff"; glowRgba = "rgba(0, 212, 255, 0.4)"; }
+            else if (tipoClima === "tierra") { colorHex = "#00ff66"; glowRgba = "rgba(0, 255, 102, 0.4)"; }
+            else if (tipoClima === "rayos") { colorHex = "#ffea00"; glowRgba = "rgba(255, 234, 0, 0.4)"; }
+            else if (tipoClima === "veneno") { colorHex = "#d400ff"; glowRgba = "rgba(212, 0, 255, 0.4)"; }
+            document.documentElement.style.setProperty('--theme-color', colorHex);
+            document.documentElement.style.setProperty('--theme-glow', glowRgba);
+        }
+
+        function startGame() {
+            streak = 0; enemyLevel = 1; ultimateCharges = 0; lastElementUsed = null;
+            updateUltimateButton();
+            document.getElementById("best-streak-txt").innerText = `RÉCORD: ${bestStreak}`;
+            document.getElementById("message").innerHTML = "¡Combate Synthwave iniciado!";
+            updateUI(); nextEncounter();
+        }
+
+        function updateUltimateButton() {
+            let btn = document.getElementById("ultimate-btn");
+            if (ultimateCharges >= 3) {
+                btn.innerText = "⚡ ¡LISTO!";
+                btn.style.background = "#00ff66";
+                btn.style.color = "#000";
+            } else {
+                btn.innerText = `⚡ PULSO (${ultimateCharges}/3)`;
+                btn.style.background = "#1a0033";
+                btn.style.color = "#00ffff";
+            }
+        }
+
+        function triggerUltimate() {
+            if (!combatActive) return;
+            if (ultimateCharges < 3) {
+                playBeep(200, 'square', 0.1);
+                document.getElementById("message").innerHTML = "⚠️ Necesitas 3 cargas de racha.";
+                return;
+            }
+            playBeep(1000, 'sine', 0.4);
+            ultimateCharges = 0;
+            updateUltimateButton();
+            hero.hp = Math.min(100, hero.hp + 30);
+            updateUI();
+            triggerFlash('blue');
+            document.getElementById("message").innerHTML = "⚡ ¡Pulso Oculto liberado! +30% HP recuperado.";
+        }
+
+        function updateUI() {
+            document.getElementById("hero-lvl-txt").innerText = `RACHA: ${streak}`;
+            document.getElementById("enemy-lvl-display").innerText = `RIVAL NV.${enemyLevel}`;
+            document.getElementById("best-streak-txt").innerText = `RÉCORD: ${bestStreak}`;
+            document.getElementById("entorno-banner").innerText = `CLIMA: ${currentEntorno.nombre} [Estado: ${currentEstado.nombre}]`;
+            document.getElementById("enemy-title-lvl").innerText = `ANÁLISIS RIVAL (NV.${enemyLevel})`;
+            
+            document.getElementById("hero-hp-fill").style.width = `${Math.max(0, hero.hp)}%`;
+            document.getElementById("hero-mana-fill").style.width = `${Math.max(0, hero.mana)}%`;
+            document.getElementById("hero-energy-fill").style.width = `${Math.max(0, hero.energy)}%`;
+            document.getElementById("hero-speed-fill").style.width = `${Math.max(0, hero.vel)}%`;
+
+            document.getElementById("enemy-hp-fill").style.width = `${Math.min(100, enemy.hp)}%`;
+            document.getElementById("enemy-mana-fill").style.width = `${Math.min(100, enemy.mana)}%`;
+            document.getElementById("enemy-energy-fill").style.width = `${Math.min(100, enemy.energy)}%`;
+            document.getElementById("enemy-speed-fill").style.width = `${Math.min(100, enemy.vel)}%`;
+        }
+
+        function generateHint() {
+            let hint = "💡 Pista: ";
+            if (currentEvent) hint += `<b>¡ALERTA EVENTO!</b> ${currentEvent.desc} `;
+            if (currentEntorno.severidad > 0) {
+                hint += `Clima ${currentEntorno.nombre}. Usa Armadura o Sinergia.`;
+            } else {
+                let elemWin = Object.keys(elementalWinsAgainst).find(k => elementalWinsAgainst[k].includes(enemy.element));
+                hint += `El rival usa ${enemy.element.toUpperCase()}. Tu mejor ofensiva es **${elemWin || 'Fuego'}**.`;
+            }
+            document.getElementById("hint-banner").innerHTML = hint;
+        }
+
+        function nextEncounter() {
+            combatActive = false;
+            document.getElementById("monster-img").style.display = "none";
+            resetSelections();
+            setTimeout(openWindow, 800);
+        }
+
+        function openWindow() {
+            playBeep(440, 'square', 0.1); 
+            let randomImagePath = getRandomMultimediaImage();
+
+            currentEntorno = entornos[Math.floor(Math.random() * entornos.length)];
+            currentEstado = estadosAlteradosPool[Math.floor(Math.random() * estadosAlteradosPool.length)];
+            applyTheme(currentEntorno.tipoClima);
+
+            if (Math.random() < 0.25) {
+                let eventPool = [
+                    { tipo: "emboscada", desc: "¡Emboscada Nocturna! Debes usar Defensa." },
+                    { tipo: "mutacion", desc: "¡Mutación Abrupta! El rival duplica su velocidad." }
+                ];
+                currentEvent = eventPool[Math.floor(Math.random() * eventPool.length)];
+                let evBanner = document.getElementById("event-banner");
+                evBanner.innerText = `⚡ ${currentEvent.desc}`;
+                evBanner.style.display = "block";
+            } else {
+                currentEvent = null;
+                document.getElementById("event-banner").style.display = "none";
+            }
+
+            hero.hp = Math.floor(Math.random() * 86) + 15;
+            hero.mana = Math.floor(Math.random() * 86) + 15;
+            hero.energy = Math.floor(Math.random() * 86) + 15;
+            hero.vel = Math.floor(Math.random() * 86) + 15;
+
+            enemy.element = elements[Math.floor(Math.random() * elements.length)];
+            enemy.hp = Math.floor(Math.random() * 86) + 15;
+            enemy.mana = Math.floor(Math.random() * 86) + 15;
+            enemy.energy = Math.floor(Math.random() * 86) + 15;
+            enemy.vel = Math.floor(Math.random() * 86) + 15;
+
+            if (currentEvent && currentEvent.tipo === "mutacion") enemy.vel = 100;
+
+            updateUI();
+            generateHint();
+
+            let imgElement = document.getElementById("monster-img");
+            imgElement.src = randomImagePath;
+            applyElementImageFilter(enemy.element, imgElement);
+            imgElement.style.display = "block";
+
+            document.getElementById("info-element").innerText = `ELEM: ${enemy.element.toUpperCase()}`;
+            document.getElementById("message").innerHTML = `⚠️ Enfrentando a Rival Nv.${enemyLevel} (${enemy.element.toUpperCase()}). [Estado: ${currentEstado.nombre}]`;
+            combatActive = true;
+            startTimer();
+        }
+
+        function applyElementImageFilter(element, img) {
+            let bf = "grayscale(100%) contrast(150%) ";
+            if (element === "Hielo") {
+                img.style.filter = bf + "sepia(100%) hue-rotate(140deg) saturate(400%)";
+            } else if (element === "Fuego") {
+                img.style.filter = bf + "sepia(100%) hue-rotate(-30deg) saturate(500%)";
+            } else if (element === "Tierra") {
+                img.style.filter = bf + "sepia(100%) hue-rotate(90deg) saturate(300%)";
+            } else if (element === "Rayos") {
+                img.style.filter = bf + "sepia(100%) hue-rotate(55deg) saturate(600%) brightness(120%)";
+            } else if (element === "Veneno") {
+                img.style.filter = bf + "sepia(100%) hue-rotate(240deg) saturate(500%) brightness(90%)";
+            } else {
+                img.style.filter = bf;
+            }
+        }
+                function triggerFlash(type) {
+            playBeep(type === 'green' ? 800 : (type === 'red' ? 120 : (type === 'blue' ? 1000 : 580)), type === 'green' || type === 'blue' ? 'sine' : 'square', 0.2);
+            let container = document.getElementById("game-container");
+            let frame = document.getElementById("window-frame");
+            let flashClass = type === 'red' ? 'flash-red' : (type === 'green' ? 'flash-green' : (type === 'blue' ? 'flash-blue' : 'flash-white'));
+            container.classList.add(flashClass); frame.classList.add(flashClass);
+            setTimeout(() => { container.classList.remove(flashClass); frame.classList.remove(flashClass); }, 250);
+        }
+
+        function selectElement(val, btn) {
+            if (!combatActive) return;
+            playBeep(700, 'sine', 0.05);
+            selection.element = val;
+            let btns = document.getElementsByClassName("elem-btn");
+            for (let b of btns) b.classList.remove("selected");
+            btn.classList.add("selected");
+        }
+
+        function toggleAction(val, btn) {
+            if (!combatActive) return;
+            playBeep(900, 'sine', 0.05);
+            
+            let costeMultiplicador = (currentEstado.nombre === "INESTABILIDAD ARCANA") ? 2 : 1;
+            hero.hp -= (9 * costeMultiplicador); 
+            hero.mana -= (7 * costeMultiplicador); 
+            hero.energy -= (10 * costeMultiplicador);
+            hero.vel -= (4 * costeMultiplicador); 
+            updateUI();
+
+            if (hero.hp <= 0) {
+                document.getElementById("message").innerHTML = "💀 ¡Colapso físico por sobrecarga!";
+                evaluateTactics();
+                return;
+            }
+
+            if (selection.actions.includes(val)) {
+                selection.actions = selection.actions.filter(a => a !== val);
+                btn.classList.remove("selected");
+            } else {
+                selection.actions.push(val);
+                btn.classList.add("selected");
+            }
+        }
+
+        function selectRisk(val, btn) {
+            if (!combatActive) return;
+            playBeep(700, 'sine', 0.05);
+            selection.risk = val;
+            let btns = document.getElementsByClassName("risk-btn");
+            for (let b of btns) b.classList.remove("selected");
+            btn.classList.add("selected");
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = CONFIG_TURN_TIME_LIMIT;
+            let timerFill = document.getElementById("timer-bar-fill");
+            timerFill.style.width = "100%";
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                timerFill.style.width = Math.max(0, (timeLeft / CONFIG_TURN_TIME_LIMIT) * 100) + "%";
+                if (timeLeft <= 0) { 
+                    clearInterval(timerInterval); 
+                    timerInterval = null;
+                    evaluateTactics(); 
+                }
+            }, 100);
+        }
+
+        function evaluateTactics() {
+            if (!combatActive) return;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            combatActive = false;
+
+            if (!selection.risk) selection.risk = 'Equilibrada';
+
+            let report = "";
+            let tacticScore = 0; 
+            let usaArmadura = selection.actions.includes("Armadura");
+            let bonusInestabilidad = (currentEstado.nombre === "INESTABILIDAD ARCANA") ? 10 : 0;
+
+            if (hero.hp <= 0) {
+                tacticScore = -100;
+                report += "💀 <span style='color:#ff0055'>Agotamiento: Tus barras llegaron a cero.</span><br>";
+            } else {
+                if (currentEntorno.severidad > 0) {
+                    if (selection.element === currentEntorno.elementoBase) {
+                        tacticScore += (35 + bonusInestabilidad);
+                        report += `☀️ <span style="color:#00ff66">Sinergia con clima (+${35 + bonusInestabilidad} pts).</span><br>`;
+                    } else if (usaArmadura) {
+                        tacticScore += (30 + bonusInestabilidad);
+                        report += `🛡️ <span style="color:#00ff66">Armadura neutralizó clima (+${30 + bonusInestabilidad} pts).</span><br>`;
+                    } else {
+                        let penalClima = currentEntorno.severidad * 25;
+                        tacticScore -= penalClima;
+                        report += `⚠️ <span style="color:#ff0055">Clima desprotegido (-${penalClima} pts).</span><br>`;
+                    }
+                }
+
+                if (selection.element) {
+                    if (elementalWinsAgainst[selection.element] && elementalWinsAgainst[selection.element].includes(enemy.element)) {
+                        tacticScore += (35 + bonusInestabilidad); 
+                        report += `🔥 Tu elemento venció al rival (+${35 + bonusInestabilidad} pts).<br>`;
+                    } else if (selection.element === enemy.element) {
+                        if (currentEstado.nombre === "CAMPO DE RESONANCIA") {
+                            tacticScore += 25;
+                            report += `✨ Campo de Resonancia: Espejo beneficioso [+25 pts].<br>`;
+                        } else {
+                            let fatiga = (50 - hero.hp) + (50 - hero.energy);
+                            let pen = Math.max(10, Math.floor(fatiga / 2));
+                            tacticScore -= pen;
+                            report += `⚖️ Duelo Espejo penalizado [-${pen} pts].<br>`;
+                        }
+                    } else { 
+                        report += `❌ Elemento débil frente al rival [0 pts].<br>`; 
+                    }
+
+                    if (lastElementUsed) {
+                        let comboKey = `${lastElementUsed}-${selection.element}`;
+                        if (combosValidos[comboKey]) {
+                            tacticScore += 25;
+                            report += `🔥✨ <b>¡COMBO ${combosValidos[comboKey]}!</b> [+25 pts].<br>`;
+                        }
+                    }
+                    lastElementUsed = selection.element;
+                }
+
+                if (currentEvent && currentEvent.tipo === "emboscada") {
+                    if (!selection.actions.includes("Defensa")) {
+                        tacticScore -= 35;
+                        report += `⚡ Emboscada fallida (Sin Defensa) [-35 pts].<br>`;
+                    } else {
+                        tacticScore += 25;
+                        report += `⚡ Emboscada repelida [+25 pts].<br>`;
+                    }
+                }
+
+                let actionCount = selection.actions.length;
+                if (actionCount === 0) {
+                    report += "❌ Sin tácticas de apoyo.<br>";
+                } else {
+                    selection.actions.forEach(act => {
+                        tacticScore += (20 + bonusInestabilidad);
+                        report += `✔️ Táctica (${act}) [+${20 + bonusInestabilidad} pts].<br>`;
+                    });
+                    if (actionCount > 3) {
+                        let exceso = (actionCount - 3) * 10;
+                        tacticScore -= exceso;
+                        report += `🚨 Exceso de acciones: -${exceso} pts.<br>`;
+                    }
+                }
+            }
+
+            let umbralVictoria = 38 + (enemyLevel * 2);
+            if (currentEstado.nombre === "NIEBLA TÓPICA") umbralVictoria += 10;
+            
+            let superaSituacion = false;
+            if (hero.hp > 0) {
+                if (selection.risk === "Temeraria") {
+                    if (tacticScore >= (umbralVictoria + 15)) { 
+                        superaSituacion = true; tacticScore *= 2; 
+                        report += `💥 Temeraria lograda (x2).`; 
+                    } else { superaSituacion = false; report += `💥 Temeraria fallida.`; }
+                } else if (selection.risk === "Conservadora") {
+                    superaSituacion = true; tacticScore = Math.floor(tacticScore / 2);
+                    report += `🛡️ Conservadora salvada (/2).`;
+                } else {
+                    superaSituacion = tacticScore >= umbralVictoria;
+                    report += superaSituacion ? `⚖️ Umbral superado (${tacticScore}/${umbralVictoria}).` : `⚖️ Insuficiente (${tacticScore}/${umbralVictoria}).`;
+                }
+            }
+
+            lastEvaluationDetails = { report: report, score: tacticScore, umbral: umbralVictoria };
+            document.getElementById("message").innerHTML = report;
+
+            if (superaSituacion) {
+                triggerFlash('green'); 
+                streak++; enemyLevel++; ultimateCharges = Math.min(3, ultimateCharges + 1);
+                updateUltimateButton();
+                if (streak > bestStreak) { bestStreak = streak; localStorage.setItem("mitos_best_streak", bestStreak); }
+                setTimeout(() => { showResultModal(true); }, 800);
+            } else {
+                triggerFlash('red'); hero.hp = 0; updateUI();
+                streak = 0; if (enemyLevel > 1) enemyLevel--;
+                setTimeout(() => { showResultModal(false); }, 800);
+            }
+        }
+
+        function showResultModal(won) {
+            document.getElementById("result-title").innerText = won ? `🏆 ¡RONDA SUPERADA (RACHA: ${streak})!` : `💀 DERROTADO (NV. RIVAL: ${enemyLevel})`;
+            document.getElementById("result-body").innerHTML = `<b>Desglose:</b><br>${lastEvaluationDetails.report}<br><br><b>Estado actual:</b> Racha: ${streak} | Cargas Pulso: ${ultimateCharges}/3`;
+            document.getElementById("result-modal").style.display = "flex";
+        }
+
+        function closeResultModal() {
+            document.getElementById("result-modal").style.display = "none";
+            nextEncounter();
+        }
+
+        function resetSelections() {
+            selection = { element: null, actions: [], risk: 'Equilibrada' };
+            let allBtns = document.getElementsByClassName("tactical-btn");
+            for (let b of allBtns) {
+                if (!b.id.includes('default-risk')) b.classList.remove("selected");
+            }
+            document.getElementById('default-risk-btn').classList.add('selected');
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
