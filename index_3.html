@@ -12,33 +12,33 @@
             font-family: 'Outfit', sans-serif;
             text-align: center;
             margin: 0;
-            padding: 10px;
+            padding: 8px;
             width: 100%;
-            height: 100vh;
+            min-height: 100vh;
             overflow-x: hidden;
             box-sizing: border-box;
             background-image: linear-gradient(to bottom, #0d0221 0%, #030008 100%);
         }
         h1 {
-            font-size: 20px;
+            font-size: clamp(16px, 4vw, 22px);
             font-weight: 800;
             letter-spacing: 2px;
             text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
-            margin: 8px 0;
+            margin: 6px 0;
             color: #ffffff;
             text-transform: uppercase;
         }
         #game-container {
-            width: 100vw;
+            width: 100%;
             max-width: 620px;
             margin: 0 auto;
             border: 2px solid var(--theme-color, #00ffff);
             background-color: rgba(10, 5, 25, 0.95);
-            padding: 14px;
+            padding: 12px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             border-radius: 12px;
             box-shadow: 0 0 25px var(--theme-glow, rgba(0, 255, 255, 0.4)), inset 0 0 15px rgba(255, 0, 255, 0.1);
             position: relative;
@@ -50,16 +50,17 @@
         .flash-blue { background-color: #00d4ff !important; }
         
         .stats-panel {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid rgba(255, 0, 255, 0.3);
             padding-bottom: 8px;
             color: #ff00ff;
             text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
-            gap: 6px;
+            gap: 8px;
         }
         
         .top-btn {
@@ -68,7 +69,7 @@
             border: 1px solid #00ffff;
             font-family: 'Outfit', sans-serif;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 11px;
             padding: 6px 10px;
             border-radius: 6px;
             cursor: pointer;
@@ -80,7 +81,7 @@
             color: #000;
             box-shadow: 0 0 12px #00ffff;
         }
-               .modal-overlay {
+                .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -103,14 +104,14 @@
             border-radius: 12px;
             box-sizing: border-box;
             text-align: left;
-            font-size: 11.5px;
+            font-size: 13px;
             line-height: 1.7;
             color: #e0e0e0;
             box-shadow: 0 0 35px rgba(255, 0, 255, 0.5);
         }
         .modal-content h2 {
             color: #00ffff;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
             text-align: center;
             margin-top: 0;
@@ -120,7 +121,7 @@
         }
         .modal-content h3 {
             color: #ff00ff;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             margin: 16px 0 6px 0;
             border-left: 3px solid #ff00ff;
@@ -139,7 +140,7 @@
             border: none;
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
-            font-size: 11px;
+            font-size: 12px;
             padding: 12px;
             border-radius: 8px;
             cursor: pointer;
@@ -158,9 +159,9 @@
             background-color: rgba(0, 20, 40, 0.8);
             border: 2px solid var(--theme-color, #00ffff);
             color: var(--theme-color, #00ffff);
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
-            padding: 9px;
+            padding: 8px;
             border-radius: 8px;
             box-shadow: 0 0 10px var(--theme-glow, rgba(0, 255, 255, 0.3));
             letter-spacing: 0.5px;
@@ -169,7 +170,7 @@
             background-color: rgba(40, 0, 40, 0.8);
             border: 2px dashed #ff00ff;
             color: #ff66ff;
-            font-size: 9.5px;
+            font-size: 11px;
             font-weight: 600;
             padding: 8px;
             border-radius: 8px;
@@ -181,30 +182,41 @@
             background-color: rgba(20, 10, 40, 0.8);
             border: 1px dashed #ffff00;
             color: #ffff66;
-            font-size: 9.5px;
-            padding: 7px;
+            font-size: 11px;
+            padding: 8px;
             border-radius: 8px;
             text-align: center;
             box-shadow: 0 0 8px rgba(255, 255, 0, 0.2);
         }
-               .main-layout {
+
+        .main-layout {
             display: flex;
             gap: 10px;
             align-items: stretch;
         }
         .left-image-side {
-            flex: 1.1;
+            flex: 1;
             display: flex;
             flex-direction: column;
         }
         .right-info-side {
-            flex: 1.2;
+            flex: 1.1;
             display: flex;
             flex-direction: column;
             gap: 8px;
             justify-content: space-between;
         }
-        #window-frame {
+
+        @media (max-width: 480px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            #window-frame {
+                aspect-ratio: 16/9 !important;
+                max-height: 200px;
+            }
+        }
+                #window-frame {
             width: 100%;
             aspect-ratio: 9/16;
             border: 2px solid var(--theme-color, #00ffff);
@@ -240,7 +252,7 @@
             box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
         }
         .bar-title {
-            font-size: 9.5px;
+            font-size: 11px;
             font-weight: 800;
             color: var(--theme-color, #00ffff);
             text-align: center;
@@ -252,19 +264,19 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 9px;
+            font-size: 10.5px;
             font-weight: 600;
             color: #fff;
         }
         .bar-label {
-            width: 36px;
+            width: 40px;
             text-align: left;
             color: #ffff00;
             text-shadow: 0 0 4px rgba(255, 255, 0, 0.4);
         }
         .bar-outer {
             flex: 1;
-            height: 12px;
+            height: 13px;
             background: #111;
             border: 1px solid #555;
             border-radius: 3px;
@@ -279,9 +291,9 @@
         .info-card {
             background-color: rgba(10, 0, 20, 0.9);
             border: 2px solid #ff00ff;
-            font-size: 10px;
+            font-size: 11.5px;
             font-weight: 700;
-            padding: 8px 4px;
+            padding: 8px 6px;
             text-align: center;
             color: #ff66ff;
             border-radius: 8px;
@@ -292,7 +304,7 @@
             width: 100%;
             background-color: #050210;
             border: 2px solid var(--theme-color, #00ffff);
-            height: 12px;
+            height: 13px;
             border-radius: 6px;
             overflow: hidden;
             box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
@@ -310,17 +322,17 @@
             text-align: left;
         }
         .selector-label {
-            font-size: 9.5px;
+            font-size: 11px;
             font-weight: 700;
             color: #ffff00;
             margin-bottom: 5px;
             display: block;
             text-shadow: 0 0 4px rgba(255, 255, 0, 0.3);
         }
-        .row-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
-        .row-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
-        .row-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-        .row-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+        .row-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+        .row-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        .row-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .row-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
 
         .tactical-btn {
             background-color: rgba(15, 10, 35, 0.9);
@@ -328,8 +340,8 @@
             border: 2px solid var(--theme-color, #00ffff);
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
-            font-size: 8.5px;
-            padding: 11px 2px;
+            font-size: 10px;
+            padding: 12px 2px;
             cursor: pointer;
             text-align: center;
             border-radius: 6px;
@@ -355,7 +367,7 @@
             border: none;
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
-            font-size: 12px;
+            font-size: 13px;
             padding: 14px;
             cursor: pointer;
             margin-top: 4px;
@@ -367,7 +379,7 @@
         #action-execute-btn:hover { filter: brightness(1.2); box-shadow: 0 0 30px #00ffff; }
         
         #message {
-            font-size: 10px;
+            font-size: 11.5px;
             font-weight: 600;
             margin-top: 4px;
             min-height: 55px;
@@ -380,179 +392,48 @@
             border-radius: 8px;
             box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.2);
         }
-
-
-        /* Ajustes responsivos: evita recortes horizontales en móviles */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
-        html {
-            width: 100%;
-            min-width: 0;
-            overflow-x: clip;
-        }
-
-        body {
-            width: 100%;
-            min-width: 0;
-            min-height: 100vh;
-            height: auto;
-            margin: 0;
-            padding: 8px;
-            overflow-x: clip;
-        }
-
-        h1 {
-            width: 100%;
-            max-width: 100%;
-            font-size: clamp(15px, 4.5vw, 20px);
-            letter-spacing: clamp(1px, 0.5vw, 2px);
-            overflow-wrap: anywhere;
-        }
-
-        #game-container {
-            width: 100%;
-            max-width: 620px;
-            min-width: 0;
-            margin-inline: auto;
-            padding: clamp(8px, 3vw, 14px);
-        }
-
-        .stats-panel {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .stats-panel > span,
-        .stats-panel > button {
-            min-width: 0;
-            max-width: 100%;
-        }
-
-        .main-layout,
-        .left-image-side,
-        .right-info-side {
-            min-width: 0;
-        }
-
-        .row-grid-5,
-        .row-grid-4,
-        .row-grid-3,
-        .row-grid-2 {
-            min-width: 0;
-        }
-
-        .tactical-btn {
-            min-width: 0;
-            overflow-wrap: anywhere;
-            word-break: normal;
-        }
-
-        .modal-overlay {
-            width: 100%;
-            min-width: 0;
-            padding: 8px;
-        }
-
-        .modal-content {
-            width: 100%;
-            min-width: 0;
-            padding: clamp(12px, 4vw, 20px);
-        }
-
-        .modal-btn-row {
-            flex-wrap: wrap;
-        }
-
-        .modal-action-btn {
-            min-width: 0;
-            overflow-wrap: anywhere;
-        }
-
-        @media (max-width: 360px) {
-            body {
-                padding: 5px;
-            }
-
-            .stats-panel {
-                gap: 5px;
-                font-size: 10px;
-            }
-
-            .top-btn {
-                padding: 6px 7px;
-                font-size: 9px;
-            }
-
-            .main-layout {
-                gap: 6px;
-            }
-
-            .bar-row {
-                gap: 4px;
-            }
-
-            .bar-label {
-                width: 29px;
-                flex-shrink: 0;
-            }
-
-            .bars-container {
-                padding: 6px;
-            }
-
-            .row-grid-5 {
-                gap: 3px;
-            }
-
-            .tactical-btn {
-                font-size: 8px;
-                padding: 10px 1px;
-            }
-        }
     </style>
 </head>
 <body>
-     <!-- MODAL 1: MANUAL TÁCTICO INTEGRAL -->
+        <!-- MODAL 1: MANUAL TÁCTICO INTEGRAL -->
     <div id="guide-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>📖 MANUAL TÁCTICO & MECÁNICAS AVANZADAS</h2>
             
             <h3>1. PROGRESIÓN Y BUCLE INFINITO</h3>
-            <p>Combates dinámicos contra monstruos de la carpeta <b>multimedia/</b> (0001.jpg en adelante).<br>
-            • <b>Victoria:</b> Sube tu racha y asciende al Rival Nv. +1.<br>
-            • <b>Derrota:</b> Reinicia tu racha a 0 y baja al rival Nv. -1.</p>
+            <p>Combates dinámicos contra monstruos de la carpeta <b>multimedia/</b> (0001.jpg en adelante)[span_1](start_span)[span_1](end_span).<br>
+            • <b>Victoria:</b> Sube tu racha y asciende al Rival Nv. +1[span_2](start_span)[span_2](end_span).<br>
+            • <b>Derrota:</b> Reinicia tu racha a 0 y baja al rival Nv. -1[span_3](start_span)[span_3](end_span).</p>
 
             <h3>2. GESTIÓN DE BARRAS Y COSTE DE FATIGA</h3>
-            <p>Tus 4 barras (HP, MAN, ENE, VEL) empiezan con valores aleatorios. Cada clic en tácticas drena tus recursos en tiempo real (HP -9, MAN -7, ENE -10, VEL -4). ¡Si tu HP llega a 0, colapsas!</p>
+            <p>Tus 4 barras (HP, MAN, ENE, VEL) empiezan con valores aleatorios. Cada acción táctica seleccionada drena tus recursos de forma controlada (HP -9, MAN -7, ENE -10, VEL -4)[span_4](start_span)[span_4](end_span). ¡Si deseleccionas la acción, recuperas el recurso para evitar castigos por clics accidentales! Si tu HP llega a 0, colapsas[span_5](start_span)[span_5](end_span).</p>
 
             <h3>3. PREVALENCIAS ELEMENTALES & TIERRA VERDE</h3>
-            <p>Cadena cerrada de 1 a 1:<br>
-            🔥 <b style="color:#ff6600">FUEGO</b> vence a <span style="color:#00ff66">🌍 Tierra (Verde)</span> (+35 pts)<br>
-            🌍 <b style="color:#00ff66">TIERRA (Verde)</b> vence a <span style="color:#cc44ff">🧪 Veneno</span> (+35 pts)<br>
-            🧪 <b style="color:#cc44ff">VENENO</b> vence a <span style="color:#ffffff">⚡ Rayos</span> (+35 pts)<br>
-            ⚡ <b style="color:#ffffff">RAYOS</b> vence a <span style="color:#00ffff">❄️ Hielo</span> (+35 pts)<br>
-            ❄️ <b style="color:#00ffff">HIELO</b> vence a <span style="color:#ff6600">🔥 Fuego</span> (+35 pts)</p>
-            <p>⚠️ <b>Duelo Espejo:</b> Mismo elemento que el monstruo penaliza por fatiga (salvo con Estado Campo de Resonancia).</p>
+            <p>Cadena cerrada de 1 a 1[span_6](start_span)[span_6](end_span):<br>
+            🔥 <b style="color:#ff6600">FUEGO</b> vence a <span style="color:#00ff66">🌍 Tierra (Verde)</span> (+35 pts)[span_7](start_span)[span_7](end_span)<br>
+            🌍 <b style="color:#00ff66">TIERRA (Verde)</b> vence a <span style="color:#cc44ff">🧪 Veneno</span> (+35 pts)[span_8](start_span)[span_8](end_span)<br>
+            🧪 <b style="color:#cc44ff">VENENO</b> vence a <span style="color:#ffffff">⚡ Rayos</span> (+35 pts)[span_9](start_span)[span_9](end_span)<br>
+            ⚡ <b style="color:#ffffff">RAYOS</b> vence a <span style="color:#00ffff">❄️ Hielo</span> (+35 pts)[span_10](start_span)[span_10](end_span)<br>
+            ❄️ <b style="color:#00ffff">HIELO</b> vence a <span style="color:#ff6600">🔥 Fuego</span> (+35 pts)[span_11](start_span)[span_11](end_span)</p>
+            <p>⚠️ <b>Duelo Espejo:</b> Mismo elemento que el monstruo penaliza por fatiga (salvo con Estado Campo de Resonancia)[span_12](start_span)[span_12](end_span).</p>
 
             <h3>4. LEYENDA CROMÁTICA DE CLIMAS Y SEVERIDAD</h3>
-            <p>• <b>CLIMA FUEGO (<span style="color:#ff6600">Naranja</span>) / HIELO (<span style="color:#00d4ff">Cian</span>) / ÁCIDA (<span style="color:#cc44ff">Morado</span>):</b> Sev 2.<br>
-            • <b>CLIMA TEMPLADO (<span style="color:#00ff66">Verde</span>):</b> Sev 1.<br>
-            • <b>CLIMA TORMENTOSO (<span style="color:#ffffff">Blanco</span>):</b> Sev 3.<br>
-            <i>Soluciones:</i> Usar <b>Armadura</b> (+30 pts) o coincidir tu elemento con el clima para obtener <b>Sinergia Perfecta (+35 pts)</b>.</p>
+            <p>• <b>CLIMA FUEGO (<span style="color:#ff6600">Naranja</span>) / HIELO (<span style="color:#00d4ff">Cian</span>) / ÁCIDA (<span style="color:#cc44ff">Morado</span>):</b> Sev 2[span_13](start_span)[span_13](end_span).<br>
+            • <b>CLIMA TEMPLADO (<span style="color:#00ff66">Verde</span>):</b> Sev 1[span_14](start_span)[span_14](end_span).<br>
+            • <b>CLIMA TORMENTOSO (<span style="color:#ffffff">Blanco</span>):</b> Sev 3[span_15](start_span)[span_15](end_span).<br>
+            <i>Soluciones:</i> Usar <b>Armadura</b> (+30 pts) o coincidir tu elemento con el clima para obtener <b>Sinergia Perfecta (+35 pts)</b>[span_16](start_span)[span_16](end_span).</p>
 
             <h3>5. BONIFICACIONES TÁCTICAS & NUEVAS MECÁNICAS</h3>
-            <p>• <b>APOYOS:</b> Defensa (HP &lt; 40), Poción (HP &lt; 35), Ataque Físico (ENE rival &lt; 50), Hechizo (MAN rival &lt; 50), Armadura, Glp Ágil (VEL rival &gt; tu VEL), Drenaje (MAN rival ≥ 50). Cada acierto otorga +20 pts.<br>
-            • <b>Estados Alterados:</b> Modificadores aleatorios por ronda (Inestabilidad Arcana, Campo de Resonancia, Niebla Tópica).<br>
-            • <b>Combos Elementales:</b> Combinar elementos consecutivos compatibles (ej. Fuego + Tierra = Magma) otorga +25 pts extra.<br>
-            • <b>Eventos Críticos:</b> Crisis súbitas (Emboscadas o Mutaciones) que exigen tácticas defensivas específicas.<br>
-            • <b>Pulso Oculto (Definitiva):</b> Acumula 3 victorias en racha y pulsa el botón especial para curar +30% HP y limpiar penalizaciones.</p>
+            <p>• <b>APOYOS:</b> Defensa (HP &lt; 40), Poción (HP &lt; 35), Ataque Físico (ENE rival &lt; 50), Hechizo (MAN rival &lt; 50), Armadura, Glp Ágil (VEL rival &gt; tu VEL), Drenaje (MAN rival ≥ 50). Cada acierto otorga +20 pts[span_17](start_span)[span_17](end_span).<br>
+            • <b>Estados Alterados:</b> Modificadores aleatorios por ronda (Inestabilidad Arcana, Campo de Resonancia, Niebla Tópica)[span_18](start_span)[span_18](end_span).<br>
+            • <b>Combos Elementales:</b> Combinar elementos consecutivos compatibles (ej. Fuego + Tierra = Magma) otorga +25 pts extra[span_19](start_span)[span_19](end_span).<br>
+            • <b>Eventos Críticos:</b> Crisis súbitas (Emboscadas o Mutaciones) que exigen tácticas defensivas específicas[span_20](start_span)[span_20](end_span).<br>
+            • <b>Pulso Oculto (Definitiva):</b> Acumula 3 victorias en racha y pulsa el botón especial para curar +30% HP y limpiar penalizaciones[span_21](start_span)[span_21](end_span).</p>
 
             <h3>6. POSTURAS DE RIESGO</h3>
-            <p>• <b>Equilibrada:</b> Umbral base estricto.<br>
-            • <b>Temeraria:</b> Exige umbral +15 pts; duplica tus puntos (x2) si aciertas.<br>
-            • <b>Conservadora:</b> Reduce tu puntuación a la mitad (/2) de forma segura.</p>
+            <p>• <b>Equilibrada:</b> Umbral base estricto[span_22](start_span)[span_22](end_span).<br>
+            • <b>Temeraria:</b> Exige umbral +15 pts; duplica tus puntos (x2) si aciertas[span_23](start_span)[span_23](end_span).<br>
+            • <b>Conservadora:</b> Reduce tu puntuación a la mitad (/2) de forma segura[span_24](start_span)[span_24](end_span).</p>
 
             <div class="modal-btn-row">
                 <button class="modal-action-btn" onclick="toggleGuide()">✖ CERRAR MANUAL</button>
@@ -587,8 +468,7 @@
         <div id="entorno-banner">CLIMA: DESPEJADO</div>
         <div id="event-banner">⚡ EVENTO CRÍTICO ACTIVO</div>
         <div id="hint-banner">💡 Pista: Analiza las barras del rival antes de actuar.</div>
-
-        <div class="bars-container">
+                <div class="bars-container">
             <div class="bar-title">TU ESTADO (DINÁMICO)</div>
             <div class="bar-row"><span class="bar-label">HP</span><div class="bar-outer"><div id="hero-hp-fill" class="bar-inner-hp"></div></div></div>
             <div class="bar-row"><span class="bar-label">MAN</span><div class="bar-outer"><div id="hero-mana-fill" class="bar-inner-mana"></div></div></div>
@@ -619,7 +499,7 @@
 
         <!-- 1. Elemento -->
         <div class="selector-row">
-            <span class="selector-label">1. ELEMENTO (Elige SÓLO UNO):</span>
+            <span class="selector-label">1. ELEMENTO (Elige SÓLO UNO)[span_25](start_span)[span_25](end_span):</span>
             <div class="row-grid-5">
                 <button class="tactical-btn elem-btn" onclick="selectElement('Fuego', this)">FUEGO</button>
                 <button class="tactical-btn elem-btn" onclick="selectElement('Hielo', this)">HIELO</button>
@@ -631,7 +511,7 @@
 
         <!-- 2. Acciones -->
         <div class="selector-row">
-            <span class="selector-label">2. TÁCTICAS (Múltiples combinaciones):</span>
+            <span class="selector-label">2. TÁCTICAS (Coste de fatiga al seleccionar)[span_26](start_span)[span_26](end_span):</span>
             <div class="row-grid-4">
                 <button class="tactical-btn action-btn" onclick="toggleAction('Fisico', this)">FÍSICO</button>
                 <button class="tactical-btn action-btn" onclick="toggleAction('Hechizo', this)">HECHIZO</button>
@@ -646,7 +526,7 @@
 
         <!-- 3. Riesgo y Definitiva -->
         <div class="selector-row">
-            <span class="selector-label">3. POSTURA & PULSO OCULTO:</span>
+            <span class="selector-label">3. POSTURA & PULSO OCULTO[span_27](start_span)[span_27](end_span):</span>
             <div class="row-grid-2">
                 <div class="row-grid-3">
                     <button class="tactical-btn risk-btn" style="color:#ff5555; border-color:#ff5555;" onclick="selectRisk('Temeraria', this)">TEMERARIA</button>
@@ -793,8 +673,7 @@
             document.documentElement.style.setProperty('--theme-color', colorHex);
             document.documentElement.style.setProperty('--theme-glow', glowRgba);
         }
-
-        function startGame() {
+                 function startGame() {
             streak = 0; enemyLevel = 1; ultimateCharges = 0; lastElementUsed = null;
             updateUltimateButton();
             document.getElementById("best-streak-txt").innerText = `RÉCORD: ${bestStreak}`;
@@ -933,7 +812,8 @@
                 img.style.filter = bf;
             }
         }
-                function triggerFlash(type) {
+
+        function triggerFlash(type) {
             playBeep(type === 'green' ? 800 : (type === 'red' ? 120 : (type === 'blue' ? 1000 : 580)), type === 'green' || type === 'blue' ? 'sine' : 'square', 0.2);
             let container = document.getElementById("game-container");
             let frame = document.getElementById("window-frame");
@@ -956,24 +836,32 @@
             playBeep(900, 'sine', 0.05);
             
             let costeMultiplicador = (currentEstado.nombre === "INESTABILIDAD ARCANA") ? 2 : 1;
-            hero.hp -= (9 * costeMultiplicador); 
-            hero.mana -= (7 * costeMultiplicador); 
-            hero.energy -= (10 * costeMultiplicador);
-            hero.vel -= (4 * costeMultiplicador); 
+            let hpCost = 9 * costeMultiplicador;
+            let manaCost = 7 * costeMultiplicador;
+            let energyCost = 10 * costeMultiplicador;
+            let velCost = 4 * costeMultiplicador;
+
+            if (selection.actions.includes(val)) {
+                selection.actions = selection.actions.filter(a => a !== val);
+                btn.classList.remove("selected");
+                hero.hp = Math.min(100, hero.hp + hpCost);
+                hero.mana = Math.min(100, hero.mana + manaCost);
+                hero.energy = Math.min(100, hero.energy + energyCost);
+                hero.vel = Math.min(100, hero.vel + velCost);
+            } else {
+                selection.actions.push(val);
+                btn.classList.add("selected");
+                hero.hp -= hpCost; 
+                hero.mana -= manaCost; 
+                hero.energy -= energyCost;
+                hero.vel -= velCost; 
+            }
             updateUI();
 
             if (hero.hp <= 0) {
                 document.getElementById("message").innerHTML = "💀 ¡Colapso físico por sobrecarga!";
                 evaluateTactics();
                 return;
-            }
-
-            if (selection.actions.includes(val)) {
-                selection.actions = selection.actions.filter(a => a !== val);
-                btn.classList.remove("selected");
-            } else {
-                selection.actions.push(val);
-                btn.classList.add("selected");
             }
         }
 
@@ -1036,7 +924,7 @@
                 if (selection.element) {
                     if (elementalWinsAgainst[selection.element] && elementalWinsAgainst[selection.element].includes(enemy.element)) {
                         tacticScore += (35 + bonusInestabilidad); 
-                        report += `🔥 Tu elemento venció al rival (+${35 + bonusInestabilidad} pts).<br>`;
+                        report += `🔥 Tu elemento (${selection.element}) venció al rival (${enemy.element}) (+${35 + bonusInestabilidad} pts).<br>`;
                     } else if (selection.element === enemy.element) {
                         if (currentEstado.nombre === "CAMPO DE RESONANCIA") {
                             tacticScore += 25;
@@ -1073,7 +961,7 @@
 
                 let actionCount = selection.actions.length;
                 if (actionCount === 0) {
-                    report += "❌ Sin tácticas de apoyo.<br>";
+                    report += "❌ Sin tácticas de apoyo seleccionadas.<br>";
                 } else {
                     selection.actions.forEach(act => {
                         tacticScore += (20 + bonusInestabilidad);
@@ -1095,14 +983,14 @@
                 if (selection.risk === "Temeraria") {
                     if (tacticScore >= (umbralVictoria + 15)) { 
                         superaSituacion = true; tacticScore *= 2; 
-                        report += `💥 Temeraria lograda (x2).`; 
-                    } else { superaSituacion = false; report += `💥 Temeraria fallida.`; }
+                        report += `💥 Postura Temeraria lograda (x2).`; 
+                    } else { superaSituacion = false; report += `💥 Postura Temeraria fallida (exigía +15 extra).`; }
                 } else if (selection.risk === "Conservadora") {
                     superaSituacion = true; tacticScore = Math.floor(tacticScore / 2);
-                    report += `🛡️ Conservadora salvada (/2).`;
+                    report += `🛡️ Postura Conservadora aplicada con seguridad (/2).`;
                 } else {
                     superaSituacion = tacticScore >= umbralVictoria;
-                    report += superaSituacion ? `⚖️ Umbral superado (${tacticScore}/${umbralVictoria}).` : `⚖️ Insuficiente (${tacticScore}/${umbralVictoria}).`;
+                    report += superaSituacion ? `⚖️ Umbral superado (${tacticScore}/${umbralVictoria}).` : `⚖️ Puntuación insuficiente (${tacticScore}/${umbralVictoria}).`;
                 }
             }
 
@@ -1124,7 +1012,7 @@
 
         function showResultModal(won) {
             document.getElementById("result-title").innerText = won ? `🏆 ¡RONDA SUPERADA (RACHA: ${streak})!` : `💀 DERROTADO (NV. RIVAL: ${enemyLevel})`;
-            document.getElementById("result-body").innerHTML = `<b>Desglose:</b><br>${lastEvaluationDetails.report}<br><br><b>Estado actual:</b> Racha: ${streak} | Cargas Pulso: ${ultimateCharges}/3`;
+            document.getElementById("result-body").innerHTML = `<b>Desglose analítico:</b><br>${lastEvaluationDetails.report}<br><br><b>Estado actual:</b> Racha: ${streak} | Cargas Pulso: ${ultimateCharges}/3`;
             document.getElementById("result-modal").style.display = "flex";
         }
 
